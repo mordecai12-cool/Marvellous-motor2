@@ -1,3 +1,150 @@
 body {
     font-family: Arial, sans-serif;
 }
+
+nav {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 20px 50px;
+    background-color: #111;
+}
+
+nav h2 {
+    color: white;
+}
+
+nav a {
+    color: white;
+    text-decoration: none;
+    margin-left: 20px;
+}
+
+.hero {
+    text-align: center;
+    padding: 100px 20px;
+    background-color: #f4f4f4;
+}
+
+.hero h1 {
+    font-size: 48px;
+    color: #111;
+}
+
+.hero p {
+    font-size: 20px;
+    color: #555;
+}
+
+.hero a {
+    display: inline-block;
+    margin-top: 20px;
+    padding: 15px 30px;
+    background-color: #007BFF;
+    color: white;
+    text-decoration: none;
+    border-radius: 5px;
+}
+
+.featured-cars {
+    padding: 60px 50px;
+    text-align: center;
+}
+
+.featured-cars > div {
+    display: inline-block;
+    width: 250px;
+    margin: 15px;
+    padding: 25px;
+    background-color: #f4f4f4;
+    border-radius: 10px;
+}
+
+.featured-cars h2 {
+    font-size: 32px;
+    margin-bottom: 30px;
+}
+
+.featured-cars h3 {
+    font-size: 22px;
+}
+
+.featured-cars a {
+    display: inline-block;
+    margin-top: 10px;
+    padding: 10px 20px;
+    background-color: #111;
+    color: white;
+    text-decoration: none;
+    border-radius: 5px;
+}
+
+.why-choose-us {
+    padding: 60px 50px;
+    text-align: center;
+    background-color: #f4f4f4;
+}
+
+.why-choose-us > div {
+    display: inline-block;
+    width: 250px;
+    margin: 15px;
+    padding: 25px;
+    background-color: white;
+    border-radius: 10px;
+}
+
+.why-choose-us h2 {
+    font-size: 32px;
+    margin-bottom: 30px;
+}
+
+.why-choose-us h3 {
+    font-size: 22px;
+}
+
+.how-it-works {
+    padding: 60px 50px;
+    text-align: center;
+}
+
+.how-it-works > div {
+    display: inline-block;
+    width: 200px;
+    margin: 15px;
+    padding: 25px;
+    background-color: #f4f4f4;
+    border-radius: 10px;
+}
+
+.how-it-works h2 {
+    font-size: 32px;
+    margin-bottom: 30px;
+}
+
+.how-it-works h3 {
+    font-size: 20px;
+}
+
+.contact-us {
+    padding: 60px 50px;
+    text-align: center;
+    background-color: #111;
+    color: white;
+}
+
+.contact-us h2 {
+    font-size: 32px;
+    margin-bottom: 20px;
+}
+
+.contact-us p {
+    margin: 10px;
+}
+
+footer {
+    padding: 20px;
+    text-align: center;
+    background-color: #000;
+    color: white;
+}
