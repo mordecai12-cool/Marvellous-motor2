@@ -18,16 +18,17 @@
 
     <section class="payment-page">
 
-        <h1>Order Summary</h1>
+        <h1>Complete Your Order</h1>
 
         <div class="order-summary">
-            <h2>Toyota Camry</h2>
+            <h2>Order Details</h2>
 
+            <p>Car: Toyota Camry</p>
             <p>Year: 2025</p>
             <p>Transmission: Automatic</p>
             <p>Fuel: Petrol</p>
 
-            <h2>₦25,000,000</h2>
+            <h2>Amount to Pay: ₦25,000,000</h2>
         </div>
 
         <div class="delivery-summary">
@@ -37,19 +38,31 @@
         </div>
 
         <div class="payment-section">
-            <h2>Payment</h2>
+
+            <h2>Payment Details</h2>
 
             <p>
-                Follow the business payment instructions
-                provided by Marvellous Motors.
+                Make your payment using the business account
+                details below.
             </p>
 
-            <p>
-                After making your payment, enter your
-                payment reference below.
-            </p>
+            <p>Bank: Your Business Bank</p>
+            <p>Account Name: Your Business Account Name</p>
+            <p>Account Number: Your Business Account Number</p>
 
-            <form>
+            <form action="payment-pending.html">
+
+                <label for="amount-paid">Amount Paid</label>
+
+                <input
+                    type="number"
+                    id="amount-paid"
+                    name="amount-paid"
+                    placeholder="Enter amount paid"
+                    min="0"
+                    step="0.01"
+                >
+
                 <label for="reference">Payment Reference</label>
 
                 <input
@@ -59,10 +72,21 @@
                     placeholder="Enter payment reference"
                 >
 
+                <label for="receipt">Payment Receipt</label>
+
+                <input
+                    type="file"
+                    id="receipt"
+                    name="receipt"
+                    accept="image/*,.pdf"
+                >
+
                 <button type="submit">
                     Submit Payment
                 </button>
+
             </form>
+
         </div>
 
     </section>
