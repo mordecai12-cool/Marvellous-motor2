@@ -1,9 +1,19 @@
 package main
 
 import (
+    "html/template"
 	"log"
 	"net/http"
 )
+
+type OrderData struct {
+    Name    string
+    Email   string
+    Phone   string
+    Address string
+    City    string
+    State   string
+}
 
 func main() {
 	http.HandleFunc("/order", handleOrder)
@@ -36,6 +46,14 @@ func handleOrder(w http.ResponseWriter, r *http.Request) {
     city := r.FormValue("city")
     state := r.FormValue("state")
 
+    orderData := OrderData{
+    Name:    name,
+    Email:   email,
+    Phone:   phone,
+    Address: address,
+    City:    city,
+    State:   state,
+    }
     log.Println("Customer:", name)
     log.Println("Email:", email)
     log.Println("Phone:", phone)
@@ -45,5 +63,15 @@ func handleOrder(w http.ResponseWriter, r *http.Request) {
 
 	log.Println("Order received successfully")
 
-	http.Redirect(w, r, "/payment.html?name="+name, http.StatusSeeOther)
+    tmpl, err := template.ParseFiles("payment.html")
+    if err != nil {
+        http.Error(w, "Could not load payment page", http.StatusInternalServerError)
+        return
+    }
+
+    err = tmpl.Execute(w, orderData)
+    if err != nil {
+        http.Error(w, "Could not display payment page", http.StatusInternalServerError)
+        return
+    }
 }
