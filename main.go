@@ -17,6 +17,7 @@ type OrderData struct {
 
 func main() {
 	http.HandleFunc("/order", handleOrder)
+    http.HandleFunc("/payment", handlePayment)
 	http.Handle("/", http.FileServer(http.Dir(".")))
 
 	log.Println("Marvellous Motors is running on http://localhost:8080")
@@ -74,4 +75,23 @@ func handleOrder(w http.ResponseWriter, r *http.Request) {
         http.Error(w, "Could not display payment page", http.StatusInternalServerError)
         return
     }
+}
+
+func handlePayment(w http.ResponseWriter, r *http.Request) {
+    if r.Method != http.MethodPost {
+        http.Error(w, "Method not allowed", http.StatusMethodNotAllowed)
+        return
+    }
+
+    log.Println("Payment form received")
+
+    amount := r.FormValue("amount-paid")
+
+    log.Println("Amount Paid:", amount)
+
+    reference := r.FormValue("reference")
+
+    log.Println("Payment Reference:", reference)
+
+    http.Redirect(w, r, "/payment-pending.html", http.StatusSeeOther)
 }
