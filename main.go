@@ -4,6 +4,8 @@ import (
     "html/template"
 	"log"
 	"net/http"
+    "os"
+    "io"
 )
 
 type OrderData struct {
@@ -92,6 +94,30 @@ func handlePayment(w http.ResponseWriter, r *http.Request) {
     reference := r.FormValue("reference")
 
     log.Println("Payment Reference:", reference)
+
+    file, header, err := r.FormFile("receipt")
+    if err != nil {
+        http.Error(w, "Receipt is required", http.StatusBadRequest)
+        return
+    }
+    defer file.Close()
+
+    log.Println("Receipt:", header.Filename)
+
+    filename := "receipt_" + reference
+
+    destination, err := os.Create("uploads/" + filename)
+    if err != nil {
+        http.Error(w, "Could not save receipt", http.StatusInternalServerError)
+        return
+    }
+    defer destination.Close()
+
+    _, err = io.Copy(destination, file)
+    if err != nil {
+        http.Error(w, "Could not save receipt", http.StatusInternalServerError)
+        return
+    }
 
     http.Redirect(w, r, "/payment-pending.html", http.StatusSeeOther)
 }
