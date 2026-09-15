@@ -348,3 +348,35 @@ footer {
     text-decoration: none;
     border-radius: 5px;
 }
+
+.admin-dashboard {
+    max-width: 1000px;
+    margin: auto;
+    padding: 60px 20px;
+}
+
+.admin-dashboard h1 {
+    text-align: center;
+    font-size: 40px;
+}
+
+.admin-dashboard > p {
+    text-align: center;
+    color: #555;
+}
+
+.admin-cards {
+    display: flex;
+    justify-content: center;
+    gap: 30px;
+    margin-top: 40px;
+    flex-wrap: wrap;
+}
+
+.admin-card {
+    width: 250px;
+    padding: 30px;
+    background-color: #f4f4f4;
+    border-radius: 10px;
+    text-align: center;
+}

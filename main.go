@@ -8,7 +8,7 @@ import (
 	"net/http"
 	"os"
 	"path/filepath"
-	"strconv"
+	"time"
 
 	_ "modernc.org/sqlite"
 )
@@ -23,12 +23,28 @@ type OrderData struct {
 	State   string
 }
 
+type AdminOrder struct {
+    ID      int64
+    Name    string
+    Email   string
+    Phone   string
+    Address string
+    City    string
+    State   string
+    Status  string
+}
+
 func main() {
 	db, err := sql.Open("sqlite", "marvellous.db")
 	if err != nil {
 		log.Fatal(err)
 	}
 	defer db.Close()
+
+	err = os.MkdirAll("uploads", 0755)
+	if err != nil {
+		log.Fatal(err)
+	}
 
 	log.Println("Database connected")
 
@@ -69,6 +85,9 @@ func main() {
 	})
 	http.HandleFunc("/payment", func(w http.ResponseWriter, r *http.Request) {
 		handlePayment(db, w, r)
+	})
+	http.HandleFunc("/admin/orders", func(w http.ResponseWriter, r *http.Request) {
+		handleAdminOrders(db, w, r)
 	})
 	http.Handle("/", http.FileServer(http.Dir(".")))
 
@@ -180,17 +199,48 @@ func handlePayment(db *sql.DB, w http.ResponseWriter, r *http.Request) {
 
 	log.Println("Payment Reference:", reference)
 
+	r.Body = http.MaxBytesReader(w, r.Body, 5<<20)
+
 	file, header, err := r.FormFile("receipt")
 	if err != nil {
 		http.Error(w, "Receipt is required", http.StatusBadRequest)
 		return
 	}
+
+	extension := filepath.Ext(header.Filename)
+
+	if extension != ".png" && extension != ".jpg" && extension != ".jpeg" && extension != ".pdf" {
+		http.Error(w, "Invalid receipt file type", http.StatusBadRequest)
+		return
+	}
+
 	defer file.Close()
+
+	buffer := make([]byte, 512)
+
+	_, err = file.Read(buffer)
+	if err != nil {
+		http.Error(w, "Could not read receipt", http.StatusBadRequest)
+		return
+	}
+
+	contentType := http.DetectContentType(buffer)
+	log.Println("Receipt type:", contentType)
+
+	if contentType != "image/png" && contentType != "image/jpeg" &&  contentType != "application/pdf" {
+		http.Error(w, "Invalid receipt file type", http.StatusBadRequest)
+		return
+	}
+
+	_, err = file.Seek(0, 0)
+	if err != nil {
+		http.Error(w, "Could not reset receipt", http.StatusInternalServerError)
+		return
+	}
 
 	log.Println("Receipt:", header.Filename)
 
-	extension := filepath.Ext(header.Filename)
-	filename := "receipt_" + strconv.FormatInt(orderID, 10) + extension
+	filename := "receipt_" + orderID + "_" + time.Now().Format("20060102150405") + extension
 
 	_, err = db.Exec(`
 	    INSERT INTO payments (
@@ -225,4 +275,11 @@ func handlePayment(db *sql.DB, w http.ResponseWriter, r *http.Request) {
 	}
 
 	http.Redirect(w, r, "/payment-pending.html", http.StatusSeeOther)
+}
+
+func handleAdminOrders(db *sql.DB, w http.ResponseWriter, r *http.Request) {
+	if r.Method != http.MethodGet {
+		http.Error(w, "Method not allowed", http.StatusMethodNotAllowed)
+		return
+	}
 }
