@@ -12,6 +12,7 @@ import (
 )
 
 type OrderData struct {
+	OrderID int64
 	Name    string
 	Email   string
 	Phone   string
@@ -46,10 +47,27 @@ func main() {
         log.Fatal(err)
     }
 
+	_, err = db.Exec(`
+	    CREATE TABLE IF NOT EXISTS payments (
+		id INTEGER PRIMARY KEY AUTOINCREMENT,
+		order_id INTEGER NOT NULL,
+		amount_paid REAL NOT NULL,
+		payment_reference TEXT NOT NULL,
+        receipt TEXT NOT NULL,
+        payment_status TEXT NOT NULL,
+        created_at DATETIME DEFAULT CURRENT_TIMESTAMP
+		)
+	`)
+	if err != nil {
+		log.Fatal(err)
+	}
+
     http.HandleFunc("/order", func(w http.ResponseWriter, r *http.Request) {
         handleOrder(db, w, r)
     })
-	http.HandleFunc("/payment", handlePayment)
+	http.HandleFunc("/payment", func(w http.ResponseWriter, r *http.Request) {
+		handlePayment(db, w, r)
+	})
 	http.Handle("/", http.FileServer(http.Dir(".")))
 
 	log.Println("Marvellous Motors is running on http://localhost:8080")
@@ -79,14 +97,6 @@ func handleOrder(db *sql.DB, w http.ResponseWriter, r *http.Request) {
 	city := r.FormValue("city")
 	state := r.FormValue("state")
 
-	orderData := OrderData{
-		Name:    name,
-		Email:   email,
-		Phone:   phone,
-		Address: address,
-		City:    city,
-		State:   state,
-	}
 	log.Println("Customer:", name)
 	log.Println("Email:", email)
 	log.Println("Phone:", phone)
@@ -124,6 +134,16 @@ func handleOrder(db *sql.DB, w http.ResponseWriter, r *http.Request) {
 
     log.Println("Order ID:", orderID)
 
+	orderData := OrderData{
+		OrderID: orderID,
+		Name:    name,
+		Email:   email,
+		Phone:   phone,
+		Address: address,
+		City:    city,
+		State:   state,
+	}
+
     log.Println("Order saved to database")
 
 	tmpl, err := template.ParseFiles("payment.html")
@@ -139,13 +159,16 @@ func handleOrder(db *sql.DB, w http.ResponseWriter, r *http.Request) {
 	}
 }
 
-func handlePayment(w http.ResponseWriter, r *http.Request) {
+func handlePayment(db *sql.DB, w http.ResponseWriter, r *http.Request) {
 	if r.Method != http.MethodPost {
 		http.Error(w, "Method not allowed", http.StatusMethodNotAllowed)
 		return
 	}
 
 	log.Println("Payment form received")
+
+	orderID := r.FormValue("order-id")
+    log.Println("Order ID:", orderID)
 
 	amount := r.FormValue("amount-paid")
 
@@ -165,6 +188,26 @@ func handlePayment(w http.ResponseWriter, r *http.Request) {
 	log.Println("Receipt:", header.Filename)
 
 	filename := "receipt_" + reference
+
+	_, err = db.Exec(`
+	    INSERT INTO payments (
+		    order_id,
+			amount_paid,
+            payment_reference,
+            receipt,
+            payment_status
+		)
+		VALUES (?, ?, ?, ?, ?)
+	`, orderID, amount, reference, filename, "pending")
+
+	if err != nil {
+		log.Println("Payment database error:", err)
+        http.Error(w, "Could not save payment", http.StatusInternalServerError)
+        return
+	}
+
+	log.Println("Payment saved to database")
+
 
 	destination, err := os.Create("uploads/" + filename)
 	if err != nil {
