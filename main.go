@@ -34,6 +34,15 @@ type AdminOrder struct {
     Status  string
 }
 
+type AdminPayment struct {
+    ID              int64
+    OrderID         int64
+    AmountPaid      string
+    PaymentReference string
+    Receipt         string
+    PaymentStatus   string
+}
+
 func main() {
 	db, err := sql.Open("sqlite", "marvellous.db")
 	if err != nil {
@@ -88,6 +97,9 @@ func main() {
 	})
 	http.HandleFunc("/admin/orders", func(w http.ResponseWriter, r *http.Request) {
 		handleAdminOrders(db, w, r)
+	})
+	http.HandleFunc("/admin/payments", func(w http.ResponseWriter, r *http.Request) {
+		handleAdminPayments(db, w, r)
 	})
 	http.Handle("/", http.FileServer(http.Dir(".")))
 
@@ -334,4 +346,64 @@ func handleAdminOrders(db *sql.DB, w http.ResponseWriter, r *http.Request) {
         http.Error(w, "Could not display orders", http.StatusInternalServerError)
         return
 	}
+}
+
+func handleAdminPayments(db *sql.DB, w http.ResponseWriter, r *http.Request) {
+
+    if r.Method != http.MethodGet {
+        http.Error(w, "Method not allowed", http.StatusMethodNotAllowed)
+        return
+    }
+
+	rows, err := db.Query(`
+	    SELECT id, order_id, amount_paid, payment_reference, receipt, payment_status
+		FROM payments
+		ORDER BY id DESC
+	`)
+	if err != nil {
+		log.Println("Could not get payments:", err)
+        http.Error(w, "Could not load payments", http.StatusInternalServerError)
+        return
+	}
+	defer rows.Close()
+
+	var payments []AdminPayment
+
+    for rows.Next() {
+
+		var payment AdminPayment
+
+		err := rows.Scan(
+			&payment.ID,
+            &payment.OrderID,
+            &payment.AmountPaid,
+            &payment.PaymentReference,
+            &payment.Receipt,
+            &payment.PaymentStatus,
+		)
+
+		if err != nil {
+			log.Println("Could not read payment:", err)
+            http.Error(w, "Could not read payment", http.StatusInternalServerError)
+            return
+		}
+
+		payments = append(payments, payment)
+
+	}
+
+	tmpl, err := template.ParseFiles("admin-payments.html")
+	if err != nil {
+		log.Println("Could not load admin payments page:", err)
+        http.Error(w, "Could not load admin payments page", http.StatusInternalServerError)
+        return
+	}
+
+	err = tmpl.Execute(w, payments)
+	if err != nil {
+		log.Println("Could not display payments:", err)
+        http.Error(w, "Could not display payments", http.StatusInternalServerError)
+        return
+	}
+
 }

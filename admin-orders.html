@@ -19,7 +19,29 @@
         <h1>Customer Orders</h1>
 
         <div id="orders">
-            Orders will appear here.
+
+            {{range .}}
+
+            <div class="admin-order">
+
+                <h2>Order #{{.ID}}</h2>
+
+                <p>Name: {{.Name}}</p>
+                <p>Email: {{.Email}}</p>
+                <p>Phone: {{.Phone}}</p>
+
+                <p>Address: {{.Address}}</p>
+                <p>City: {{.City}}</p>
+                <p>State: {{.State}}</p>
+
+                <p>Status: {{.Status}}</p>
+
+            </div>
+
+            {{else}}
+
+                <p>No orders found.</p>
+            {{end}}
         </div>
 
     </section>

@@ -1,0 +1,48 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Admin Payments - Marvellous Motors</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+
+<body>
+
+    <nav>
+        <h2>Marvellous Motors Admin</h2>
+
+        <a href="admin.html">Dashboard</a>
+        <a href="index.html">Home</a>
+    </nav>
+
+    <section class="admin-payments">
+
+        <h1>Customer Payments</h1>
+
+        <div id="payments">
+
+            {{range .}}
+
+                <div class="admin-payment">
+
+                    <h2>Payment #{{.ID}}</h2>
+
+                    <p>Order ID: {{.OrderID}}</p>
+                    <p>Amount Paid: ₦{{.AmountPaid}}</p>
+                    <p>Payment Reference: {{.PaymentReference}}</p>
+                    <p>Receipt: {{.Receipt}}</p>
+                    <p>Status: {{.PaymentStatus}}</p>
+
+                </div>
+
+            {{else}}
+
+                <p>No payments found.</p>
+
+            {{end}}
+            
+        </div>
+
+    </section>
+
+</body>
+</html>
