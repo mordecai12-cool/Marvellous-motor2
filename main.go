@@ -282,4 +282,56 @@ func handleAdminOrders(db *sql.DB, w http.ResponseWriter, r *http.Request) {
 		http.Error(w, "Method not allowed", http.StatusMethodNotAllowed)
 		return
 	}
+
+	rows, err := db.Query(`
+	    SELECT id, name, email, phone, address, city, state, status
+		FROM orders
+		ORDER BY id DESC
+	`)
+	if err != nil {
+	    log.Println("Could not get orders:", err)
+	    http.Error(w, "Could not load orders", http.StatusInternalServerError)
+		return
+	}
+	defer rows.Close()
+
+	var orders []AdminOrder
+
+	for rows.Next() {
+
+		var order AdminOrder
+
+		err := rows.Scan(
+			&order.ID,
+            &order.Name,
+            &order.Email,
+            &order.Phone,
+            &order.Address,
+            &order.City,
+            &order.State,
+            &order.Status,
+		)
+
+		if err != nil {
+			log.Println("Could not read order:", err)
+		    http.Error(w, "Could not read order", http.StatusInternalServerError)
+            return
+		}
+
+		orders = append(orders, order)
+	}
+
+	tmpl, err := template.ParseFiles("admin-orders.html")
+	if err != nil {
+		log.Println("Could not load admin orders page:", err)
+        http.Error(w, "Could not load admin orders page", http.StatusInternalServerError)
+        return
+	}
+	
+	err = tmpl.Execute(w, orders)
+	if err != nil {
+		log.Println("Could not display orders:", err)
+        http.Error(w, "Could not display orders", http.StatusInternalServerError)
+        return
+	}
 }
