@@ -1,14 +1,16 @@
 package main
 
 import (
-    "database/sql"
+	"database/sql"
 	"html/template"
 	"io"
 	"log"
 	"net/http"
 	"os"
+	"path/filepath"
+	"strconv"
 
-    _ "modernc.org/sqlite"
+	_ "modernc.org/sqlite"
 )
 
 type OrderData struct {
@@ -22,15 +24,15 @@ type OrderData struct {
 }
 
 func main() {
-    db, err := sql.Open("sqlite", "marvellous.db")
-    if err != nil {
-        log.Fatal(err)
-    }
-    defer db.Close()
+	db, err := sql.Open("sqlite", "marvellous.db")
+	if err != nil {
+		log.Fatal(err)
+	}
+	defer db.Close()
 
-    log.Println("Database connected")
+	log.Println("Database connected")
 
-    _, err = db.Exec(`
+	_, err = db.Exec(`
         CREATE TABLE IF NOT EXISTS orders (
         id INTEGER PRIMARY KEY AUTOINCREMENT,
         name TEXT NOT NULL,
@@ -43,9 +45,9 @@ func main() {
         created_at DATETIME DEFAULT CURRENT_TIMESTAMP 
         )
     `)
-    if err != nil {
-        log.Fatal(err)
-    }
+	if err != nil {
+		log.Fatal(err)
+	}
 
 	_, err = db.Exec(`
 	    CREATE TABLE IF NOT EXISTS payments (
@@ -62,9 +64,9 @@ func main() {
 		log.Fatal(err)
 	}
 
-    http.HandleFunc("/order", func(w http.ResponseWriter, r *http.Request) {
-        handleOrder(db, w, r)
-    })
+	http.HandleFunc("/order", func(w http.ResponseWriter, r *http.Request) {
+		handleOrder(db, w, r)
+	})
 	http.HandleFunc("/payment", func(w http.ResponseWriter, r *http.Request) {
 		handlePayment(db, w, r)
 	})
@@ -106,7 +108,7 @@ func handleOrder(db *sql.DB, w http.ResponseWriter, r *http.Request) {
 
 	log.Println("Order received successfully")
 
-    result, err := db.Exec(`
+	result, err := db.Exec(`
         INSERT INTO orders (
             name,
             email,
@@ -119,20 +121,20 @@ func handleOrder(db *sql.DB, w http.ResponseWriter, r *http.Request) {
         VALUES (?, ?, ?, ?, ?, ?, ?)
     `, name, email, phone, address, city, state, "payment_pending")
 
-    if err != nil {
-        log.Println("Database error:", err)
-        http.Error(w, "Could not save order", http.StatusInternalServerError)
-        return
-    }
+	if err != nil {
+		log.Println("Database error:", err)
+		http.Error(w, "Could not save order", http.StatusInternalServerError)
+		return
+	}
 
-    orderID, err := result.LastInsertId()
-    if err != nil {
-        log.Println("Could not get order ID:", err)
-        http.Error(w, "Could not get order ID", http.StatusInternalServerError)
-        return
-    }
+	orderID, err := result.LastInsertId()
+	if err != nil {
+		log.Println("Could not get order ID:", err)
+		http.Error(w, "Could not get order ID", http.StatusInternalServerError)
+		return
+	}
 
-    log.Println("Order ID:", orderID)
+	log.Println("Order ID:", orderID)
 
 	orderData := OrderData{
 		OrderID: orderID,
@@ -144,7 +146,7 @@ func handleOrder(db *sql.DB, w http.ResponseWriter, r *http.Request) {
 		State:   state,
 	}
 
-    log.Println("Order saved to database")
+	log.Println("Order saved to database")
 
 	tmpl, err := template.ParseFiles("payment.html")
 	if err != nil {
@@ -168,7 +170,7 @@ func handlePayment(db *sql.DB, w http.ResponseWriter, r *http.Request) {
 	log.Println("Payment form received")
 
 	orderID := r.FormValue("order-id")
-    log.Println("Order ID:", orderID)
+	log.Println("Order ID:", orderID)
 
 	amount := r.FormValue("amount-paid")
 
@@ -187,7 +189,8 @@ func handlePayment(db *sql.DB, w http.ResponseWriter, r *http.Request) {
 
 	log.Println("Receipt:", header.Filename)
 
-	filename := "receipt_" + reference
+	extension := filepath.Ext(header.Filename)
+	filename := "receipt_" + strconv.FormatInt(orderID, 10) + extension
 
 	_, err = db.Exec(`
 	    INSERT INTO payments (
@@ -202,12 +205,11 @@ func handlePayment(db *sql.DB, w http.ResponseWriter, r *http.Request) {
 
 	if err != nil {
 		log.Println("Payment database error:", err)
-        http.Error(w, "Could not save payment", http.StatusInternalServerError)
-        return
+		http.Error(w, "Could not save payment", http.StatusInternalServerError)
+		return
 	}
 
 	log.Println("Payment saved to database")
-
 
 	destination, err := os.Create("uploads/" + filename)
 	if err != nil {
