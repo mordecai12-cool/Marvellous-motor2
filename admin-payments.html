@@ -27,7 +27,7 @@
                     <h2>Payment #{{.ID}}</h2>
 
                     <p>Order ID: {{.OrderID}}</p>
-                    <p>Amount Paid: ₦{{.AmountPaid}}</p>
+                    <p>Amount Paid: {{formatAmount .AmountPaid}}</p>
                     <p>Payment Reference: {{.PaymentReference}}</p>
                     <p>Receipt: {{.Receipt}}</p>
                     <p>Status: {{.PaymentStatus}}</p>

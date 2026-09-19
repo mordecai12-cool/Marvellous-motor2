@@ -2,6 +2,7 @@ package main
 
 import (
 	"database/sql"
+	"fmt"
 	"html/template"
 	"io"
 	"log"
@@ -37,10 +38,14 @@ type AdminOrder struct {
 type AdminPayment struct {
     ID              int64
     OrderID         int64
-    AmountPaid      string
+    AmountPaid      float64
     PaymentReference string
     Receipt         string
     PaymentStatus   string
+}
+
+func formatAmount(amount float64) string {
+    return fmt.Sprintf("₦%.0f", amount)
 }
 
 func main() {
@@ -392,7 +397,9 @@ func handleAdminPayments(db *sql.DB, w http.ResponseWriter, r *http.Request) {
 
 	}
 
-	tmpl, err := template.ParseFiles("admin-payments.html")
+	tmpl, err := template.New("admin-payments.html").Funcs(template.FuncMap{
+        "formatAmount": formatAmount,
+    }).ParseFiles("admin-payments.html")
 	if err != nil {
 		log.Println("Could not load admin payments page:", err)
         http.Error(w, "Could not load admin payments page", http.StatusInternalServerError)
