@@ -106,6 +106,12 @@ func main() {
 	http.HandleFunc("/admin/payments", func(w http.ResponseWriter, r *http.Request) {
 		handleAdminPayments(db, w, r)
 	})
+	http.HandleFunc("/admin/payments/verify", func(w http.ResponseWriter, r *http.Request) {
+        handleVerifyPayment(db, w, r)
+    })
+
+	http.Handle("/uploads/", http.StripPrefix("/uploads/", http.FileServer(http.Dir("uploads"))))
+
 	http.Handle("/", http.FileServer(http.Dir(".")))
 
 	log.Println("Marvellous Motors is running on http://localhost:8080")
@@ -412,5 +418,48 @@ func handleAdminPayments(db *sql.DB, w http.ResponseWriter, r *http.Request) {
         http.Error(w, "Could not display payments", http.StatusInternalServerError)
         return
 	}
+
+}
+
+func handleVerifyPayment(db *sql.DB, w http.ResponseWriter, r *http.Request) {
+
+    if r.Method != http.MethodPost {
+        http.Error(w, "Method not allowed", http.StatusMethodNotAllowed)
+        return
+    }
+
+    paymentID := r.FormValue("payment-id")
+
+    log.Println("Verifying payment:", paymentID)
+
+	_, err := db.Exec(`
+	    UPDATE payments
+		SET payment_status = ?
+		WHERE id = ?
+	`, "verified", paymentID)
+
+	if err != nil {
+		log.Println("Could not verify payment:", err)
+        http.Error(w, "Could not verify payment", http.StatusInternalServerError)
+        return
+	}
+
+	_, err = db.Exec(`
+	    UPDATE orders
+		SET status = ? 
+		WHERE id = (
+		    SELECT order_id
+			FROM payments
+			WHERE id = ?
+		)
+	`, "processing", paymentID)
+
+	if err != nil {
+		log.Println("Could not update order status:", err)
+        http.Error(w, "Could not update order status", http.StatusInternalServerError)
+        return
+	}
+
+	http.Redirect(w, r, "/admin/payments", http.StatusSeeOther)
 
 }
