@@ -109,6 +109,9 @@ func main() {
 	http.HandleFunc("/admin/payments/verify", func(w http.ResponseWriter, r *http.Request) {
         handleVerifyPayment(db, w, r)
     })
+	http.HandleFunc("/admin/orders/delivery", func(w http.ResponseWriter, r *http.Request) {
+        handleOrderDelivery(db, w, r)
+    })
 
 	http.Handle("/uploads/", http.StripPrefix("/uploads/", http.FileServer(http.Dir("uploads"))))
 
@@ -444,7 +447,7 @@ func handleVerifyPayment(db *sql.DB, w http.ResponseWriter, r *http.Request) {
         return
 	}
 
-	_, err = db.Exec(`
+	result, err := db.Exec(`
 	    UPDATE orders
 		SET status = ? 
 		WHERE id = (
@@ -460,6 +463,66 @@ func handleVerifyPayment(db *sql.DB, w http.ResponseWriter, r *http.Request) {
         return
 	}
 
+	rowsAffected, err := result.RowsAffected()
+	if err != nil {
+		log.Println("Could not check updated order:", err)
+        return
+	}
+
+	log.Println("Orders updated:", rowsAffected)
+
 	http.Redirect(w, r, "/admin/payments", http.StatusSeeOther)
 
+}
+
+func handleOrderDelivery(db *sql.DB, w http.ResponseWriter, r *http.Request) {
+
+    if r.Method != http.MethodPost {
+        http.Error(w, "Method not allowed", http.StatusMethodNotAllowed)
+        return
+    }
+
+    orderID := r.FormValue("order-id")
+
+    log.Println("Marking order out for delivery:", orderID)
+
+    _, err := db.Exec(`
+        UPDATE orders
+        SET status = ?
+        WHERE id = ?
+    `, "out_for_delivery", orderID)
+
+    if err != nil {
+        log.Println("Could not update delivery status:", err)
+        http.Error(w, "Could not update delivery status", http.StatusInternalServerError)
+        return
+    }
+
+    http.Redirect(w, r, "/admin/orders", http.StatusSeeOther)
+}
+
+func handleOrderDelivered(db *sql.DB, w http.ResponseWriter, r *http.Request) {
+
+    if r.Method != http.MethodPost {
+        http.Error(w, "Method not allowed", http.StatusMethodNotAllowed)
+        return
+    }
+
+    orderID := r.FormValue("order-id")
+
+    log.Println("Marking order as delivered:", orderID)
+
+    _, err := db.Exec(`
+        UPDATE orders
+        SET status = ?
+        WHERE id = ?
+    `, "delivered", orderID)
+
+    if err != nil {
+        log.Println("Could not update delivered status:", err)
+        http.Error(w, "Could not update delivered status", http.StatusInternalServerError)
+        return
+    }
+
+    http.Redirect(w, r, "/admin/orders", http.StatusSeeOther)
 }

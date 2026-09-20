@@ -36,6 +36,20 @@
 
                 <p>Status: {{.Status}}</p>
 
+                {{if eq .Status "processing"}}
+                   <form action="/admin/orders/delivery" method="post">
+                    <input type="hidden" name="order-id" value="{{.ID}}">
+                    <button type="submit">Mark Out for Delivery</button>
+                   </form>
+                {{end}}
+
+                {{if eq .Status "out_for_delivery"}}
+                    <form action="/admin/orders/delivered" method="post">
+                        <input type="hidden" name="order-id" value="{{.ID}}">
+                        <button type="submit">Mark as Delivered</button>
+                    </form>
+                {{end}}    
+
             </div>
 
             {{else}}
