@@ -197,10 +197,12 @@ func handleOrder(db *sql.DB, w http.ResponseWriter, r *http.Request) {
             address,
             city,
             state,
-            status
+            status,
+			car_name,
+			car_price
         )
-        VALUES (?, ?, ?, ?, ?, ?, ?)
-    `, name, email, phone, address, city, state, "payment_pending")
+        VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)
+    `, name, email, phone, address, city, state, "payment_pending", carName, carPrice)
 
 	if err != nil {
 		log.Println("Database error:", err)
