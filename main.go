@@ -9,7 +9,6 @@ import (
 	"net/http"
 	"os"
 	"path/filepath"
-	"strconv"
 	"time"
 
 	_ "modernc.org/sqlite"
@@ -46,14 +45,14 @@ type AdminPayment struct {
 }
 
 type OrderStatusData struct {
-    OrderID int64
-    Name    string
-    Email   string
-    Phone   string
-    Address string
-    City    string
-    State   string
-    Status  string
+	OrderID int64
+	Name    string
+	Email   string
+	Phone   string
+	Address string
+	City    string
+	State   string
+	Status  string
 }
 
 func formatAmount(amount float64) string {
@@ -92,6 +91,22 @@ func main() {
 	}
 
 	_, err = db.Exec(`
+	    ALTER TABLE orders
+		ADD COLUMN car_name TEXT
+	`)
+	if err != nil {
+		log.Println("Car name column:", err)
+	}
+
+	_, err = db.Exec(`
+	    ALTER TABLE orders
+		ADD COLUMN car_price REAL
+	`)
+	if err != nil {
+		log.Println("Car price column:", err)
+	}
+
+	_, err = db.Exec(`
 	    CREATE TABLE IF NOT EXISTS payments (
 		id INTEGER PRIMARY KEY AUTOINCREMENT,
 		order_id INTEGER NOT NULL,
@@ -110,8 +125,8 @@ func main() {
 		handleOrder(db, w, r)
 	})
 	http.HandleFunc("/order-status", func(w http.ResponseWriter, r *http.Request) {
-        handleOrderStatus(db, w, r)
-    })
+		handleOrderStatus(db, w, r)
+	})
 	http.HandleFunc("/payment", func(w http.ResponseWriter, r *http.Request) {
 		handlePayment(db, w, r)
 	})
@@ -161,6 +176,9 @@ func handleOrder(db *sql.DB, w http.ResponseWriter, r *http.Request) {
 	address := r.FormValue("address")
 	city := r.FormValue("city")
 	state := r.FormValue("state")
+
+	carName := "Toyota Camry"
+    carPrice := 25000000
 
 	log.Println("Customer:", name)
 	log.Println("Email:", email)
@@ -554,29 +572,27 @@ func handleOrderStatus(db *sql.DB, w http.ResponseWriter, r *http.Request) {
 
 	orderID := r.URL.Query().Get("order-id")
 
-	var status string
+	var data OrderStatusData
 
 	err := db.QueryRow(`
-        SELECT status
-        FROM orders
+	    SELECT id, name, email, phone, address, city, state, status
+		FROM orders
         WHERE id = ?
-    `, orderID).Scan(&status)
+	`, orderID).Scan(
+		&data.OrderID,
+		&data.Name,
+		&data.Email,
+		&data.Phone,
+		&data.Address,
+		&data.City,
+		&data.State,
+		&data.Status,
+	)
 
 	if err != nil {
 		log.Println("Could not get order status:", err)
 		http.Error(w, "Order not found", http.StatusNotFound)
 		return
-	}
-
-	id, err := strconv.ParseInt(orderID, 10, 64)
-	if err != nil {
-		http.Error(w, "Invalid order ID", http.StatusBadRequest)
-		return
-	}
-
-	data := OrderStatusData{
-		OrderID: id,
-		Status:  status,
 	}
 
 	tmpl, err := template.ParseFiles("order-status.html")
