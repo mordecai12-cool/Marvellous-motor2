@@ -1,0 +1,36 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Order Status - Marvellous Motors</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+
+<body>
+
+    <nav>
+        <h2>Marvellous Motors</h2>
+
+        <a href="index.html">Home</a>
+        <a href="cars.html">Cars</a>
+        <a href="about.html">About</a>
+        <a href="contact.html">Contact</a>
+    </nav>
+
+    <section class="order-status">
+
+        <h1>Order Status</h1>
+
+        <p>Your order status will appear here.</p>
+
+        <div class="status-box">
+
+            <h2>Order #{{.OrderID}}</h2>
+
+            <p>Status: {{.Status}}</p>
+
+        </div>
+
+    </section>
+
+</body>
+</html>

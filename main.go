@@ -9,6 +9,7 @@ import (
 	"net/http"
 	"os"
 	"path/filepath"
+	"strconv"
 	"time"
 
 	_ "modernc.org/sqlite"
@@ -25,7 +26,27 @@ type OrderData struct {
 }
 
 type AdminOrder struct {
-    ID      int64
+	ID      int64
+	Name    string
+	Email   string
+	Phone   string
+	Address string
+	City    string
+	State   string
+	Status  string
+}
+
+type AdminPayment struct {
+	ID               int64
+	OrderID          int64
+	AmountPaid       float64
+	PaymentReference string
+	Receipt          string
+	PaymentStatus    string
+}
+
+type OrderStatusData struct {
+    OrderID int64
     Name    string
     Email   string
     Phone   string
@@ -35,17 +56,8 @@ type AdminOrder struct {
     Status  string
 }
 
-type AdminPayment struct {
-    ID              int64
-    OrderID         int64
-    AmountPaid      float64
-    PaymentReference string
-    Receipt         string
-    PaymentStatus   string
-}
-
 func formatAmount(amount float64) string {
-    return fmt.Sprintf("₦%.0f", amount)
+	return fmt.Sprintf("₦%.0f", amount)
 }
 
 func main() {
@@ -97,6 +109,9 @@ func main() {
 	http.HandleFunc("/order", func(w http.ResponseWriter, r *http.Request) {
 		handleOrder(db, w, r)
 	})
+	http.HandleFunc("/order-status", func(w http.ResponseWriter, r *http.Request) {
+        handleOrderStatus(db, w, r)
+    })
 	http.HandleFunc("/payment", func(w http.ResponseWriter, r *http.Request) {
 		handlePayment(db, w, r)
 	})
@@ -107,11 +122,14 @@ func main() {
 		handleAdminPayments(db, w, r)
 	})
 	http.HandleFunc("/admin/payments/verify", func(w http.ResponseWriter, r *http.Request) {
-        handleVerifyPayment(db, w, r)
-    })
+		handleVerifyPayment(db, w, r)
+	})
 	http.HandleFunc("/admin/orders/delivery", func(w http.ResponseWriter, r *http.Request) {
-        handleOrderDelivery(db, w, r)
-    })
+		handleOrderDelivery(db, w, r)
+	})
+	http.HandleFunc("/admin/orders/delivered", func(w http.ResponseWriter, r *http.Request) {
+		handleOrderDelivered(db, w, r)
+	})
 
 	http.Handle("/uploads/", http.StripPrefix("/uploads/", http.FileServer(http.Dir("uploads"))))
 
@@ -253,7 +271,7 @@ func handlePayment(db *sql.DB, w http.ResponseWriter, r *http.Request) {
 	contentType := http.DetectContentType(buffer)
 	log.Println("Receipt type:", contentType)
 
-	if contentType != "image/png" && contentType != "image/jpeg" &&  contentType != "application/pdf" {
+	if contentType != "image/png" && contentType != "image/jpeg" && contentType != "application/pdf" {
 		http.Error(w, "Invalid receipt file type", http.StatusBadRequest)
 		return
 	}
@@ -315,8 +333,8 @@ func handleAdminOrders(db *sql.DB, w http.ResponseWriter, r *http.Request) {
 		ORDER BY id DESC
 	`)
 	if err != nil {
-	    log.Println("Could not get orders:", err)
-	    http.Error(w, "Could not load orders", http.StatusInternalServerError)
+		log.Println("Could not get orders:", err)
+		http.Error(w, "Could not load orders", http.StatusInternalServerError)
 		return
 	}
 	defer rows.Close()
@@ -329,19 +347,19 @@ func handleAdminOrders(db *sql.DB, w http.ResponseWriter, r *http.Request) {
 
 		err := rows.Scan(
 			&order.ID,
-            &order.Name,
-            &order.Email,
-            &order.Phone,
-            &order.Address,
-            &order.City,
-            &order.State,
-            &order.Status,
+			&order.Name,
+			&order.Email,
+			&order.Phone,
+			&order.Address,
+			&order.City,
+			&order.State,
+			&order.Status,
 		)
 
 		if err != nil {
 			log.Println("Could not read order:", err)
-		    http.Error(w, "Could not read order", http.StatusInternalServerError)
-            return
+			http.Error(w, "Could not read order", http.StatusInternalServerError)
+			return
 		}
 
 		orders = append(orders, order)
@@ -350,24 +368,24 @@ func handleAdminOrders(db *sql.DB, w http.ResponseWriter, r *http.Request) {
 	tmpl, err := template.ParseFiles("admin-orders.html")
 	if err != nil {
 		log.Println("Could not load admin orders page:", err)
-        http.Error(w, "Could not load admin orders page", http.StatusInternalServerError)
-        return
+		http.Error(w, "Could not load admin orders page", http.StatusInternalServerError)
+		return
 	}
-	
+
 	err = tmpl.Execute(w, orders)
 	if err != nil {
 		log.Println("Could not display orders:", err)
-        http.Error(w, "Could not display orders", http.StatusInternalServerError)
-        return
+		http.Error(w, "Could not display orders", http.StatusInternalServerError)
+		return
 	}
 }
 
 func handleAdminPayments(db *sql.DB, w http.ResponseWriter, r *http.Request) {
 
-    if r.Method != http.MethodGet {
-        http.Error(w, "Method not allowed", http.StatusMethodNotAllowed)
-        return
-    }
+	if r.Method != http.MethodGet {
+		http.Error(w, "Method not allowed", http.StatusMethodNotAllowed)
+		return
+	}
 
 	rows, err := db.Query(`
 	    SELECT id, order_id, amount_paid, payment_reference, receipt, payment_status
@@ -376,30 +394,30 @@ func handleAdminPayments(db *sql.DB, w http.ResponseWriter, r *http.Request) {
 	`)
 	if err != nil {
 		log.Println("Could not get payments:", err)
-        http.Error(w, "Could not load payments", http.StatusInternalServerError)
-        return
+		http.Error(w, "Could not load payments", http.StatusInternalServerError)
+		return
 	}
 	defer rows.Close()
 
 	var payments []AdminPayment
 
-    for rows.Next() {
+	for rows.Next() {
 
 		var payment AdminPayment
 
 		err := rows.Scan(
 			&payment.ID,
-            &payment.OrderID,
-            &payment.AmountPaid,
-            &payment.PaymentReference,
-            &payment.Receipt,
-            &payment.PaymentStatus,
+			&payment.OrderID,
+			&payment.AmountPaid,
+			&payment.PaymentReference,
+			&payment.Receipt,
+			&payment.PaymentStatus,
 		)
 
 		if err != nil {
 			log.Println("Could not read payment:", err)
-            http.Error(w, "Could not read payment", http.StatusInternalServerError)
-            return
+			http.Error(w, "Could not read payment", http.StatusInternalServerError)
+			return
 		}
 
 		payments = append(payments, payment)
@@ -407,33 +425,33 @@ func handleAdminPayments(db *sql.DB, w http.ResponseWriter, r *http.Request) {
 	}
 
 	tmpl, err := template.New("admin-payments.html").Funcs(template.FuncMap{
-        "formatAmount": formatAmount,
-    }).ParseFiles("admin-payments.html")
+		"formatAmount": formatAmount,
+	}).ParseFiles("admin-payments.html")
 	if err != nil {
 		log.Println("Could not load admin payments page:", err)
-        http.Error(w, "Could not load admin payments page", http.StatusInternalServerError)
-        return
+		http.Error(w, "Could not load admin payments page", http.StatusInternalServerError)
+		return
 	}
 
 	err = tmpl.Execute(w, payments)
 	if err != nil {
 		log.Println("Could not display payments:", err)
-        http.Error(w, "Could not display payments", http.StatusInternalServerError)
-        return
+		http.Error(w, "Could not display payments", http.StatusInternalServerError)
+		return
 	}
 
 }
 
 func handleVerifyPayment(db *sql.DB, w http.ResponseWriter, r *http.Request) {
 
-    if r.Method != http.MethodPost {
-        http.Error(w, "Method not allowed", http.StatusMethodNotAllowed)
-        return
-    }
+	if r.Method != http.MethodPost {
+		http.Error(w, "Method not allowed", http.StatusMethodNotAllowed)
+		return
+	}
 
-    paymentID := r.FormValue("payment-id")
+	paymentID := r.FormValue("payment-id")
 
-    log.Println("Verifying payment:", paymentID)
+	log.Println("Verifying payment:", paymentID)
 
 	_, err := db.Exec(`
 	    UPDATE payments
@@ -443,8 +461,8 @@ func handleVerifyPayment(db *sql.DB, w http.ResponseWriter, r *http.Request) {
 
 	if err != nil {
 		log.Println("Could not verify payment:", err)
-        http.Error(w, "Could not verify payment", http.StatusInternalServerError)
-        return
+		http.Error(w, "Could not verify payment", http.StatusInternalServerError)
+		return
 	}
 
 	result, err := db.Exec(`
@@ -459,14 +477,14 @@ func handleVerifyPayment(db *sql.DB, w http.ResponseWriter, r *http.Request) {
 
 	if err != nil {
 		log.Println("Could not update order status:", err)
-        http.Error(w, "Could not update order status", http.StatusInternalServerError)
-        return
+		http.Error(w, "Could not update order status", http.StatusInternalServerError)
+		return
 	}
 
 	rowsAffected, err := result.RowsAffected()
 	if err != nil {
 		log.Println("Could not check updated order:", err)
-        return
+		return
 	}
 
 	log.Println("Orders updated:", rowsAffected)
@@ -477,52 +495,101 @@ func handleVerifyPayment(db *sql.DB, w http.ResponseWriter, r *http.Request) {
 
 func handleOrderDelivery(db *sql.DB, w http.ResponseWriter, r *http.Request) {
 
-    if r.Method != http.MethodPost {
-        http.Error(w, "Method not allowed", http.StatusMethodNotAllowed)
-        return
-    }
+	if r.Method != http.MethodPost {
+		http.Error(w, "Method not allowed", http.StatusMethodNotAllowed)
+		return
+	}
 
-    orderID := r.FormValue("order-id")
+	orderID := r.FormValue("order-id")
 
-    log.Println("Marking order out for delivery:", orderID)
+	log.Println("Marking order out for delivery:", orderID)
 
-    _, err := db.Exec(`
+	_, err := db.Exec(`
         UPDATE orders
         SET status = ?
         WHERE id = ?
     `, "out_for_delivery", orderID)
 
-    if err != nil {
-        log.Println("Could not update delivery status:", err)
-        http.Error(w, "Could not update delivery status", http.StatusInternalServerError)
-        return
-    }
+	if err != nil {
+		log.Println("Could not update delivery status:", err)
+		http.Error(w, "Could not update delivery status", http.StatusInternalServerError)
+		return
+	}
 
-    http.Redirect(w, r, "/admin/orders", http.StatusSeeOther)
+	http.Redirect(w, r, "/admin/orders", http.StatusSeeOther)
 }
 
 func handleOrderDelivered(db *sql.DB, w http.ResponseWriter, r *http.Request) {
 
-    if r.Method != http.MethodPost {
-        http.Error(w, "Method not allowed", http.StatusMethodNotAllowed)
-        return
-    }
+	if r.Method != http.MethodPost {
+		http.Error(w, "Method not allowed", http.StatusMethodNotAllowed)
+		return
+	}
 
-    orderID := r.FormValue("order-id")
+	orderID := r.FormValue("order-id")
 
-    log.Println("Marking order as delivered:", orderID)
+	log.Println("Marking order as delivered:", orderID)
 
-    _, err := db.Exec(`
+	_, err := db.Exec(`
         UPDATE orders
         SET status = ?
         WHERE id = ?
     `, "delivered", orderID)
 
-    if err != nil {
-        log.Println("Could not update delivered status:", err)
-        http.Error(w, "Could not update delivered status", http.StatusInternalServerError)
-        return
-    }
+	if err != nil {
+		log.Println("Could not update delivered status:", err)
+		http.Error(w, "Could not update delivered status", http.StatusInternalServerError)
+		return
+	}
 
-    http.Redirect(w, r, "/admin/orders", http.StatusSeeOther)
+	http.Redirect(w, r, "/admin/orders", http.StatusSeeOther)
+}
+
+func handleOrderStatus(db *sql.DB, w http.ResponseWriter, r *http.Request) {
+
+	if r.Method != http.MethodGet {
+		http.Error(w, "Method not allowed", http.StatusMethodNotAllowed)
+		return
+	}
+
+	orderID := r.URL.Query().Get("order-id")
+
+	var status string
+
+	err := db.QueryRow(`
+        SELECT status
+        FROM orders
+        WHERE id = ?
+    `, orderID).Scan(&status)
+
+	if err != nil {
+		log.Println("Could not get order status:", err)
+		http.Error(w, "Order not found", http.StatusNotFound)
+		return
+	}
+
+	id, err := strconv.ParseInt(orderID, 10, 64)
+	if err != nil {
+		http.Error(w, "Invalid order ID", http.StatusBadRequest)
+		return
+	}
+
+	data := OrderStatusData{
+		OrderID: id,
+		Status:  status,
+	}
+
+	tmpl, err := template.ParseFiles("order-status.html")
+	if err != nil {
+		log.Println("Could not load order status page:", err)
+		http.Error(w, "Could not load order status page", http.StatusInternalServerError)
+		return
+	}
+
+	err = tmpl.Execute(w, data)
+	if err != nil {
+		log.Println("Could not display order status:", err)
+		http.Error(w, "Could not display order status", http.StatusInternalServerError)
+		return
+	}
 }
