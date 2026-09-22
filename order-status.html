@@ -26,6 +26,11 @@
 
             <h2>Order #{{.OrderID}}</h2>
 
+            <h3>Vehicle Information</h3>
+
+            <p>Car: {{.CarName}}</p>
+            <p>Price: ₦{{printf "%.0f" .CarPrice}}</p>
+
             <h3>Customer Information</h3>
 
             <p>Name: {{.Name}}</p>

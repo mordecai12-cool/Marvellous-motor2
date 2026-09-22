@@ -35,6 +35,10 @@
             <h2>Customer Information</h2>
 
             <p>Order ID: {{.OrderID}}</p>
+
+            <a href="/order-status?order-id={{.OrderID}}">
+                My Order  Status
+            </a>
             <p>Name: {{.Name}}</p>
             <p>Email: {{.Email}}</p>
             <p>Phone: {{.Phone}}</p>

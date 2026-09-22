@@ -52,6 +52,8 @@ type OrderStatusData struct {
 	Address string
 	City    string
 	State   string
+	CarName  string
+	CarPrice float64
 	Status  string
 }
 
@@ -577,7 +579,7 @@ func handleOrderStatus(db *sql.DB, w http.ResponseWriter, r *http.Request) {
 	var data OrderStatusData
 
 	err := db.QueryRow(`
-	    SELECT id, name, email, phone, address, city, state, status
+	    SELECT id, name, email, phone, address, city, state, car_name, car_price, status
 		FROM orders
         WHERE id = ?
 	`, orderID).Scan(
@@ -588,6 +590,8 @@ func handleOrderStatus(db *sql.DB, w http.ResponseWriter, r *http.Request) {
 		&data.Address,
 		&data.City,
 		&data.State,
+		&data.CarName,
+		&data.CarPrice,
 		&data.Status,
 	)
 
