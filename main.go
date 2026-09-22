@@ -109,6 +109,28 @@ func main() {
 	}
 
 	_, err = db.Exec(`
+	    ALTER TABLE orders
+        ADD COLUMN customer_id INTEGER
+	`)
+	if err != nil {
+		log.Println("Customer ID column:", err)
+	}
+
+	_, err = db.Exec(`
+	    CREATE TABLE IF NOT EXISTS customers (
+		    id INTEGER PRIMARY KEY AUTOINCREMENT,
+            name TEXT NOT NULL,
+            email TEXT NOT NULL UNIQUE,
+            phone TEXT NOT NULL,
+            password TEXT NOT NULL,
+            created_at DATETIME DEFAULT CURRENT_TIMESTAMP
+		)
+	`)
+	if err != nil {
+		log.Fatal(err)
+	}
+
+	_, err = db.Exec(`
 	    CREATE TABLE IF NOT EXISTS payments (
 		id INTEGER PRIMARY KEY AUTOINCREMENT,
 		order_id INTEGER NOT NULL,
@@ -147,6 +169,9 @@ func main() {
 	http.HandleFunc("/admin/orders/delivered", func(w http.ResponseWriter, r *http.Request) {
 		handleOrderDelivered(db, w, r)
 	})
+	http.HandleFunc("/register", func(w http.ResponseWriter, r *http.Request) {
+        handleRegister(db, w, r)
+    })
 
 	http.Handle("/uploads/", http.StripPrefix("/uploads/", http.FileServer(http.Dir("uploads"))))
 
@@ -614,4 +639,47 @@ func handleOrderStatus(db *sql.DB, w http.ResponseWriter, r *http.Request) {
 		http.Error(w, "Could not display order status", http.StatusInternalServerError)
 		return
 	}
+}
+
+func handleRegister(db *sql.DB, w http.ResponseWriter, r *http.Request) {
+
+    if r.Method != http.MethodPost {
+        http.Error(w, "Method not allowed", http.StatusMethodNotAllowed)
+        return
+    }
+
+    err := r.ParseForm()
+    if err != nil {
+        http.Error(w, "Could not read form", http.StatusBadRequest)
+        return
+    }
+
+    name := r.FormValue("name")
+    email := r.FormValue("email")
+    phone := r.FormValue("phone")
+    password := r.FormValue("password")
+    confirmPassword := r.FormValue("confirm-password")
+
+    if password != confirmPassword {
+        http.Error(w, "Passwords do not match", http.StatusBadRequest)
+        return
+    }
+
+    _, err = db.Exec(`
+        INSERT INTO customers (
+            name,
+            email,
+            phone,
+            password
+        )
+        VALUES (?, ?, ?, ?)
+    `, name, email, phone, password)
+
+    if err != nil {
+        log.Println("Could not create customer:", err)
+        http.Error(w, "Could not create account", http.StatusInternalServerError)
+        return
+    }
+
+    http.Redirect(w, r, "/login.html", http.StatusSeeOther)
 }

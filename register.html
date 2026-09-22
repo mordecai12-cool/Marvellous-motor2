@@ -1,0 +1,40 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Create Account - Marvellous Motors</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+
+    <h1>Create Your Account</h1>
+
+    <form action="/register" method="POST">
+
+        <label>Full Name</label>
+        <input type="text" name="name" required>
+
+        <label>Email</label>
+        <input type="email" name="email" required>
+
+        <label>Phone</label>
+        <input type="tel" name="phone" required>
+
+        <label>Password</label>
+        <input type="password" name="password" required>
+
+        <label>Confirm Password</label>
+        <input type="password" name="confirm-password" required>
+
+        <button type="submit">Create Account</button>
+
+    </form>
+
+    <p>
+        Already have an account?
+        <a href="/login.html">Sign In</a>
+    </p>
+
+</body>
+</html>
