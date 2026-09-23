@@ -205,6 +205,20 @@ func handleOrder(db *sql.DB, w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
+	session, err := store.Get(r, "customer-session")
+	if err != nil {
+		http.Error(w, "Could not get customer session", http.StatusInternalServerError)
+        return
+	}
+
+	customerIDValue, ok := session.Values["customer_id"]
+	if !ok {
+		http.Error(w, "Please sign in before placing an order", http.StatusUnauthorized)
+        return
+	}
+
+	customerID := customerIDValue.(int64)
+
 	name := r.FormValue("name")
 	email := r.FormValue("email")
 	phone := r.FormValue("phone")
@@ -226,6 +240,7 @@ func handleOrder(db *sql.DB, w http.ResponseWriter, r *http.Request) {
 
 	result, err := db.Exec(`
         INSERT INTO orders (
+		    customer_id,
             name,
             email,
             phone,
@@ -236,8 +251,8 @@ func handleOrder(db *sql.DB, w http.ResponseWriter, r *http.Request) {
 			car_name,
 			car_price
         )
-        VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)
-    `, name, email, phone, address, city, state, "payment_pending", carName, carPrice)
+        VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+    `, customerID, name, email, phone, address, city, state, "payment_pending", carName, carPrice)
 
 	if err != nil {
 		log.Println("Database error:", err)
@@ -741,6 +756,36 @@ func handleLogin(db *sql.DB, w http.ResponseWriter, r *http.Request) {
         http.Error(w, "Invalid email or password", http.StatusUnauthorized)
         return
     }
+
+	var customerID int64
+
+	err = db.QueryRow(`
+	    SELECT id
+        FROM customers
+        WHERE email = ?
+	`, email).Scan(&customerID)
+
+	if err != nil {
+		log.Println("Could not get customer ID:", err)
+        http.Error(w, "Could not log in", http.StatusInternalServerError)
+        return
+	}
+
+	session, err := store.Get(r, "customer-session")
+	if err != nil {
+		log.Println("Could not get session:", err)
+        http.Error(w, "Could not create session", http.StatusInternalServerError)
+        return
+	}
+
+	session.Values["customer_id"] = customerID
+
+	err = session.Save(r, w)
+	if err != nil {
+		log.Println("Could not save session:", err)
+        http.Error(w, "Could not save session", http.StatusInternalServerError)
+        return
+	}
 
     http.Redirect(w, r, "/customer-dashboard.html", http.StatusSeeOther)
 }
