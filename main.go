@@ -10,6 +10,9 @@ import (
 	"os"
 	"path/filepath"
 	"time"
+	"github.com/gorilla/sessions"
+
+	"golang.org/x/crypto/bcrypt"
 
 	_ "modernc.org/sqlite"
 )
@@ -45,21 +48,23 @@ type AdminPayment struct {
 }
 
 type OrderStatusData struct {
-	OrderID int64
-	Name    string
-	Email   string
-	Phone   string
-	Address string
-	City    string
-	State   string
+	OrderID  int64
+	Name     string
+	Email    string
+	Phone    string
+	Address  string
+	City     string
+	State    string
 	CarName  string
 	CarPrice float64
-	Status  string
+	Status   string
 }
 
 func formatAmount(amount float64) string {
 	return fmt.Sprintf("₦%.0f", amount)
 }
+
+var store = sessions.NewCookieStore([]byte("marvellous-motors-secret-key"))
 
 func main() {
 	db, err := sql.Open("sqlite", "marvellous.db")
@@ -170,7 +175,10 @@ func main() {
 		handleOrderDelivered(db, w, r)
 	})
 	http.HandleFunc("/register", func(w http.ResponseWriter, r *http.Request) {
-        handleRegister(db, w, r)
+		handleRegister(db, w, r)
+	})
+	http.HandleFunc("/login", func(w http.ResponseWriter, r *http.Request) {
+        handleLogin(db, w, r)
     })
 
 	http.Handle("/uploads/", http.StripPrefix("/uploads/", http.FileServer(http.Dir("uploads"))))
@@ -205,7 +213,7 @@ func handleOrder(db *sql.DB, w http.ResponseWriter, r *http.Request) {
 	state := r.FormValue("state")
 
 	carName := "Toyota Camry"
-    carPrice := 25000000
+	carPrice := 25000000
 
 	log.Println("Customer:", name)
 	log.Println("Email:", email)
@@ -643,6 +651,59 @@ func handleOrderStatus(db *sql.DB, w http.ResponseWriter, r *http.Request) {
 
 func handleRegister(db *sql.DB, w http.ResponseWriter, r *http.Request) {
 
+	if r.Method != http.MethodPost {
+		http.Error(w, "Method not allowed", http.StatusMethodNotAllowed)
+		return
+	}
+
+	err := r.ParseForm()
+	if err != nil {
+		http.Error(w, "Could not read form", http.StatusBadRequest)
+		return
+	}
+
+	name := r.FormValue("name")
+	email := r.FormValue("email")
+	phone := r.FormValue("phone")
+	password := r.FormValue("password")
+	confirmPassword := r.FormValue("confirm-password")
+
+	if password != confirmPassword {
+		http.Error(w, "Passwords do not match", http.StatusBadRequest)
+		return
+	}
+
+	hashedPassword, err := bcrypt.GenerateFromPassword(
+		[]byte(password),
+		bcrypt.DefaultCost,
+	)
+	if err != nil {
+		log.Println("Could not hash password:", err)
+		http.Error(w, "Could not create account", http.StatusInternalServerError)
+		return
+	}
+
+	_, err = db.Exec(`
+        INSERT INTO customers (
+            name,
+            email,
+            phone,
+            password
+        )
+        VALUES (?, ?, ?, ?)
+    `, name, email, phone, hashedPassword)
+
+	if err != nil {
+		log.Println("Could not create customer:", err)
+		http.Error(w, "Could not create account", http.StatusInternalServerError)
+		return
+	}
+
+	http.Redirect(w, r, "/login.html", http.StatusSeeOther)
+}
+
+func handleLogin(db *sql.DB, w http.ResponseWriter, r *http.Request) {
+
     if r.Method != http.MethodPost {
         http.Error(w, "Method not allowed", http.StatusMethodNotAllowed)
         return
@@ -654,32 +715,32 @@ func handleRegister(db *sql.DB, w http.ResponseWriter, r *http.Request) {
         return
     }
 
-    name := r.FormValue("name")
     email := r.FormValue("email")
-    phone := r.FormValue("phone")
     password := r.FormValue("password")
-    confirmPassword := r.FormValue("confirm-password")
 
-    if password != confirmPassword {
-        http.Error(w, "Passwords do not match", http.StatusBadRequest)
-        return
-    }
+    var storedPassword string
 
-    _, err = db.Exec(`
-        INSERT INTO customers (
-            name,
-            email,
-            phone,
-            password
-        )
-        VALUES (?, ?, ?, ?)
-    `, name, email, phone, password)
+    err = db.QueryRow(`
+        SELECT password
+        FROM customers
+        WHERE email = ?
+    `, email).Scan(&storedPassword)
 
     if err != nil {
-        log.Println("Could not create customer:", err)
-        http.Error(w, "Could not create account", http.StatusInternalServerError)
+        log.Println("Could not find customer:", err)
+        http.Error(w, "Invalid email or password", http.StatusUnauthorized)
         return
     }
 
-    http.Redirect(w, r, "/login.html", http.StatusSeeOther)
+    err = bcrypt.CompareHashAndPassword(
+        []byte(storedPassword),
+        []byte(password),
+    )
+
+    if err != nil {
+        http.Error(w, "Invalid email or password", http.StatusUnauthorized)
+        return
+    }
+
+    http.Redirect(w, r, "/customer-dashboard.html", http.StatusSeeOther)
 }
