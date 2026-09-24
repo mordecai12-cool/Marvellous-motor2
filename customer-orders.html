@@ -1,0 +1,59 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>My Orders - Marvellous Motors</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+
+    <h1>My Orders</h1>
+
+    {{if .}}
+
+        {{range .}}
+
+            <div class="order-card">
+
+                <h2>Order #{{.OrderID}}</h2>
+
+                <p>
+                    <strong>Vehicle:</strong>
+                    {{.CarName}}
+                </p>
+
+                <p>
+                    <strong>Price:</strong>
+                    {{formatAmount .CarPrice}}
+                </p>
+
+                <p>
+                    <strong>Status:</strong>
+                    {{.Status}}
+                </p>
+
+                <a href="/order-status?order-id={{.OrderID}}">
+                    View Order
+                </a>
+
+            </div>
+
+            <hr>
+
+        {{end}}
+
+    {{else}}
+
+        <p>You have not placed any orders yet.</p>
+
+        <a href="/cars.html">Browse Cars</a>
+
+    {{end}}
+
+    <br>
+
+    <a href="/customer-dashboard.html">Back to Dashboard</a>
+
+</body>
+</html>

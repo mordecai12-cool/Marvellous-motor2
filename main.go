@@ -180,6 +180,9 @@ func main() {
 	http.HandleFunc("/login", func(w http.ResponseWriter, r *http.Request) {
         handleLogin(db, w, r)
     })
+	http.HandleFunc("/customer-orders", func(w http.ResponseWriter, r *http.Request) {
+        handleCustomerOrders(db, w, r)
+    })
 
 	http.Handle("/uploads/", http.StripPrefix("/uploads/", http.FileServer(http.Dir("uploads"))))
 
@@ -662,6 +665,86 @@ func handleOrderStatus(db *sql.DB, w http.ResponseWriter, r *http.Request) {
 		http.Error(w, "Could not display order status", http.StatusInternalServerError)
 		return
 	}
+}
+
+func handleCustomerOrders(db *sql.DB, w http.ResponseWriter, r *http.Request) {
+
+    if r.Method != http.MethodGet {
+        http.Error(w, "Method not allowed", http.StatusMethodNotAllowed)
+        return
+    }
+
+    session, err := store.Get(r, "customer-session")
+    if err != nil {
+        http.Error(w, "Could not get customer session", http.StatusInternalServerError)
+        return
+    }
+
+    customerIDValue, ok := session.Values["customer_id"]
+    if !ok {
+        http.Error(w, "Please sign in first", http.StatusUnauthorized)
+        return
+    }
+
+    customerID := customerIDValue.(int64)
+
+    rows, err := db.Query(`
+        SELECT id, car_name, car_price, status
+        FROM orders
+        WHERE customer_id = ?
+        ORDER BY id DESC
+    `, customerID)
+
+    if err != nil {
+        log.Println("Could not get customer orders:", err)
+        http.Error(w, "Could not get orders", http.StatusInternalServerError)
+        return
+    }
+    defer rows.Close()
+
+    type CustomerOrder struct {
+        OrderID  int64
+        CarName  string
+        CarPrice float64
+        Status   string
+    }
+
+    var orders []CustomerOrder
+
+    for rows.Next() {
+        var order CustomerOrder
+
+        err := rows.Scan(
+            &order.OrderID,
+            &order.CarName,
+            &order.CarPrice,
+            &order.Status,
+        )
+
+        if err != nil {
+            log.Println("Could not read customer order:", err)
+            http.Error(w, "Could not read orders", http.StatusInternalServerError)
+            return
+        }
+
+        orders = append(orders, order)
+    }
+
+    tmpl, err := template.New("customer-orders.html").Funcs(template.FuncMap{
+        "formatAmount": formatAmount,
+    }).ParseFiles("customer-orders.html")
+    if err != nil {
+        log.Println("Could not load customer orders page:", err)
+        http.Error(w, "Could not load customer orders page", http.StatusInternalServerError)
+        return
+    }
+
+    err = tmpl.Execute(w, orders)
+    if err != nil {
+        log.Println("Could not display customer orders:", err)
+        http.Error(w, "Could not display customer orders", http.StatusInternalServerError)
+        return
+    }
 }
 
 func handleRegister(db *sql.DB, w http.ResponseWriter, r *http.Request) {
