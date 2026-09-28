@@ -1,7 +1,9 @@
 package main
 
 import (
+	"crypto/rand"
 	"database/sql"
+	"encoding/hex"
 	"fmt"
 	"html/template"
 	"io"
@@ -150,6 +152,19 @@ func main() {
 		log.Fatal(err)
 	}
 
+	_, err = db.Exec(`
+	    CREATE TABLE IF NOT EXISTS password_reset_tokens (
+		    id INTEGER PRIMARY KEY AUTOINCREMENT,
+            customer_id INTEGER NOT NULL,
+            token TEXT NOT NULL UNIQUE,
+            expires_at DATETIME NOT NULL,
+            created_at DATETIME DEFAULT CURRENT_TIMESTAMP
+		)
+	`)
+	if err != nil {
+		log.Fatal(err)
+	}
+
 	http.HandleFunc("/order", func(w http.ResponseWriter, r *http.Request) {
 		handleOrder(db, w, r)
 	})
@@ -185,6 +200,18 @@ func main() {
     })
 	http.HandleFunc("/logout", handleLogout)
 	http.HandleFunc("/customer-dashboard.html", handleCustomerDashboard)
+	http.HandleFunc("/customer-profile", func(w http.ResponseWriter, r *http.Request) {
+        handleCustomerProfile(db, w, r)
+    })
+	http.HandleFunc("/edit-profile", func(w http.ResponseWriter, r *http.Request) {
+        handleEditProfile(db, w, r)
+    })
+	http.HandleFunc("/forgot-password", func(w http.ResponseWriter, r *http.Request) {
+        handleForgotPassword(db, w, r)
+    })
+	http.HandleFunc("/reset-password", func(w http.ResponseWriter, r *http.Request) {
+        handleResetPassword(db, w, r)
+    })
 
 	http.Handle("/uploads/", http.StripPrefix("/uploads/", http.FileServer(http.Dir("uploads"))))
 
@@ -947,4 +974,294 @@ func handleCustomerDashboard(w http.ResponseWriter, r *http.Request) {
         http.Error(w, "Could not display dashboard", http.StatusInternalServerError)
         return
     }
+}
+
+func handleCustomerProfile(db *sql.DB, w http.ResponseWriter, r *http.Request) {
+
+    if r.Method != http.MethodGet {
+        http.Error(w, "Method not allowed", http.StatusMethodNotAllowed)
+        return
+    }
+
+    session, err := store.Get(r, "customer-session")
+    if err != nil {
+        http.Error(w, "Could not get customer session", http.StatusInternalServerError)
+        return
+    }
+
+    customerIDValue, ok := session.Values["customer_id"]
+    if !ok {
+        http.Error(w, "Please sign in first", http.StatusUnauthorized)
+        return
+    }
+
+    customerID := customerIDValue.(int64)
+
+    var name string
+    var email string
+    var phone string
+
+    err = db.QueryRow(`
+        SELECT name, email, phone
+        FROM customers
+        WHERE id = ?
+    `, customerID).Scan(&name, &email, &phone)
+
+    if err != nil {
+        log.Println("Could not get customer profile:", err)
+        http.Error(w, "Could not get profile", http.StatusInternalServerError)
+        return
+    }
+
+    data := struct {
+        Name  string
+        Email string
+        Phone string
+    }{
+        Name:  name,
+        Email: email,
+        Phone: phone,
+    }
+
+    tmpl, err := template.ParseFiles("customer-profile.html")
+    if err != nil {
+        log.Println("Could not load customer profile page:", err)
+        http.Error(w, "Could not load profile page", http.StatusInternalServerError)
+        return
+    }
+
+    err = tmpl.Execute(w, data)
+    if err != nil {
+        log.Println("Could not display customer profile:", err)
+        http.Error(w, "Could not display profile", http.StatusInternalServerError)
+        return
+    }
+}
+
+func handleEditProfile(db *sql.DB, w http.ResponseWriter, r *http.Request) {
+
+    session, err := store.Get(r, "customer-session")
+    if err != nil {
+        http.Error(w, "Could not get customer session", http.StatusInternalServerError)
+        return
+    }
+
+    customerIDValue, ok := session.Values["customer_id"]
+    if !ok {
+        http.Error(w, "Please sign in first", http.StatusUnauthorized)
+        return
+    }
+
+    customerID := customerIDValue.(int64)
+
+    if r.Method == http.MethodGet {
+
+        var name string
+        var email string
+        var phone string
+
+        err = db.QueryRow(`
+            SELECT name, email, phone
+            FROM customers
+            WHERE id = ?
+        `, customerID).Scan(&name, &email, &phone)
+
+        if err != nil {
+            log.Println("Could not get customer details:", err)
+            http.Error(w, "Could not get profile", http.StatusInternalServerError)
+            return
+        }
+
+        data := struct {
+            Name  string
+            Email string
+            Phone string
+        }{
+            Name:  name,
+            Email: email,
+            Phone: phone,
+        }
+
+        tmpl, err := template.ParseFiles("edit-profile.html")
+        if err != nil {
+            http.Error(w, "Could not load edit profile page", http.StatusInternalServerError)
+            return
+        }
+
+        err = tmpl.Execute(w, data)
+        if err != nil {
+            http.Error(w, "Could not display edit profile page", http.StatusInternalServerError)
+            return
+        }
+
+        return
+    }
+
+    if r.Method == http.MethodPost {
+
+        err := r.ParseForm()
+        if err != nil {
+            http.Error(w, "Could not read form", http.StatusBadRequest)
+            return
+        }
+
+        name := r.FormValue("name")
+        phone := r.FormValue("phone")
+
+        _, err = db.Exec(`
+            UPDATE customers
+            SET name = ?, phone = ?
+            WHERE id = ?
+        `, name, phone, customerID)
+
+        if err != nil {
+            log.Println("Could not update profile:", err)
+            http.Error(w, "Could not update profile", http.StatusInternalServerError)
+            return
+        }
+
+        session.Values["customer_name"] = name
+
+        err = session.Save(r, w)
+        if err != nil {
+            http.Error(w, "Could not save session", http.StatusInternalServerError)
+            return
+        }
+
+        http.Redirect(w, r, "/customer-profile", http.StatusSeeOther)
+        return
+    }
+
+    http.Error(w, "Method not allowed", http.StatusMethodNotAllowed)
+}
+
+func handleForgotPassword(db *sql.DB, w http.ResponseWriter, r *http.Request) {
+
+    if r.Method == http.MethodGet {
+        tmpl, err := template.ParseFiles("forgot-password.html")
+        if err != nil {
+            http.Error(w, "Could not load forgot password page", http.StatusInternalServerError)
+            return
+        }
+
+        err = tmpl.Execute(w, nil)
+        if err != nil {
+            http.Error(w, "Could not display forgot password page", http.StatusInternalServerError)
+            return
+        }
+
+        return
+    }
+
+    if r.Method == http.MethodPost {
+
+        err := r.ParseForm()
+        if err != nil {
+            http.Error(w, "Could not read form", http.StatusBadRequest)
+            return
+        }
+
+        email := r.FormValue("email")
+
+        var customerID int64
+
+        err = db.QueryRow(`
+            SELECT id
+            FROM customers
+            WHERE email = ?
+        `, email).Scan(&customerID)
+
+        if err != nil {
+            http.Error(w, "Email not found", http.StatusNotFound)
+            return
+        }
+
+        tokenBytes := make([]byte, 32)
+
+		_, err = rand.Read(tokenBytes)
+		if err != nil {
+			log.Println("Could not generate reset token:", err)
+            http.Error(w, "Could not create reset request", http.StatusInternalServerError)
+            return
+		}
+
+		token := hex.EncodeToString(tokenBytes)
+
+		_, err = db.Exec(`
+		    INSERT INTO password_reset_tokens (
+			    customer_id,
+                token,
+                expires_at
+			)
+			VALUES (?, ?, datetime('now', '+30 minutes'))
+		`, customerID, token)
+
+		if err != nil {
+			log.Println("Could not save reset token:", err)
+            http.Error(w, "Could not create reset request", http.StatusInternalServerError)
+            return
+		}
+
+		log.Println("Password reset token created:", token)
+
+		http.Error(w, "Password reset request received", http.StatusOK)
+        return
+    }
+
+    http.Error(w, "Method not allowed", http.StatusMethodNotAllowed)
+}
+
+func handleResetPassword(db *sql.DB, w http.ResponseWriter, r *http.Request) {
+
+    token := r.URL.Query().Get("token")
+
+    if r.Method == http.MethodGet {
+
+        if token == "" {
+            http.Error(w, "Invalid reset link", http.StatusBadRequest)
+            return
+        }
+
+        var customerID int64
+        var expiresAt time.Time
+
+        err := db.QueryRow(`
+            SELECT customer_id, expires_at
+            FROM password_reset_tokens
+            WHERE token = ?
+        `, token).Scan(&customerID, &expiresAt)
+
+        if err != nil {
+			log.Println("Could not validate reset token:", err)
+            http.Error(w, "Invalid or expired reset link", http.StatusBadRequest)
+            return
+        }
+
+        if time.Now().After(expiresAt) {
+            http.Error(w, "Reset link has expired", http.StatusBadRequest)
+            return
+        }
+
+        data := struct {
+            Token string
+        }{
+            Token: token,
+        }
+
+        tmpl, err := template.ParseFiles("reset-password.html")
+        if err != nil {
+            http.Error(w, "Could not load reset password page", http.StatusInternalServerError)
+            return
+        }
+
+        err = tmpl.Execute(w, data)
+        if err != nil {
+            http.Error(w, "Could not display reset password page", http.StatusInternalServerError)
+            return
+        }
+
+        return
+    }
+
+    http.Error(w, "Method not allowed", http.StatusMethodNotAllowed)
 }
