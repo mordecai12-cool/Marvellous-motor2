@@ -183,6 +183,8 @@ func main() {
 	http.HandleFunc("/customer-orders", func(w http.ResponseWriter, r *http.Request) {
         handleCustomerOrders(db, w, r)
     })
+	http.HandleFunc("/logout", handleLogout)
+	http.HandleFunc("/customer-dashboard.html", handleCustomerDashboard)
 
 	http.Handle("/uploads/", http.StripPrefix("/uploads/", http.FileServer(http.Dir("uploads"))))
 
@@ -627,13 +629,28 @@ func handleOrderStatus(db *sql.DB, w http.ResponseWriter, r *http.Request) {
 
 	orderID := r.URL.Query().Get("order-id")
 
+	session, err := store.Get(r, "customer-session")
+	if err != nil {
+		http.Error(w, "Could not get customer session", http.StatusInternalServerError)
+        return
+	}
+
+	customerIDValue, ok := session.Values["customer_id"]
+	if !ok {
+		http.Error(w, "Please sign in first", http.StatusUnauthorized)
+        return
+	}
+
+	customerID := customerIDValue.(int64)
+
 	var data OrderStatusData
 
-	err := db.QueryRow(`
+	err = db.QueryRow(`
 	    SELECT id, name, email, phone, address, city, state, car_name, car_price, status
 		FROM orders
         WHERE id = ?
-	`, orderID).Scan(
+		AND customer_id = ?
+	`, orderID, customerID).Scan(
 		&data.OrderID,
 		&data.Name,
 		&data.Email,
@@ -841,12 +858,13 @@ func handleLogin(db *sql.DB, w http.ResponseWriter, r *http.Request) {
     }
 
 	var customerID int64
+	var customerName string
 
 	err = db.QueryRow(`
-	    SELECT id
+	    SELECT id, name
         FROM customers
         WHERE email = ?
-	`, email).Scan(&customerID)
+	`, email).Scan(&customerID, &customerName)
 
 	if err != nil {
 		log.Println("Could not get customer ID:", err)
@@ -862,6 +880,7 @@ func handleLogin(db *sql.DB, w http.ResponseWriter, r *http.Request) {
 	}
 
 	session.Values["customer_id"] = customerID
+	session.Values["customer_name"] = customerName
 
 	err = session.Save(r, w)
 	if err != nil {
@@ -871,4 +890,61 @@ func handleLogin(db *sql.DB, w http.ResponseWriter, r *http.Request) {
 	}
 
     http.Redirect(w, r, "/customer-dashboard.html", http.StatusSeeOther)
+}
+
+func handleLogout(w http.ResponseWriter, r *http.Request) {
+
+    session, err := store.Get(r, "customer-session")
+    if err != nil {
+        http.Error(w, "Could not get session", http.StatusInternalServerError)
+        return
+    }
+
+    session.Values["customer_id"] = nil
+    session.Options.MaxAge = -1
+
+    err = session.Save(r, w)
+    if err != nil {
+        http.Error(w, "Could not log out", http.StatusInternalServerError)
+        return
+    }
+
+    http.Redirect(w, r, "/login.html", http.StatusSeeOther)
+}
+func handleCustomerDashboard(w http.ResponseWriter, r *http.Request) {
+
+    if r.Method != http.MethodGet {
+        http.Error(w, "Method not allowed", http.StatusMethodNotAllowed)
+        return
+    }
+
+    session, err := store.Get(r, "customer-session")
+    if err != nil {
+        http.Error(w, "Could not get customer session", http.StatusInternalServerError)
+        return
+    }
+
+    customerName, ok := session.Values["customer_name"]
+    if !ok {
+        http.Error(w, "Please sign in first", http.StatusUnauthorized)
+        return
+    }
+
+    data := struct {
+        Name string
+    }{
+        Name: customerName.(string),
+    }
+
+    tmpl, err := template.ParseFiles("customer-dashboard.html")
+    if err != nil {
+        http.Error(w, "Could not load dashboard", http.StatusInternalServerError)
+        return
+    }
+
+    err = tmpl.Execute(w, data)
+    if err != nil {
+        http.Error(w, "Could not display dashboard", http.StatusInternalServerError)
+        return
+    }
 }
