@@ -35,10 +35,36 @@
                     </p>
                     <p>Status: {{.PaymentStatus}}</p>
 
-                    <form action="/admin/payments/verify" method="post">
-                        <input type="hidden" name="payment-id" value="{{.ID}}">
-                        <button type="submit">Verify Payment</button>
-                    </form>
+                    {{if eq .PaymentStatus "pending"}}
+                    
+                        <form action="/admin/payments/verify" method="post">
+                            <input type="hidden" name="payment-id" value="{{.ID}}">
+                            <button type="submit">Verify Payment</button>
+                        </form>
+
+                    {{else if eq .OrderStatus "processing"}}
+
+                        <p>✅ Payment Verified</p>
+
+                        <form action="/admin/orders/delivery" method="post">
+                            <input type="hidden" name="order-id" value="{{.OrderID}}">
+                            <button type="submit">Out for Delivery</button>
+                        </form>
+
+                    {{else if eq .OrderStatus "out_for_delivery"}}
+
+                        <p>🚚 Out for Delivery</p>
+
+                        <form action="/admin/orders/delivered" method="post">
+                            <input type="hidden" name="order-id" value="{{.OrderID}}">
+                            <button type="submit">Mark as Delivered</button>
+                        </form>
+
+                    {{else if eq .OrderStatus "delivered"}}
+
+                        <p>✅ Delivered</p>
+
+                    {{end}}
 
                 </div>
 

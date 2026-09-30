@@ -45,7 +45,36 @@
 
             <h3>Order Status</h3>
 
-            <p>Status: {{.Status}}</p>
+            <p>Current Status: <strong>{{.Status}}</strong></p>
+
+            <div  class="order-timeline">
+
+                <div class="status-step">
+                    <span>{{if statusReached .Status "payment_pending"}}✓{{else}}○{{end}}</span>
+                    <p>Order Placed</p>
+                </div>
+
+                <div class="status-step">
+                    <span>{{if statusReached .Status "payment_pending"}}✓{{else}}○{{end}}</span>
+                    <p>Payment Verification</p>
+                </div>
+
+                <div class="status-step">
+                    <span>{{if statusReached .Status "processing"}}✓{{else}}○{{end}}</span>
+                    <p>Processing</p>
+                </div>
+
+                <div class="status-step">
+                    <span>{{if statusReached .Status "out_for_delivery"}}✓{{else}}○{{end}}</span>
+                    <p>Out for Delivery</p>
+                </div>
+
+                <div class="status-step">
+                    <span>{{if statusReached .Status "delivered"}}✓{{else}}○{{end}}</span>
+                    <p>Delivered</p>
+                </div>
+
+            </div>
 
         </div>
 

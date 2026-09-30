@@ -47,6 +47,7 @@ type AdminPayment struct {
 	PaymentReference string
 	Receipt          string
 	PaymentStatus    string
+	OrderStatus      string
 }
 
 type OrderStatusData struct {
@@ -531,10 +532,19 @@ func handleAdminPayments(db *sql.DB, w http.ResponseWriter, r *http.Request) {
 	}
 
 	rows, err := db.Query(`
-	    SELECT id, order_id, amount_paid, payment_reference, receipt, payment_status
+	    SELECT
+		    payments.id,
+            payments.order_id,
+            payments.amount_paid,
+            payments.payment_reference,
+            payments.receipt,
+            payments.payment_status,
+            orders.status
 		FROM payments
-		ORDER BY id DESC
+        JOIN orders ON payments.order_id = orders.id
+        ORDER BY payments.id DESC
 	`)
+
 	if err != nil {
 		log.Println("Could not get payments:", err)
 		http.Error(w, "Could not load payments", http.StatusInternalServerError)
@@ -555,6 +565,7 @@ func handleAdminPayments(db *sql.DB, w http.ResponseWriter, r *http.Request) {
 			&payment.PaymentReference,
 			&payment.Receipt,
 			&payment.PaymentStatus,
+			&payment.OrderStatus,
 		)
 
 		if err != nil {
@@ -737,7 +748,9 @@ func handleOrderStatus(db *sql.DB, w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	tmpl, err := template.ParseFiles("order-status.html")
+	tmpl, err := template.New("order-status.html").Funcs(template.FuncMap{
+		"statusReached": statusReached,
+	}).ParseFiles("order-status.html")
 	if err != nil {
 		log.Println("Could not load order status page:", err)
 		http.Error(w, "Could not load order status page", http.StatusInternalServerError)
@@ -1378,4 +1391,23 @@ func handleResetPassword(db *sql.DB, w http.ResponseWriter, r *http.Request) {
 	}
 
     http.Error(w, "Method not allowed", http.StatusMethodNotAllowed)
+}
+
+func statusReached(currentStatus, stepStatus string) bool {
+
+    steps := map[string]int{
+        "payment_pending":    1,
+        "processing":         2,
+        "out_for_delivery":   3,
+        "delivered":          4,
+    }
+
+    current, currentOK := steps[currentStatus]
+    step, stepOK := steps[stepStatus]
+
+    if !currentOK || !stepOK {
+        return false
+    }
+
+    return current >= step
 }
