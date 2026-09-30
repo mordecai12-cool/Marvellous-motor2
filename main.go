@@ -212,6 +212,34 @@ func main() {
 	http.HandleFunc("/reset-password", func(w http.ResponseWriter, r *http.Request) {
         handleResetPassword(db, w, r)
     })
+	http.HandleFunc("/payment-pending.html", func(w http.ResponseWriter, r *http.Request) {
+		orderID := r.URL.Query().Get("order-id")
+
+		if orderID == "" {
+			http.Error(w, "Order ID missing", http.StatusBadRequest)
+            return
+		}
+
+		data := struct {
+			OrderID string
+		}{
+			OrderID: orderID,
+		}
+
+		tmpl, err := template.ParseFiles("payment-pending.html")
+		if err != nil {
+			log.Println("Could not load payment pending page:", err)
+            http.Error(w, "Could not load page", http.StatusInternalServerError)
+            return
+		}
+
+		err = tmpl.Execute(w, data)
+		if err != nil {
+			log.Println("Could not display payment pending page:", err)
+            http.Error(w, "Could not display page", http.StatusInternalServerError)
+            return
+		}
+	})
 
 	http.Handle("/uploads/", http.StripPrefix("/uploads/", http.FileServer(http.Dir("uploads"))))
 
@@ -251,12 +279,25 @@ func handleOrder(db *sql.DB, w http.ResponseWriter, r *http.Request) {
 
 	customerID := customerIDValue.(int64)
 
-	name := r.FormValue("name")
-	email := r.FormValue("email")
-	phone := r.FormValue("phone")
+	var name string
+    var email string
+    var phone string
+
+	err = db.QueryRow(`
+	    SELECT name, email, phone
+        FROM customers
+        WHERE id = ?
+	`, customerID).Scan(&name, &email, &phone)
+
+	if err != nil {
+		log.Println("Could not get customer details:", err)
+        http.Error(w, "Could not get customer details", http.StatusInternalServerError)
+        return
+	}
+
 	address := r.FormValue("address")
-	city := r.FormValue("city")
-	state := r.FormValue("state")
+    city := r.FormValue("city")
+    state := r.FormValue("state")
 
 	carName := "Toyota Camry"
 	carPrice := 25000000
@@ -420,7 +461,7 @@ func handlePayment(db *sql.DB, w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	http.Redirect(w, r, "/payment-pending.html", http.StatusSeeOther)
+	http.Redirect(w, r, "/payment-pending.html?order-id="+orderID, http.StatusSeeOther)
 }
 
 func handleAdminOrders(db *sql.DB, w http.ResponseWriter, r *http.Request) {
