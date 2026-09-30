@@ -1263,5 +1263,78 @@ func handleResetPassword(db *sql.DB, w http.ResponseWriter, r *http.Request) {
         return
     }
 
+	if r.Method == http.MethodPost {
+
+		err := r.ParseForm()
+		if err != nil {
+			http.Error(w, "Could not read form", http.StatusBadRequest)
+            return
+		}
+
+		token := r.FormValue("token")
+        password := r.FormValue("password")
+        confirmPassword := r.FormValue("confirm-password")
+
+		if password != confirmPassword {
+			http.Error(w, "Passwords do not match", http.StatusBadRequest)
+            return
+		}
+
+		var customerID int64
+        var expiresAt time.Time
+
+		err = db.QueryRow(`
+		    SELECT customer_id, expires_at
+            FROM password_reset_tokens
+            WHERE token = ?
+		`, token).Scan(&customerID, &expiresAt)
+
+		if err != nil {
+			log.Println("Could not validate reset token:", err)
+            http.Error(w, "Invalid or expired reset link", http.StatusBadRequest)
+            return
+		}
+
+		if time.Now().After(expiresAt) {
+			http.Error(w, "Reset link has expired", http.StatusBadRequest)
+            return
+		}
+
+		hashedPassword, err := bcrypt.GenerateFromPassword(
+			[]byte(password),
+            bcrypt.DefaultCost,
+		)
+
+		if err != nil {
+			log.Println("Could not hash new password:", err)
+            http.Error(w, "Could not reset password", http.StatusInternalServerError)
+            return
+		}
+
+		_, err = db.Exec(`
+		    UPDATE customers
+            SET password = ?
+            WHERE id = ? 
+		`, hashedPassword, customerID)
+
+		if err != nil {
+			log.Println("Could not update password:", err)
+            http.Error(w, "Could not reset password", http.StatusInternalServerError)
+            return
+		}
+
+		_, err = db.Exec(`
+		    DELETE FROM password_reset_tokens
+            WHERE token = ?
+		`, token)
+
+		if err != nil {
+			log.Println("Could not remove reset token:", err)
+		}
+
+		http.Redirect(w, r, "/login.html", http.StatusSeeOther)
+        return
+	}
+
     http.Error(w, "Method not allowed", http.StatusMethodNotAllowed)
 }
