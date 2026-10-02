@@ -6,35 +6,89 @@
     <title>Create Account - Marvellous Motors</title>
     <link rel="stylesheet" href="style.css">
 </head>
+
 <body>
 
-    <h1>Create Your Account</h1>
+    <nav>
+        <h2>Marvellous Motors</h2>
 
-    <form action="/register" method="POST">
+        <div>
+            <a href="index.html">Home</a>
+            <a href="cars.html">Cars</a>
+            <a href="about.html">About</a>
+            <a href="contact.html">Contact</a>
+        </div>
+    </nav>
 
-        <label>Full Name</label>
-        <input type="text" name="name" required>
+    <section class="register-page">
 
-        <label>Email</label>
-        <input type="email" name="email" required>
+        <div class="register-box">
 
-        <label>Phone</label>
-        <input type="tel" name="phone" required>
+            <h1>Create Your Account</h1>
 
-        <label>Password</label>
-        <input type="password" name="password" required>
+            <p>Join Marvellous Motors and start your journey.</p>
 
-        <label>Confirm Password</label>
-        <input type="password" name="confirm-password" required>
+            <form action="/register" method="POST">
 
-        <button type="submit">Create Account</button>
+                <label for="name">Full Name</label>
+                <input
+                    type="text"
+                    id="name"
+                    name="name"
+                    placeholder="Enter your full name"
+                    required
+                >
 
-    </form>
+                <label for="email">Email</label>
+                <input
+                    type="email"
+                    id="email"
+                    name="email"
+                    placeholder="Enter your email"
+                    required
+                >
 
-    <p>
-        Already have an account?
-        <a href="/login.html">Sign In</a>
-    </p>
+                <label for="phone">Phone</label>
+                <input
+                    type="tel"
+                    id="phone"
+                    name="phone"
+                    placeholder="Enter your phone number"
+                    required
+                >
+
+                <label for="password">Password</label>
+                <input
+                    type="password"
+                    id="password"
+                    name="password"
+                    placeholder="Create a password"
+                    required
+                >
+
+                <label for="confirm-password">Confirm Password</label>
+                <input
+                    type="password"
+                    id="confirm-password"
+                    name="confirm-password"
+                    placeholder="Confirm your password"
+                    required
+                >
+
+                <button type="submit">
+                    Create Account
+                </button>
+
+            </form>
+
+            <p class="login-link">
+                Already have an account?
+                <a href="/login.html">Sign In</a>
+            </p>
+
+        </div>
+
+    </section>
 
 </body>
 </html>

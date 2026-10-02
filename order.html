@@ -1,6 +1,8 @@
 <!DOCTYPE html>
-<html>
+<html lang="en">
 <head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Place Order - Marvellous Motors</title>
     <link rel="stylesheet" href="style.css">
 </head>
@@ -10,32 +12,61 @@
     <nav>
         <h2>Marvellous Motors</h2>
 
-        <a href="index.html">Home</a>
-        <a href="cars.html">Cars</a>
-        <a href="about.html">About</a>
-        <a href="contact.html">Contact</a>
+        <div>
+            <a href="index.html">Home</a>
+            <a href="cars.html">Cars</a>
+            <a href="about.html">About</a>
+            <a href="contact.html">Contact</a>
+        </div>
     </nav>
 
     <section class="order-page">
 
-        <h1>Place Your Order</h1>
+        <div class="order-box">
 
-        <p>Enter your delivery location.</p>
+            <h1>Place Your Order</h1>
 
-        <form action="/order" method="POST">
+            <p>Enter your delivery address to continue with your order.</p>
 
-            <label for="address">Delivery Address</label><br>
-            <input type="text" id="address" name="address" required><br><br>
+            <form action="/order" method="POST">
 
-            <label for="city">City</label><br>
-            <input type="text" id="city" name="city" required><br><br>
+                <label for="address">Delivery Address</label>
 
-            <label for="state">State</label><br>
-            <input type="text" id="state" name="state" required><br><br>
+                <input
+                    type="text"
+                    id="address"
+                    name="address"
+                    placeholder="Enter your delivery address"
+                    required
+                >
 
-            <button type="submit">Continue</button>
+                <label for="city">City</label>
 
-        </form>
+                <input
+                    type="text"
+                    id="city"
+                    name="city"
+                    placeholder="Enter your city"
+                    required
+                >
+
+                <label for="state">State</label>
+
+                <input
+                    type="text"
+                    id="state"
+                    name="state"
+                    placeholder="Enter your state"
+                    required
+                >
+
+                <button type="submit">
+                    Continue to Payment
+                </button>
+
+            </form>
+
+        </div>
 
     </section>
 
