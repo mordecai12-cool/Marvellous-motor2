@@ -166,6 +166,9 @@ func main() {
 		log.Fatal(err)
 	}
 
+	http.HandleFunc("/start-order", func(w http.ResponseWriter, r *http.Request) {
+        handleStartOrder(w, r)
+    })
 	http.HandleFunc("/order", func(w http.ResponseWriter, r *http.Request) {
 		handleOrder(db, w, r)
 	})
@@ -1410,4 +1413,27 @@ func statusReached(currentStatus, stepStatus string) bool {
     }
 
     return current >= step
+}
+
+func handleStartOrder(w http.ResponseWriter, r *http.Request) {
+
+    if r.Method != http.MethodGet {
+        http.Error(w, "Method not allowed", http.StatusMethodNotAllowed)
+        return
+    }
+
+    session, err := store.Get(r, "customer-session")
+    if err != nil {
+        http.Error(w, "Could not get customer session", http.StatusInternalServerError)
+        return
+    }
+
+    _, ok := session.Values["customer_id"]
+
+    if !ok {
+        http.Redirect(w, r, "/login.html", http.StatusSeeOther)
+        return
+    }
+
+    http.Redirect(w, r, "/order.html", http.StatusSeeOther)
 }
