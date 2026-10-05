@@ -1216,3 +1216,62 @@ footer {
     color: #0B1F3A;
 
 }
+
+/* About Page */
+
+.about-page {
+    max-width: 900px;
+    margin: 50px auto;
+    padding: 50px;
+    background-color: #ffffff;
+    border-radius: 15px;
+    box-shadow: 0 5px 20px rgba(0, 31, 63, 0.12);
+}
+
+.about-page h1 {
+    text-align: center;
+    font-size: 42px;
+    color: #001f3f;
+    margin-bottom: 30px;
+}
+
+.about-page h2 {
+    color: #0077b6;
+    margin-top: 35px;
+}
+
+.about-page p {
+    font-size: 18px;
+    line-height: 1.8;
+    color: #444;
+}
+
+
+/* Contact Page */
+
+.contact-page {
+    max-width: 900px;
+    margin: 50px auto;
+    padding: 50px;
+    background-color: #ffffff;
+    border-radius: 15px;
+    box-shadow: 0 5px 20px rgba(0, 31, 63, 0.12);
+    text-align: center;
+}
+
+.contact-page h1 {
+    font-size: 42px;
+    color: #001f3f;
+    margin-bottom: 25px;
+}
+
+.contact-page h2 {
+    color: #0077b6;
+    margin-top: 35px;
+}
+
+.contact-page p {
+    font-size: 18px;
+    line-height: 1.8;
+    color: #444;
+}
