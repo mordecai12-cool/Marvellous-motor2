@@ -247,7 +247,15 @@ func main() {
 
 	http.Handle("/uploads/", http.StripPrefix("/uploads/", http.FileServer(http.Dir("uploads"))))
 
-	http.Handle("/", http.FileServer(http.Dir(".")))
+	http.HandleFunc("/", func(w http.ResponseWriter, r *http.Request) {
+
+		if r.URL.Path == "/" || r.URL.Path == "/index.html" {
+			handleHome(w, r)
+            return
+		}
+
+		http.FileServer(http.Dir(".")).ServeHTTP(w, r)
+	})
 
 	log.Println("Marvellous Motors is running on http://localhost:8080")
 
@@ -1436,4 +1444,38 @@ func handleStartOrder(w http.ResponseWriter, r *http.Request) {
     }
 
     http.Redirect(w, r, "/order.html", http.StatusSeeOther)
+}
+
+func handleHome(w http.ResponseWriter, r *http.Request) {
+
+    if r.Method != http.MethodGet {
+        http.Error(w, "Method not allowed", http.StatusMethodNotAllowed)
+        return
+    }
+
+    session, err := store.Get(r, "customer-session")
+    if err != nil {
+        http.Error(w, "Could not get customer session", http.StatusInternalServerError)
+        return
+    }
+
+    _, signedIn := session.Values["customer_id"]
+
+    data := struct {
+        SignedIn bool
+    }{
+        SignedIn: signedIn,
+    }
+
+    tmpl, err := template.ParseFiles("index.html")
+    if err != nil {
+        http.Error(w, "Could not load home page", http.StatusInternalServerError)
+        return
+    }
+
+    err = tmpl.Execute(w, data)
+    if err != nil {
+        http.Error(w, "Could not display home page", http.StatusInternalServerError)
+        return
+    }
 }

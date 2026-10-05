@@ -15,8 +15,13 @@
         <a href="cars.html">Cars</a>
         <a href="about.html">About</a>
         <a href="contact.html">Contact</a>
-        <a href="/login.html">Sign In</a>
-        <a href="/register.html">Sign Up</a>
+        {{if .SignedIn}}
+            <a href="/customer-dashboard.html">Dashboard</a>
+            <a href="/logout">Logout</a>
+        {{else}}
+            <a href="/login.html">Sign In</a>
+            <a href="/register.html">Sign Up</a>
+        {{end}}
     </nav>
 
     <section class="hero">
