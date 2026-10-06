@@ -598,6 +598,25 @@ func handleAdminPayments(db *sql.DB, w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
+	// Prevent browser from showing cached admin payment information
+	w.Header().Set("Cache-Control", "no-store, no-cache, must-revalidate")
+	w.Header().Set("Pragma", "no-cache")
+	w.Header().Set("Expires", "0")
+
+	// Check if admin is logged in
+	session, err := store.Get(r, "admin-session")
+	if err != nil {
+		http.Error(w, "Could not get admin session", http.StatusInternalServerError)
+		return
+	}
+
+	adminID, ok := session.Values["admin_id"]
+	if !ok || adminID == nil {
+		http.Redirect(w, r, "/admin-login.html", http.StatusSeeOther)
+		return
+	}
+
+	// Get payments from database
 	rows, err := db.Query(`
 	    SELECT
 		    payments.id,
@@ -642,12 +661,12 @@ func handleAdminPayments(db *sql.DB, w http.ResponseWriter, r *http.Request) {
 		}
 
 		payments = append(payments, payment)
-
 	}
 
 	tmpl, err := template.New("admin-payments.html").Funcs(template.FuncMap{
 		"formatAmount": formatAmount,
 	}).ParseFiles("admin-payments.html")
+
 	if err != nil {
 		log.Println("Could not load admin payments page:", err)
 		http.Error(w, "Could not load admin payments page", http.StatusInternalServerError)
@@ -660,7 +679,6 @@ func handleAdminPayments(db *sql.DB, w http.ResponseWriter, r *http.Request) {
 		http.Error(w, "Could not display payments", http.StatusInternalServerError)
 		return
 	}
-
 }
 
 func handleVerifyPayment(db *sql.DB, w http.ResponseWriter, r *http.Request) {
@@ -1657,6 +1675,11 @@ func handleAdminDashboard(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
+	// Prevent browser from using a cached admin page
+	w.Header().Set("Cache-Control", "no-store, no-cache, must-revalidate")
+	w.Header().Set("Pragma", "no-cache")
+	w.Header().Set("Expires", "0")
+
 	session, err := store.Get(r, "admin-session")
 	if err != nil {
 		http.Error(w, "Could not get admin session", http.StatusInternalServerError)
@@ -1688,5 +1711,9 @@ func handleAdminLogout(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	http.Redirect(w, r, "/admin-login.html", http.StatusSeeOther)
+	w.Header().Set("Cache-Control", "no-store, no-cache, must-revalidate")
+	w.Header().Set("Pragma", "no-cache")
+	w.Header().Set("Expires", "0")
+
+	http.Redirect(w, r, "/index.html", http.StatusSeeOther)
 }
