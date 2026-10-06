@@ -290,6 +290,11 @@ func main() {
             return
 		}
 
+		if r.URL.Path == "/admin.html" {
+			handleAdminDashboard(w, r)
+		    return
+		}
+
 		http.FileServer(http.Dir(".")).ServeHTTP(w, r)
 	})
 
@@ -513,11 +518,26 @@ func handlePayment(db *sql.DB, w http.ResponseWriter, r *http.Request) {
 }
 
 func handleAdminOrders(db *sql.DB, w http.ResponseWriter, r *http.Request) {
+
 	if r.Method != http.MethodGet {
 		http.Error(w, "Method not allowed", http.StatusMethodNotAllowed)
 		return
 	}
 
+	// Check if admin is logged in
+	session, err := store.Get(r, "admin-session")
+	if err != nil {
+		http.Error(w, "Could not get admin session", http.StatusInternalServerError)
+		return
+	}
+
+	adminID, ok := session.Values["admin_id"]
+	if !ok || adminID == nil {
+		http.Redirect(w, r, "/admin-login.html", http.StatusSeeOther)
+		return
+	}
+
+	// Get orders from database
 	rows, err := db.Query(`
 	    SELECT id, name, email, phone, address, city, state, status
 		FROM orders
