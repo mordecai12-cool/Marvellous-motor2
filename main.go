@@ -139,6 +139,35 @@ func main() {
 	}
 
 	_, err = db.Exec(`
+	    CREATE TABLE IF NOT EXISTS admins (
+		    id INTEGER PRIMARY KEY AUTOINCREMENT,
+            name TEXT NOT NULL,
+            email TEXT NOT NULL UNIQUE,
+            password TEXT NOT NULL,
+            created_at DATETIME DEFAULT CURRENT_TIMESTAMP
+		)
+	`)
+	if err != nil {
+		log.Fatal(err)
+	}
+
+	_, err = db.Exec(`
+	    ALTER TABLE admins
+        ADD COLUMN role TEXT NOT NULL DEFAULT 'admin'
+	`)
+	if err != nil {
+		log.Println("Admin role column:", err)
+	}
+
+	_, err = db.Exec(`
+	    ALTER TABLE admins
+        ADD COLUMN status TEXT NOT NULL DEFAULT 'pending'
+	`)
+	if err != nil {
+		log.Println("Admin status column:", err)
+	}
+
+	_, err = db.Exec(`
 	    CREATE TABLE IF NOT EXISTS payments (
 		id INTEGER PRIMARY KEY AUTOINCREMENT,
 		order_id INTEGER NOT NULL,
@@ -178,6 +207,8 @@ func main() {
 	http.HandleFunc("/payment", func(w http.ResponseWriter, r *http.Request) {
 		handlePayment(db, w, r)
 	})
+	http.HandleFunc("/admin.html", handleAdminDashboard)
+
 	http.HandleFunc("/admin/orders", func(w http.ResponseWriter, r *http.Request) {
 		handleAdminOrders(db, w, r)
 	})
@@ -199,6 +230,11 @@ func main() {
 	http.HandleFunc("/login", func(w http.ResponseWriter, r *http.Request) {
         handleLogin(db, w, r)
     })
+	http.HandleFunc("/admin-login", func(w http.ResponseWriter, r *http.Request) {
+	    handleAdminLogin(db, w, r)
+    })
+	http.HandleFunc("/admin-logout", handleAdminLogout)
+	
 	http.HandleFunc("/customer-orders", func(w http.ResponseWriter, r *http.Request) {
         handleCustomerOrders(db, w, r)
     })
@@ -1478,4 +1514,159 @@ func handleHome(w http.ResponseWriter, r *http.Request) {
         http.Error(w, "Could not display home page", http.StatusInternalServerError)
         return
     }
+}
+
+func createSuperAdmin(db *sql.DB) {
+    name := "Marvellous Motors Main Admin"
+    email := "marvellousmordecaiotiti@gmail.com"
+
+    password := "strongpassword"
+
+    hashedPassword, err := bcrypt.GenerateFromPassword(
+        []byte(password),
+        bcrypt.DefaultCost,
+    )
+    if err != nil {
+        log.Fatal("Could not hash admin password:", err)
+    }
+
+    _, err = db.Exec(`
+        INSERT INTO admins (
+            name,
+            email,
+            password,
+            role,
+            status
+        )
+        VALUES (?, ?, ?, ?, ?)
+    `,
+        name,
+        email,
+        hashedPassword,
+        "super_admin",
+        "approved",
+    )
+
+    if err != nil {
+        log.Fatal("Could not create super admin:", err)
+    }
+
+    log.Println("Super admin created successfully")
+}
+
+func handleAdminLogin(db *sql.DB, w http.ResponseWriter, r *http.Request) {
+
+	if r.Method != http.MethodPost {
+		http.Error(w, "Method not allowed", http.StatusMethodNotAllowed)
+		return
+	}
+
+	err := r.ParseForm()
+	if err != nil {
+		http.Error(w, "Could not read form", http.StatusBadRequest)
+		return
+	}
+
+	email := r.FormValue("email")
+	password := r.FormValue("password")
+
+	var storedPassword string
+	var adminID int64
+	var adminName string
+	var role string
+	var status string
+
+	err = db.QueryRow(`
+		SELECT id, name, password, role, status
+		FROM admins
+		WHERE email = ?
+	`, email).Scan(
+		&adminID,
+		&adminName,
+		&storedPassword,
+		&role,
+		&status,
+	)
+
+	if err != nil {
+		log.Println("Could not find admin:", err)
+		http.Error(w, "Invalid email or password", http.StatusUnauthorized)
+		return
+	}
+
+	if status != "approved" {
+		http.Error(w, "Admin account is not approved", http.StatusUnauthorized)
+		return
+	}
+
+	err = bcrypt.CompareHashAndPassword(
+		[]byte(storedPassword),
+		[]byte(password),
+	)
+
+	if err != nil {
+		http.Error(w, "Invalid email or password", http.StatusUnauthorized)
+		return
+	}
+
+	session, err := store.Get(r, "admin-session")
+	if err != nil {
+		log.Println("Could not get admin session:", err)
+		http.Error(w, "Could not create session", http.StatusInternalServerError)
+		return
+	}
+
+	session.Values["admin_id"] = adminID
+	session.Values["admin_name"] = adminName
+	session.Values["admin_role"] = role
+
+	err = session.Save(r, w)
+	if err != nil {
+		log.Println("Could not save admin session:", err)
+		http.Error(w, "Could not save session", http.StatusInternalServerError)
+		return
+	}
+
+	http.Redirect(w, r, "/admin.html", http.StatusSeeOther)
+}
+
+func handleAdminDashboard(w http.ResponseWriter, r *http.Request) {
+
+	if r.Method != http.MethodGet {
+		http.Error(w, "Method not allowed", http.StatusMethodNotAllowed)
+		return
+	}
+
+	session, err := store.Get(r, "admin-session")
+	if err != nil {
+		http.Error(w, "Could not get admin session", http.StatusInternalServerError)
+		return
+	}
+
+	adminID, ok := session.Values["admin_id"]
+	if !ok || adminID == nil {
+		http.Redirect(w, r, "/admin-login.html", http.StatusSeeOther)
+		return
+	}
+
+	http.ServeFile(w, r, "admin.html")
+}
+
+func handleAdminLogout(w http.ResponseWriter, r *http.Request) {
+
+	session, err := store.Get(r, "admin-session")
+	if err != nil {
+		http.Error(w, "Could not get admin session", http.StatusInternalServerError)
+		return
+	}
+
+	session.Options.MaxAge = -1
+
+	err = session.Save(r, w)
+	if err != nil {
+		http.Error(w, "Could not log out", http.StatusInternalServerError)
+		return
+	}
+
+	http.Redirect(w, r, "/admin-login.html", http.StatusSeeOther)
 }
