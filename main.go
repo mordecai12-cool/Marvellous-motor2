@@ -271,6 +271,9 @@ func main() {
 	http.HandleFunc("/admin-requests/reject", func(w http.ResponseWriter, r *http.Request) {
 	    handleRejectAdminRequest(db, w, r)
     })
+	http.HandleFunc("/admin-request-status", func(w http.ResponseWriter, r *http.Request) {
+	    handleAdminRequestStatus(db, w, r)
+    })
 	http.HandleFunc("/payment-pending.html", func(w http.ResponseWriter, r *http.Request) {
 		orderID := r.URL.Query().Get("order-id")
 
@@ -1739,6 +1742,7 @@ func handleAdminDashboard(w http.ResponseWriter, r *http.Request) {
 	w.Header().Set("Pragma", "no-cache")
 	w.Header().Set("Expires", "0")
 
+	// Check admin session
 	session, err := store.Get(r, "admin-session")
 	if err != nil {
 		http.Error(w, "Could not get admin session", http.StatusInternalServerError)
@@ -1751,7 +1755,31 @@ func handleAdminDashboard(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	http.ServeFile(w, r, "admin.html")
+	// Get admin role
+	role, ok := session.Values["admin_role"]
+	if !ok {
+		http.Error(w, "Could not determine admin role", http.StatusInternalServerError)
+		return
+	}
+
+	// Load the dashboard
+	tmpl, err := template.ParseFiles("admin.html")
+	if err != nil {
+		http.Error(w, "Could not load admin dashboard", http.StatusInternalServerError)
+		return
+	}
+
+	data := struct {
+		Role string
+	}{
+		Role: role.(string),
+	}
+
+	err = tmpl.Execute(w, data)
+	if err != nil {
+		http.Error(w, "Could not display admin dashboard", http.StatusInternalServerError)
+		return
+	}
 }
 
 func handleAdminLogout(w http.ResponseWriter, r *http.Request) {
@@ -2030,4 +2058,86 @@ func handleRejectAdminRequest(db *sql.DB, w http.ResponseWriter, r *http.Request
 	}
 
 	http.Redirect(w, r, "/admin-requests", http.StatusSeeOther)
+}
+
+func handleAdminRequestStatus(db *sql.DB, w http.ResponseWriter, r *http.Request) {
+
+	if r.Method != http.MethodPost {
+		http.Error(w, "Method not allowed", http.StatusMethodNotAllowed)
+		return
+	}
+
+	err := r.ParseForm()
+	if err != nil {
+		http.Error(w, "Could not read form", http.StatusBadRequest)
+		return
+	}
+
+	email := r.FormValue("email")
+
+	var name string
+	var status string
+
+	err = db.QueryRow(`
+		SELECT name, status
+		FROM admins
+		WHERE email = ?
+	`, email).Scan(&name, &status)
+
+	if err != nil {
+		http.Error(w, "No admin request found for this email", http.StatusNotFound)
+		return
+	}
+
+	w.Header().Set("Content-Type", "text/html; charset=utf-8")
+
+	var message string
+
+	switch status {
+	case "pending":
+		message = "Your admin request is still pending. Please wait for the Main Admin to review it."
+
+	case "approved":
+		message = "Your admin request has been approved. You can now sign in as an admin."
+
+	case "rejected":
+		message = "Your admin request has been rejected. You cannot sign in as an admin."
+	}
+
+	w.Header().Set("Content-Type", "text/html; charset=utf-8")
+
+	w.Write([]byte(`
+		<!DOCTYPE html>
+		<html lang="en">
+		<head>
+			<meta charset="UTF-8">
+			<meta name="viewport" content="width=device-width, initial-scale=1.0">
+			<title>Admin Request Status</title>
+			<link rel="stylesheet" href="style.css">
+		</head>
+
+		<body>
+
+			<nav>
+				<h2>Marvellous Motors</h2>
+
+				<a href="index.html">Home</a>
+				<a href="cars.html">Cars</a>
+				<a href="about.html">About</a>
+				<a href="contact.html">Contact</a>
+			</nav>
+
+			<h1>Admin Request Status</h1>
+
+			<p>Name: ` + name + `</p>
+
+			<p>Status: <strong>` + status + `</strong></p>
+
+			<p>` + message + `</p>
+
+			<a href="/admin-login.html">Admin Sign In</a>
+
+		</body>
+		</html>
+	`))
 }

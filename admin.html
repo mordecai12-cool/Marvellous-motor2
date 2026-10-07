@@ -26,16 +26,25 @@
                 <h2>Orders</h2>
                 <p>View customer orders</p>
             </a>
-            
+
             <a href="/admin/payments" class="admin-card">
                 <h2>Payments</h2>
                 <p>Verify customer payments</p>
             </a>
-            
+
             <div class="admin-card">
                 <h2>Customers</h2>
                 <p>View customer information</p>
             </div>
+
+            {{if eq .Role "super_admin"}}
+
+            <a href="/admin-requests" class="admin-card">
+                <h2>Admin Requests</h2>
+                <p>Approve or reject admin access requests</p>
+            </a>
+
+            {{end}}
 
             <a href="/admin-logout">Logout</a>
 
