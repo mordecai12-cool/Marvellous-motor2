@@ -63,6 +63,13 @@ type OrderStatusData struct {
 	Status   string
 }
 
+type AdminRequest struct {
+	ID     int
+	Name   string
+	Email  string
+	Status string
+}
+
 func formatAmount(amount float64) string {
 	return fmt.Sprintf("₦%.0f", amount)
 }
@@ -251,6 +258,18 @@ func main() {
     })
 	http.HandleFunc("/reset-password", func(w http.ResponseWriter, r *http.Request) {
         handleResetPassword(db, w, r)
+    })
+	http.HandleFunc("/admin-request", func(w http.ResponseWriter, r *http.Request) {
+	    handleAdminRequest(db, w, r)
+    })
+	http.HandleFunc("/admin-requests", func(w http.ResponseWriter, r *http.Request) {
+	    handleAdminRequests(db, w, r)
+    })
+	http.HandleFunc("/admin-requests/approve", func(w http.ResponseWriter, r *http.Request) {
+	    handleApproveAdminRequest(db, w, r)
+    })
+	http.HandleFunc("/admin-requests/reject", func(w http.ResponseWriter, r *http.Request) {
+	    handleRejectAdminRequest(db, w, r)
     })
 	http.HandleFunc("/payment-pending.html", func(w http.ResponseWriter, r *http.Request) {
 		orderID := r.URL.Query().Get("order-id")
@@ -688,11 +707,25 @@ func handleVerifyPayment(db *sql.DB, w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
+	// Check if admin is logged in
+	session, err := store.Get(r, "admin-session")
+	if err != nil {
+		http.Error(w, "Could not get admin session", http.StatusInternalServerError)
+		return
+	}
+
+	adminID, ok := session.Values["admin_id"]
+	if !ok || adminID == nil {
+		http.Redirect(w, r, "/admin-login.html", http.StatusSeeOther)
+		return
+	}
+
 	paymentID := r.FormValue("payment-id")
 
 	log.Println("Verifying payment:", paymentID)
 
-	_, err := db.Exec(`
+	// Verify the payment
+	_, err = db.Exec(`
 	    UPDATE payments
 		SET payment_status = ?
 		WHERE id = ?
@@ -704,9 +737,10 @@ func handleVerifyPayment(db *sql.DB, w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
+	// Update the related order
 	result, err := db.Exec(`
 	    UPDATE orders
-		SET status = ? 
+		SET status = ?
 		WHERE id = (
 		    SELECT order_id
 			FROM payments
@@ -729,7 +763,6 @@ func handleVerifyPayment(db *sql.DB, w http.ResponseWriter, r *http.Request) {
 	log.Println("Orders updated:", rowsAffected)
 
 	http.Redirect(w, r, "/admin/payments", http.StatusSeeOther)
-
 }
 
 func handleOrderDelivery(db *sql.DB, w http.ResponseWriter, r *http.Request) {
@@ -739,11 +772,24 @@ func handleOrderDelivery(db *sql.DB, w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
+	// Check if admin is logged in
+	session, err := store.Get(r, "admin-session")
+	if err != nil {
+		http.Error(w, "Could not get admin session", http.StatusInternalServerError)
+		return
+	}
+
+	adminID, ok := session.Values["admin_id"]
+	if !ok || adminID == nil {
+		http.Redirect(w, r, "/admin-login.html", http.StatusSeeOther)
+		return
+	}
+
 	orderID := r.FormValue("order-id")
 
 	log.Println("Marking order out for delivery:", orderID)
 
-	_, err := db.Exec(`
+	_, err = db.Exec(`
         UPDATE orders
         SET status = ?
         WHERE id = ?
@@ -765,11 +811,24 @@ func handleOrderDelivered(db *sql.DB, w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
+	// Check if admin is logged in
+	session, err := store.Get(r, "admin-session")
+	if err != nil {
+		http.Error(w, "Could not get admin session", http.StatusInternalServerError)
+		return
+	}
+
+	adminID, ok := session.Values["admin_id"]
+	if !ok || adminID == nil {
+		http.Redirect(w, r, "/admin-login.html", http.StatusSeeOther)
+		return
+	}
+
 	orderID := r.FormValue("order-id")
 
 	log.Println("Marking order as delivered:", orderID)
 
-	_, err := db.Exec(`
+	_, err = db.Exec(`
         UPDATE orders
         SET status = ?
         WHERE id = ?
@@ -1716,4 +1775,259 @@ func handleAdminLogout(w http.ResponseWriter, r *http.Request) {
 	w.Header().Set("Expires", "0")
 
 	http.Redirect(w, r, "/index.html", http.StatusSeeOther)
+}
+
+func handleAdminRequest(db *sql.DB, w http.ResponseWriter, r *http.Request) {
+
+	if r.Method != http.MethodPost {
+		http.Error(w, "Method not allowed", http.StatusMethodNotAllowed)
+		return
+	}
+
+	err := r.ParseForm()
+	if err != nil {
+		http.Error(w, "Could not read form", http.StatusBadRequest)
+		return
+	}
+
+	name := r.FormValue("name")
+	email := r.FormValue("email")
+	password := r.FormValue("password")
+	confirmPassword := r.FormValue("confirm-password")
+
+	// Check that the passwords match
+	if password != confirmPassword {
+		http.Error(w, "Passwords do not match", http.StatusBadRequest)
+		return
+	}
+
+	// Hash the password before saving it
+	hashedPassword, err := bcrypt.GenerateFromPassword(
+		[]byte(password),
+		bcrypt.DefaultCost,
+	)
+
+	if err != nil {
+		log.Println("Could not hash admin password:", err)
+		http.Error(w, "Could not create password", http.StatusInternalServerError)
+		return
+	}
+
+	// Save the request as pending
+	_, err = db.Exec(`
+		INSERT INTO admins (
+			name,
+			email,
+			password,
+			role,
+			status
+		)
+		VALUES (?, ?, ?, ?, ?)
+	`,
+		name,
+		email,
+		hashedPassword,
+		"admin",
+		"pending",
+	)
+
+	if err != nil {
+		log.Println("Could not save admin request:", err)
+		http.Error(w, "Could not send admin request", http.StatusInternalServerError)
+		return
+	}
+
+	// Tell the applicant that the request was sent
+	w.Header().Set("Content-Type", "text/html; charset=utf-8")
+
+	w.Write([]byte(`
+		<h2>Admin Request Sent</h2>
+		<p>Your request has been sent to the Main Admin.</p>
+		<p>Please wait for approval before signing in.</p>
+		<a href="/admin-login.html">Back to Admin Sign In</a>
+	`))
+}
+
+func handleAdminRequests(db *sql.DB, w http.ResponseWriter, r *http.Request) {
+
+	if r.Method != http.MethodGet {
+		http.Error(w, "Method not allowed", http.StatusMethodNotAllowed)
+		return
+	}
+
+	// Check admin session
+	session, err := store.Get(r, "admin-session")
+	if err != nil {
+		http.Error(w, "Could not get admin session", http.StatusInternalServerError)
+		return
+	}
+
+	adminID, ok := session.Values["admin_id"]
+	if !ok || adminID == nil {
+		http.Redirect(w, r, "/admin-login.html", http.StatusSeeOther)
+		return
+	}
+
+	// Check that the logged-in admin is the Super Admin
+	role, ok := session.Values["admin_role"]
+	if !ok || role != "super_admin" {
+		http.Error(w, "Access denied. Super Admin only.", http.StatusForbidden)
+		return
+	}
+
+	// Get admin requests
+	rows, err := db.Query(`
+		SELECT id, name, email, status
+		FROM admins
+		WHERE status = ?
+		ORDER BY id DESC
+	`, "pending")
+
+	if err != nil {
+		log.Println("Could not get admin requests:", err)
+		http.Error(w, "Could not load admin requests", http.StatusInternalServerError)
+		return
+	}
+	defer rows.Close()
+
+	var requests []AdminRequest
+
+	for rows.Next() {
+
+		var request AdminRequest
+
+		err := rows.Scan(
+			&request.ID,
+			&request.Name,
+			&request.Email,
+			&request.Status,
+		)
+
+		if err != nil {
+			log.Println("Could not read admin request:", err)
+			http.Error(w, "Could not read admin request", http.StatusInternalServerError)
+			return
+		}
+
+		requests = append(requests, request)
+	}
+
+	// Load the page
+	tmpl, err := template.ParseFiles("admin-requests.html")
+	if err != nil {
+		log.Println("Could not load admin requests page:", err)
+		http.Error(w, "Could not load admin requests page", http.StatusInternalServerError)
+		return
+	}
+
+	err = tmpl.Execute(w, requests)
+	if err != nil {
+		log.Println("Could not display admin requests:", err)
+		http.Error(w, "Could not display admin requests", http.StatusInternalServerError)
+		return
+	}
+}
+
+func handleApproveAdminRequest(db *sql.DB, w http.ResponseWriter, r *http.Request) {
+
+	if r.Method != http.MethodPost {
+		http.Error(w, "Method not allowed", http.StatusMethodNotAllowed)
+		return
+	}
+
+	// Check admin session
+	session, err := store.Get(r, "admin-session")
+	if err != nil {
+		http.Error(w, "Could not get admin session", http.StatusInternalServerError)
+		return
+	}
+
+	adminID, ok := session.Values["admin_id"]
+	if !ok || adminID == nil {
+		http.Redirect(w, r, "/admin-login.html", http.StatusSeeOther)
+		return
+	}
+
+	// Only Super Admin can approve requests
+	role, ok := session.Values["admin_role"]
+	if !ok || role != "super_admin" {
+		http.Error(w, "Access denied. Super Admin only.", http.StatusForbidden)
+		return
+	}
+
+	adminRequestID := r.FormValue("admin-id")
+
+	log.Println("Approving admin request:", adminRequestID)
+
+	// Approve the admin request
+	_, err = db.Exec(`
+		UPDATE admins
+		SET status = ?, role = ?
+		WHERE id = ? AND status = ?
+	`,
+		"approved",
+		"admin",
+		adminRequestID,
+		"pending",
+	)
+
+	if err != nil {
+		log.Println("Could not approve admin request:", err)
+		http.Error(w, "Could not approve admin request", http.StatusInternalServerError)
+		return
+	}
+
+	http.Redirect(w, r, "/admin-requests", http.StatusSeeOther)
+}
+
+func handleRejectAdminRequest(db *sql.DB, w http.ResponseWriter, r *http.Request) {
+
+	if r.Method != http.MethodPost {
+		http.Error(w, "Method not allowed", http.StatusMethodNotAllowed)
+		return
+	}
+
+	// Check admin session
+	session, err := store.Get(r, "admin-session")
+	if err != nil {
+		http.Error(w, "Could not get admin session", http.StatusInternalServerError)
+		return
+	}
+
+	adminID, ok := session.Values["admin_id"]
+	if !ok || adminID == nil {
+		http.Redirect(w, r, "/admin-login.html", http.StatusSeeOther)
+		return
+	}
+
+	// Only Super Admin can reject requests
+	role, ok := session.Values["admin_role"]
+	if !ok || role != "super_admin" {
+		http.Error(w, "Access denied. Super Admin only.", http.StatusForbidden)
+		return
+	}
+
+	adminRequestID := r.FormValue("admin-id")
+
+	log.Println("Rejecting admin request:", adminRequestID)
+
+	// Reject the admin request
+	_, err = db.Exec(`
+		UPDATE admins
+		SET status = ?, role = ?
+		WHERE id = ? AND status = ?
+	`,
+		"rejected",
+		"admin",
+		adminRequestID,
+		"pending",
+	)
+
+	if err != nil {
+		log.Println("Could not reject admin request:", err)
+		http.Error(w, "Could not reject admin request", http.StatusInternalServerError)
+		return
+	}
+
+	http.Redirect(w, r, "/admin-requests", http.StatusSeeOther)
 }

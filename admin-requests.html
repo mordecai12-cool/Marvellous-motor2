@@ -1,0 +1,70 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+    <title>Admin Requests - Marvellous Motors</title>
+
+    <link rel="stylesheet" href="style.css">
+</head>
+
+<body>
+
+    <nav>
+        <h2>Marvellous Motors Admin</h2>
+
+        <a href="/admin.html">Dashboard</a>
+        <a href="/admin/orders">Orders</a>
+        <a href="/admin/payments">Payments</a>
+        <a href="/admin-logout">Logout</a>
+    </nav>
+
+    <section class="admin-dashboard">
+
+        <h1>Admin Requests</h1>
+
+        <p>Review requests for admin access.</p>
+
+        {{if .}}
+
+            {{range .}}
+
+                <div class="admin-card">
+
+                    <h2>{{.Name}}</h2>
+
+                    <p>Email: {{.Email}}</p>
+
+                    <p>Status: {{.Status}}</p>
+
+                    {{if eq .Status "pending"}}
+
+                        <form action="/admin-requests/approve" method="POST">
+                            <input type="hidden" name="admin-id" value="{{.ID}}">
+                            <button type="submit">Approve</button>
+                        </form>
+
+                        <form action="/admin-requests/reject" method="POST">
+                            <input type="hidden" name="admin-id" value="{{.ID}}">
+                            <button type="submit">Reject</button>
+                        </form>
+
+                    {{end}}
+
+                </div>
+
+            {{end}}
+
+        {{else}}
+
+            <p>No admin requests found.</p>
+
+        {{end}}
+
+    </section>
+
+</body>
+
+</html>
