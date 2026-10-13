@@ -361,31 +361,20 @@ footer {
 }
 
 .car-details {
-
-    display: flex;
-
-    align-items: center;
-
-    gap: 50px;
-
-    padding: 80px 50px;
-
-    max-width: 1100px;
-
+    max-width: 1000px;
     margin: auto;
-
+    padding: 60px 20px;
+    text-align: center;
 }
 
 .car-details img {
-
-    width: 500px;
-
-    height: 350px;
-
+    width: 100%;
+    max-width: 900px;
+    height: 500px;
     object-fit: cover;
-
-    border-radius: 10px;
-
+    border-radius: 12px;
+    display: block;
+    margin: 0 auto 40px;
 }
 
 .car-details h1 {
