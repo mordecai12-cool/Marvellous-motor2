@@ -1,56 +1,6 @@
-<!DOCTYPE html>
-<html>
-<head>
-    <title>Admin Dashboard - Marvellous Motors</title>
-    <link rel="stylesheet" href="style.css">
-<script src="/security.js" defer></script></head>
-
-<body>
-
-    <nav>
-        <h2>Marvellous Motors Admin</h2>
-
-        <a href="index.html">Home</a>
-        <a href="cars.html">Cars</a>
-    </nav>
-
-    <section class="admin-dashboard">
-
-        <h1>Admin Dashboard</h1>
-
-        <p>Manage orders and payments.</p>
-
-        <div class="admin-cards"><a href="/admin/enquiries" class="admin-card"><h2>Enquiries & sourcing</h2><p>Review sourcing, dealer and customer requests</p></a>
-
-            <a href="/admin/orders" class="admin-card">
-                <h2>Orders</h2>
-                <p>View customer orders</p>
-            </a>
-
-            <a href="/admin/payments" class="admin-card">
-                <h2>Payments</h2>
-                <p>Verify customer payments</p>
-            </a>
-
-            <div class="admin-card">
-                <h2>Customers</h2>
-                <p>View customer information</p>
-            </div>
-
-            {{if eq .Role "super_admin"}}
-
-            <a href="/admin-requests" class="admin-card">
-                <h2>Admin Requests</h2>
-                <p>Approve or reject admin access requests</p>
-            </a>
-
-            {{end}}
-
-            <a href="/admin-logout">Logout</a>
-
-        </div>
-
-    </section>
-
-</body>
-</html>
+<!DOCTYPE html><html lang="en"><head>{{template "admin-head" .}}</head><body class="ops-body">{{template "admin-open" .}}
+<section class="ops-welcome"><div><span class="welcome-pill">YOUR OPERATIONS AT A GLANCE</span><h2>A smoother journey.<br>From first order to final handover.</h2><p>Stay on top of reviews, preparation, and deliveries.</p><a href="/admin/orders">Open your order book <span>↗</span></a></div><div class="welcome-graphic" aria-hidden="true"><span class="graphic-orbit orbit-one"></span><span class="graphic-orbit orbit-two"></span><span class="graphic-car">{{template "op-icon" "deliveries"}}</span><span class="graphic-label"><i></i> Keep things moving</span></div></section>
+<div class="ops-metrics"><a href="/admin/orders" class="ops-metric"><span class="metric-icon">{{template "op-icon" "orders"}}</span><small>Total orders</small><strong>{{.Metrics.Orders}}</strong><span>Across every stage <b>↗</b></span></a><a href="/admin/payments" class="ops-metric"><span class="metric-icon amber">{{template "op-icon" "payments"}}</span><small>Awaiting payment review</small><strong>{{.Metrics.PendingPayments}}</strong><span>Receipts need your attention <b>↗</b></span></a><a href="/admin/deliveries?status=out_for_delivery" class="ops-metric"><span class="metric-icon mint">{{template "op-icon" "deliveries"}}</span><small>On the road</small><strong>{{.Metrics.OnRoad}}</strong><span>{{.Metrics.Preparing}} vehicles in preparation <b>↗</b></span></a><a href="/admin/enquiries" class="ops-metric"><span class="metric-icon lilac">{{template "op-icon" "enquiries"}}</span><small>Open enquiries</small><strong>{{.Metrics.Enquiries}}</strong><span>Sourcing, support & more <b>↗</b></span></a></div>
+<div class="ops-dashboard-grid"><section class="ops-panel overview-orders"><div class="panel-heading"><div><h2>Recent orders</h2><p>The latest drives in your order book.</p></div><a href="/admin/orders">View all ↗</a></div>{{template "ops-order-table" .Orders}}</section><section class="ops-panel pipeline-panel"><div class="panel-heading"><div><h2>Delivery pipeline</h2><p>From preparation to their driveway.</p></div></div><a class="pipeline-stage" href="/admin/deliveries?status=processing"><span class="pipeline-symbol blue">{{template "op-icon" "orders"}}</span><div><strong>Preparing vehicle</strong><small>Review complete. Next stop: dispatch.</small></div><b>{{.Metrics.Preparing}}</b></a><a class="pipeline-stage" href="/admin/deliveries?status=out_for_delivery"><span class="pipeline-symbol amber">{{template "op-icon" "deliveries"}}</span><div><strong>Out for delivery</strong><small>Dispatched by the operations team.</small></div><b>{{.Metrics.OnRoad}}</b></a><a class="pipeline-stage" href="/admin/deliveries?status=delivered"><span class="pipeline-symbol mint">✓</span><div><strong>Handover complete</strong><small>Confirmed and recorded.</small></div><b>{{.Metrics.Delivered}}</b></a><div class="pipeline-total"><span>Manually approved receipt totals</span><strong>{{.Metrics.TotalLabel}}</strong><small>Staff review records · Confirm against bank records</small></div></section></div>
+<section class="ops-panel"><div class="panel-heading"><div><h2>Recent activity</h2><p>A clear record of what moved forward.</p></div><a href="/admin/activity">View activity log ↗</a></div><div class="recent-activity">{{range .Activity}}<article><span class="activity-dot"></span><div><strong>{{.Action}}</strong><p>{{.Entity}} · {{.Actor}}</p></div><time>{{.TimeLabel}}</time></article>{{else}}<div class="ops-empty"><h3>Your next action starts the story.</h3><p>Staff reviews and delivery updates will be recorded here.</p></div>{{end}}</div></section>
+{{template "admin-close" .}}</body></html>

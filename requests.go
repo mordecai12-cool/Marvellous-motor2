@@ -81,11 +81,11 @@ func registerRequestRoutes(db *sql.DB) {
 		renderRequests(w, r, "requests-list.html", RequestPage{Title: "Your requests", Requests: requests})
 	})
 	http.HandleFunc("/admin/enquiries", func(w http.ResponseWriter, r *http.Request) {
-		session, _ := store.Get(r, "admin-session")
-		if session == nil || session.Values["admin_id"] == nil {
-			http.Redirect(w, r, "/admin-login.html", http.StatusSeeOther)
+		staff, ok := requireStaff(db, w, r)
+		if !ok {
 			return
 		}
+
 		if r.Method == http.MethodPost {
 			id, err := strconv.ParseInt(r.FormValue("id"), 10, 64)
 			status := r.FormValue("status")
@@ -108,7 +108,11 @@ func registerRequestRoutes(db *sql.DB) {
 				http.Error(w, "Could not update request", 500)
 				return
 			}
-			if _, err = tx.Exec("INSERT INTO enquiry_events(enquiry_id,admin_id,previous_status,next_status) VALUES(?,?,?,?)", id, session.Values["admin_id"], previous, status); err != nil {
+			if _, err = tx.Exec("INSERT INTO enquiry_events(enquiry_id,admin_id,previous_status,next_status) VALUES(?,?,?,?)", id, staff.ID, previous, status); err != nil {
+				http.Error(w, "Could not record update", 500)
+				return
+			}
+			if err = addActivity(tx, staff, "Enquiry status updated", fmt.Sprintf("Request #%d · %s", id, status)); err != nil {
 				http.Error(w, "Could not record update", 500)
 				return
 			}
@@ -128,7 +132,12 @@ func registerRequestRoutes(db *sql.DB) {
 			http.Error(w, "Could not load enquiries", 500)
 			return
 		}
-		renderRequests(w, r, "admin-enquiries.html", RequestPage{Title: "Customer enquiries", Requests: requests})
+		metrics, err := loadMetrics(db)
+		if err != nil {
+			http.Error(w, "Could not load operations", 500)
+			return
+		}
+		renderAdmin(w, "admin-enquiries.html", AdminPage{Staff: staff, Page: "enquiries", Title: "Every conversation matters.", Subtitle: "Review sourcing, dealer applications, and customer enquiries.", Metrics: metrics, Requests: requests})
 	})
 }
 

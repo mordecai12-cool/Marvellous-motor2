@@ -158,5 +158,5 @@ func registerShowroomRoutes() {
 }
 
 func inventoryAsset(path string) bool {
-	return strings.HasPrefix(path, "/images/") || path == "/style.css" || path == "/legacy.css" || path == "/favicon.svg" || path == "/showroom.js" || strings.HasPrefix(path, "/fonts/") || path == "/image-credits.html"
+	return strings.HasPrefix(path, "/images/") || path == "/admin.css" || path == "/admin.js" || path == "/delivery.css" || path == "/style.css" || path == "/legacy.css" || path == "/favicon.svg" || path == "/showroom.js" || strings.HasPrefix(path, "/fonts/") || path == "/image-credits.html"
 }

@@ -24,6 +24,14 @@ On this Linux desktop, the start script uses a transient systemd user service, s
 
 The server binds to `127.0.0.1:8080`. There is no deployment or GitHub push in this workflow.
 
+## Operations and delivery
+
+A dedicated admin workspace now includes order and payment review, delivery scheduling/dispatch/handover, customers, enquiries, owner-controlled staff access, and audit logs. Public admin registration is closed. See [the operations guide](docs/ADMIN_DELIVERY.md).
+
+```bash
+./open-admin.sh
+```
+
 ## What's available
 
 - Responsive homepage, collection, vehicle detail, about, contact, order, and enquiry pages.

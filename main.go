@@ -23,6 +23,7 @@ import (
 )
 
 type OrderData struct {
+	ShowroomData
 	Vehicle Vehicle
 	OrderID int64
 	Name    string
@@ -75,7 +76,12 @@ type AdminRequest struct {
 }
 
 func formatAmount(amount float64) string {
-	return fmt.Sprintf("₦%.0f", amount)
+	cents := int64(math.Round(amount * 100))
+	label := "₦" + commaNumber(int(cents/100))
+	if fraction := cents % 100; fraction != 0 {
+		label += fmt.Sprintf(".%02d", fraction)
+	}
+	return label
 }
 
 var store = newSessionStore()
@@ -218,6 +224,8 @@ func main() {
 
 	registerShowroomRoutes()
 	registerRequestRoutes(db)
+	registerAdminPlatform(db)
+	http.HandleFunc("/order-payment", func(w http.ResponseWriter, r *http.Request) { serveCustomerPayment(db, w, r) })
 
 	http.HandleFunc("/start-order", func(w http.ResponseWriter, r *http.Request) {
 		handleStartOrder(w, r)
@@ -231,7 +239,7 @@ func main() {
 	http.HandleFunc("/payment", func(w http.ResponseWriter, r *http.Request) {
 		handlePayment(db, w, r)
 	})
-	http.HandleFunc("/admin.html", handleAdminDashboard)
+	http.HandleFunc("/admin.html", func(w http.ResponseWriter, r *http.Request) { handleAdminDashboard(db, w, r) })
 
 	http.HandleFunc("/admin/orders", func(w http.ResponseWriter, r *http.Request) {
 		handleAdminOrders(db, w, r)
@@ -291,34 +299,7 @@ func main() {
 	http.HandleFunc("/admin-request-status", func(w http.ResponseWriter, r *http.Request) {
 		handleAdminRequestStatus(db, w, r)
 	})
-	http.HandleFunc("/payment-pending.html", func(w http.ResponseWriter, r *http.Request) {
-		orderID := r.URL.Query().Get("order-id")
-
-		if orderID == "" {
-			http.Error(w, "Order ID missing", http.StatusBadRequest)
-			return
-		}
-
-		data := struct {
-			OrderID string
-		}{
-			OrderID: orderID,
-		}
-
-		tmpl, err := template.ParseFiles("payment-pending.html")
-		if err != nil {
-			log.Println("Could not load payment pending page:", err)
-			http.Error(w, "Could not load page", http.StatusInternalServerError)
-			return
-		}
-
-		err = tmpl.Execute(w, data)
-		if err != nil {
-			log.Println("Could not display payment pending page:", err)
-			http.Error(w, "Could not display page", http.StatusInternalServerError)
-			return
-		}
-	})
+	http.HandleFunc("/payment-pending.html", func(w http.ResponseWriter, r *http.Request) { serveCustomerDelivery(db, w, r, true) })
 
 	http.HandleFunc("/uploads/", func(w http.ResponseWriter, r *http.Request) { handlePrivateReceipt(db, w, r) })
 
@@ -330,11 +311,11 @@ func main() {
 		}
 
 		if r.URL.Path == "/admin.html" {
-			handleAdminDashboard(w, r)
+			handleAdminDashboard(db, w, r)
 			return
 		}
 
-		if inventoryAsset(r.URL.Path) || r.URL.Path == "/security.js" || r.URL.Path == "/login.html" || r.URL.Path == "/register.html" || r.URL.Path == "/admin-login.html" || r.URL.Path == "/admin-request.html" {
+		if inventoryAsset(r.URL.Path) || r.URL.Path == "/security.js" || r.URL.Path == "/login.html" || r.URL.Path == "/register.html" {
 			http.FileServer(http.Dir(".")).ServeHTTP(w, r)
 			return
 		}
@@ -343,7 +324,7 @@ func main() {
 
 	log.Println("Marvellous Motors is running on http://localhost:8080")
 
-	err = http.ListenAndServe("127.0.0.1:8080", securityMiddleware(http.DefaultServeMux))
+	err = http.ListenAndServe("127.0.0.1:8080", securityMiddleware(adminAccessMiddleware(db, http.DefaultServeMux)))
 	if err != nil {
 		log.Fatal(err)
 	}
@@ -441,19 +422,20 @@ func handleOrder(db *sql.DB, w http.ResponseWriter, r *http.Request) {
 	log.Println("Order ID:", orderID)
 
 	orderData := OrderData{
-		Vehicle: vehicle,
-		OrderID: orderID,
-		Name:    name,
-		Email:   email,
-		Phone:   phone,
-		Address: address,
-		City:    city,
-		State:   state,
+		ShowroomData: ShowroomData{SignedIn: true},
+		Vehicle:      vehicle,
+		OrderID:      orderID,
+		Name:         name,
+		Email:        email,
+		Phone:        phone,
+		Address:      address,
+		City:         city,
+		State:        state,
 	}
 
 	log.Println("Order saved to database")
 
-	tmpl, err := template.ParseFiles("payment.html")
+	tmpl, err := template.ParseFiles("payment.html", "partials.html")
 	if err != nil {
 		http.Error(w, "Could not load payment page", http.StatusInternalServerError)
 		return
@@ -594,456 +576,31 @@ func handlePayment(db *sql.DB, w http.ResponseWriter, r *http.Request) {
 }
 
 func handleAdminOrders(db *sql.DB, w http.ResponseWriter, r *http.Request) {
-
-	if r.Method != http.MethodGet {
-		http.Error(w, "Method not allowed", http.StatusMethodNotAllowed)
-		return
-	}
-
-	// Check if admin is logged in
-	session, err := store.Get(r, "admin-session")
-	if err != nil {
-		http.Error(w, "Could not get admin session", http.StatusInternalServerError)
-		return
-	}
-
-	adminID, ok := session.Values["admin_id"]
-	if !ok || adminID == nil {
-		http.Redirect(w, r, "/admin-login.html", http.StatusSeeOther)
-		return
-	}
-
-	// Get orders from database
-	rows, err := db.Query(`
-	    SELECT id, name, email, phone, address, city, state, status
-		FROM orders
-		ORDER BY id DESC
-	`)
-	if err != nil {
-		log.Println("Could not get orders:", err)
-		http.Error(w, "Could not load orders", http.StatusInternalServerError)
-		return
-	}
-	defer rows.Close()
-
-	var orders []AdminOrder
-
-	for rows.Next() {
-
-		var order AdminOrder
-
-		err := rows.Scan(
-			&order.ID,
-			&order.Name,
-			&order.Email,
-			&order.Phone,
-			&order.Address,
-			&order.City,
-			&order.State,
-			&order.Status,
-		)
-
-		if err != nil {
-			log.Println("Could not read order:", err)
-			http.Error(w, "Could not read order", http.StatusInternalServerError)
-			return
-		}
-
-		orders = append(orders, order)
-	}
-
-	tmpl, err := template.ParseFiles("admin-orders.html")
-	if err != nil {
-		log.Println("Could not load admin orders page:", err)
-		http.Error(w, "Could not load admin orders page", http.StatusInternalServerError)
-		return
-	}
-
-	err = tmpl.Execute(w, orders)
-	if err != nil {
-		log.Println("Could not display orders:", err)
-		http.Error(w, "Could not display orders", http.StatusInternalServerError)
-		return
-	}
+	serveAdminPage(db, w, r, "orders")
 }
 
 func handleAdminPayments(db *sql.DB, w http.ResponseWriter, r *http.Request) {
-
-	if r.Method != http.MethodGet {
-		http.Error(w, "Method not allowed", http.StatusMethodNotAllowed)
-		return
-	}
-
-	// Prevent browser from showing cached admin payment information
-	w.Header().Set("Cache-Control", "no-store, no-cache, must-revalidate")
-	w.Header().Set("Pragma", "no-cache")
-	w.Header().Set("Expires", "0")
-
-	// Check if admin is logged in
-	session, err := store.Get(r, "admin-session")
-	if err != nil {
-		http.Error(w, "Could not get admin session", http.StatusInternalServerError)
-		return
-	}
-
-	adminID, ok := session.Values["admin_id"]
-	if !ok || adminID == nil {
-		http.Redirect(w, r, "/admin-login.html", http.StatusSeeOther)
-		return
-	}
-
-	// Get payments from database
-	rows, err := db.Query(`
-	    SELECT
-		    payments.id,
-            payments.order_id,
-            payments.amount_paid,
-            payments.payment_reference,
-            payments.receipt,
-            payments.payment_status,
-            orders.status
-		FROM payments
-        JOIN orders ON payments.order_id = orders.id
-        ORDER BY payments.id DESC
-	`)
-
-	if err != nil {
-		log.Println("Could not get payments:", err)
-		http.Error(w, "Could not load payments", http.StatusInternalServerError)
-		return
-	}
-	defer rows.Close()
-
-	var payments []AdminPayment
-
-	for rows.Next() {
-
-		var payment AdminPayment
-
-		err := rows.Scan(
-			&payment.ID,
-			&payment.OrderID,
-			&payment.AmountPaid,
-			&payment.PaymentReference,
-			&payment.Receipt,
-			&payment.PaymentStatus,
-			&payment.OrderStatus,
-		)
-
-		if err != nil {
-			log.Println("Could not read payment:", err)
-			http.Error(w, "Could not read payment", http.StatusInternalServerError)
-			return
-		}
-
-		payments = append(payments, payment)
-	}
-
-	tmpl, err := template.New("admin-payments.html").Funcs(template.FuncMap{
-		"formatAmount": formatAmount,
-	}).ParseFiles("admin-payments.html")
-
-	if err != nil {
-		log.Println("Could not load admin payments page:", err)
-		http.Error(w, "Could not load admin payments page", http.StatusInternalServerError)
-		return
-	}
-
-	err = tmpl.Execute(w, payments)
-	if err != nil {
-		log.Println("Could not display payments:", err)
-		http.Error(w, "Could not display payments", http.StatusInternalServerError)
-		return
-	}
+	serveAdminPage(db, w, r, "payments")
 }
 
 func handleVerifyPayment(db *sql.DB, w http.ResponseWriter, r *http.Request) {
-
-	if r.Method != http.MethodPost {
-		http.Error(w, "Method not allowed", http.StatusMethodNotAllowed)
-		return
-	}
-
-	// Check if admin is logged in
-	session, err := store.Get(r, "admin-session")
-	if err != nil {
-		http.Error(w, "Could not get admin session", http.StatusInternalServerError)
-		return
-	}
-
-	adminID, ok := session.Values["admin_id"]
-	if !ok || adminID == nil {
-		http.Redirect(w, r, "/admin-login.html", http.StatusSeeOther)
-		return
-	}
-
-	paymentID := r.FormValue("payment-id")
-
-	log.Println("Verifying payment:", paymentID)
-
-	// Verify the payment
-	_, err = db.Exec(`
-	    UPDATE payments
-		SET payment_status = ?
-		WHERE id = ?
-	`, "verified", paymentID)
-
-	if err != nil {
-		log.Println("Could not verify payment:", err)
-		http.Error(w, "Could not verify payment", http.StatusInternalServerError)
-		return
-	}
-
-	// Update the related order
-	result, err := db.Exec(`
-	    UPDATE orders
-		SET status = ?
-		WHERE id = (
-		    SELECT order_id
-			FROM payments
-			WHERE id = ?
-		)
-	`, "processing", paymentID)
-
-	if err != nil {
-		log.Println("Could not update order status:", err)
-		http.Error(w, "Could not update order status", http.StatusInternalServerError)
-		return
-	}
-
-	rowsAffected, err := result.RowsAffected()
-	if err != nil {
-		log.Println("Could not check updated order:", err)
-		return
-	}
-
-	log.Println("Orders updated:", rowsAffected)
-
-	http.Redirect(w, r, "/admin/payments", http.StatusSeeOther)
+	reviewPayment(db, w, r, "verified")
 }
 
 func handleOrderDelivery(db *sql.DB, w http.ResponseWriter, r *http.Request) {
-
-	if r.Method != http.MethodPost {
-		http.Error(w, "Method not allowed", http.StatusMethodNotAllowed)
-		return
-	}
-
-	// Check if admin is logged in
-	session, err := store.Get(r, "admin-session")
-	if err != nil {
-		http.Error(w, "Could not get admin session", http.StatusInternalServerError)
-		return
-	}
-
-	adminID, ok := session.Values["admin_id"]
-	if !ok || adminID == nil {
-		http.Redirect(w, r, "/admin-login.html", http.StatusSeeOther)
-		return
-	}
-
-	orderID := r.FormValue("order-id")
-
-	log.Println("Marking order out for delivery:", orderID)
-
-	_, err = db.Exec(`
-        UPDATE orders
-        SET status = ?
-        WHERE id = ? AND status = 'processing'
-    `, "out_for_delivery", orderID)
-
-	if err != nil {
-		log.Println("Could not update delivery status:", err)
-		http.Error(w, "Could not update delivery status", http.StatusInternalServerError)
-		return
-	}
-
-	http.Redirect(w, r, "/admin/orders", http.StatusSeeOther)
+	transitionDelivery(db, w, r, "out_for_delivery")
 }
 
 func handleOrderDelivered(db *sql.DB, w http.ResponseWriter, r *http.Request) {
-
-	if r.Method != http.MethodPost {
-		http.Error(w, "Method not allowed", http.StatusMethodNotAllowed)
-		return
-	}
-
-	// Check if admin is logged in
-	session, err := store.Get(r, "admin-session")
-	if err != nil {
-		http.Error(w, "Could not get admin session", http.StatusInternalServerError)
-		return
-	}
-
-	adminID, ok := session.Values["admin_id"]
-	if !ok || adminID == nil {
-		http.Redirect(w, r, "/admin-login.html", http.StatusSeeOther)
-		return
-	}
-
-	orderID := r.FormValue("order-id")
-
-	log.Println("Marking order as delivered:", orderID)
-
-	_, err = db.Exec(`
-        UPDATE orders
-        SET status = ?
-        WHERE id = ? AND status = 'out_for_delivery'
-    `, "delivered", orderID)
-
-	if err != nil {
-		log.Println("Could not update delivered status:", err)
-		http.Error(w, "Could not update delivered status", http.StatusInternalServerError)
-		return
-	}
-
-	http.Redirect(w, r, "/admin/orders", http.StatusSeeOther)
+	transitionDelivery(db, w, r, "delivered")
 }
 
 func handleOrderStatus(db *sql.DB, w http.ResponseWriter, r *http.Request) {
-
-	if r.Method != http.MethodGet {
-		http.Error(w, "Method not allowed", http.StatusMethodNotAllowed)
-		return
-	}
-
-	orderID := r.URL.Query().Get("order-id")
-
-	session, err := store.Get(r, "customer-session")
-	if err != nil {
-		http.Error(w, "Could not get customer session", http.StatusInternalServerError)
-		return
-	}
-
-	customerIDValue, ok := session.Values["customer_id"]
-	if !ok {
-		http.Error(w, "Please sign in first", http.StatusUnauthorized)
-		return
-	}
-
-	customerID := customerIDValue.(int64)
-
-	var data OrderStatusData
-
-	err = db.QueryRow(`
-	    SELECT id, name, email, phone, address, city, state, car_name, car_price, status
-		FROM orders
-        WHERE id = ?
-		AND customer_id = ?
-	`, orderID, customerID).Scan(
-		&data.OrderID,
-		&data.Name,
-		&data.Email,
-		&data.Phone,
-		&data.Address,
-		&data.City,
-		&data.State,
-		&data.CarName,
-		&data.CarPrice,
-		&data.Status,
-	)
-
-	if err != nil {
-		log.Println("Could not get order status:", err)
-		http.Error(w, "Order not found", http.StatusNotFound)
-		return
-	}
-
-	tmpl, err := template.New("order-status.html").Funcs(template.FuncMap{
-		"statusReached": statusReached,
-	}).ParseFiles("order-status.html")
-	if err != nil {
-		log.Println("Could not load order status page:", err)
-		http.Error(w, "Could not load order status page", http.StatusInternalServerError)
-		return
-	}
-
-	err = tmpl.Execute(w, data)
-	if err != nil {
-		log.Println("Could not display order status:", err)
-		http.Error(w, "Could not display order status", http.StatusInternalServerError)
-		return
-	}
+	serveCustomerDelivery(db, w, r, false)
 }
 
 func handleCustomerOrders(db *sql.DB, w http.ResponseWriter, r *http.Request) {
-
-	if r.Method != http.MethodGet {
-		http.Error(w, "Method not allowed", http.StatusMethodNotAllowed)
-		return
-	}
-
-	session, err := store.Get(r, "customer-session")
-	if err != nil {
-		http.Error(w, "Could not get customer session", http.StatusInternalServerError)
-		return
-	}
-
-	customerIDValue, ok := session.Values["customer_id"]
-	if !ok {
-		http.Error(w, "Please sign in first", http.StatusUnauthorized)
-		return
-	}
-
-	customerID := customerIDValue.(int64)
-
-	rows, err := db.Query(`
-        SELECT id, car_name, car_price, status
-        FROM orders
-        WHERE customer_id = ?
-        ORDER BY id DESC
-    `, customerID)
-
-	if err != nil {
-		log.Println("Could not get customer orders:", err)
-		http.Error(w, "Could not get orders", http.StatusInternalServerError)
-		return
-	}
-	defer rows.Close()
-
-	type CustomerOrder struct {
-		OrderID  int64
-		CarName  string
-		CarPrice float64
-		Status   string
-	}
-
-	var orders []CustomerOrder
-
-	for rows.Next() {
-		var order CustomerOrder
-
-		err := rows.Scan(
-			&order.OrderID,
-			&order.CarName,
-			&order.CarPrice,
-			&order.Status,
-		)
-
-		if err != nil {
-			log.Println("Could not read customer order:", err)
-			http.Error(w, "Could not read orders", http.StatusInternalServerError)
-			return
-		}
-
-		orders = append(orders, order)
-	}
-
-	tmpl, err := template.New("customer-orders.html").Funcs(template.FuncMap{
-		"formatAmount": formatAmount,
-	}).ParseFiles("customer-orders.html")
-	if err != nil {
-		log.Println("Could not load customer orders page:", err)
-		http.Error(w, "Could not load customer orders page", http.StatusInternalServerError)
-		return
-	}
-
-	err = tmpl.Execute(w, orders)
-	if err != nil {
-		log.Println("Could not display customer orders:", err)
-		http.Error(w, "Could not display customer orders", http.StatusInternalServerError)
-		return
-	}
+	serveCustomerOrders(db, w, r)
 }
 
 func handleRegister(db *sql.DB, w http.ResponseWriter, r *http.Request) {
@@ -1724,7 +1281,7 @@ func handleAdminLogin(db *sql.DB, w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	email := r.FormValue("email")
+	email := strings.ToLower(strings.TrimSpace(r.FormValue("email")))
 	password := r.FormValue("password")
 
 	var storedPassword string
@@ -1747,12 +1304,12 @@ func handleAdminLogin(db *sql.DB, w http.ResponseWriter, r *http.Request) {
 
 	if err != nil {
 		log.Println("Could not find admin:", err)
-		http.Error(w, "Invalid email or password", http.StatusUnauthorized)
+		http.Redirect(w, r, "/admin-login.html?error=invalid", http.StatusSeeOther)
 		return
 	}
 
-	if status != "approved" {
-		http.Error(w, "Admin account is not approved", http.StatusUnauthorized)
+	if status != "approved" || (role != "admin" && role != "super_admin") {
+		http.Redirect(w, r, "/admin-login.html?error=invalid", http.StatusSeeOther)
 		return
 	}
 
@@ -1762,7 +1319,7 @@ func handleAdminLogin(db *sql.DB, w http.ResponseWriter, r *http.Request) {
 	)
 
 	if err != nil {
-		http.Error(w, "Invalid email or password", http.StatusUnauthorized)
+		http.Redirect(w, r, "/admin-login.html?error=invalid", http.StatusSeeOther)
 		return
 	}
 
@@ -1787,59 +1344,15 @@ func handleAdminLogin(db *sql.DB, w http.ResponseWriter, r *http.Request) {
 	http.Redirect(w, r, "/admin.html", http.StatusSeeOther)
 }
 
-func handleAdminDashboard(w http.ResponseWriter, r *http.Request) {
-
-	if r.Method != http.MethodGet {
-		http.Error(w, "Method not allowed", http.StatusMethodNotAllowed)
-		return
-	}
-
-	// Prevent browser from using a cached admin page
-	w.Header().Set("Cache-Control", "no-store, no-cache, must-revalidate")
-	w.Header().Set("Pragma", "no-cache")
-	w.Header().Set("Expires", "0")
-
-	// Check admin session
-	session, err := store.Get(r, "admin-session")
-	if err != nil {
-		http.Error(w, "Could not get admin session", http.StatusInternalServerError)
-		return
-	}
-
-	adminID, ok := session.Values["admin_id"]
-	if !ok || adminID == nil {
-		http.Redirect(w, r, "/admin-login.html", http.StatusSeeOther)
-		return
-	}
-
-	// Get admin role
-	role, ok := session.Values["admin_role"]
-	if !ok {
-		http.Error(w, "Could not determine admin role", http.StatusInternalServerError)
-		return
-	}
-
-	// Load the dashboard
-	tmpl, err := template.ParseFiles("admin.html")
-	if err != nil {
-		http.Error(w, "Could not load admin dashboard", http.StatusInternalServerError)
-		return
-	}
-
-	data := struct {
-		Role string
-	}{
-		Role: role.(string),
-	}
-
-	err = tmpl.Execute(w, data)
-	if err != nil {
-		http.Error(w, "Could not display admin dashboard", http.StatusInternalServerError)
-		return
-	}
+func handleAdminDashboard(db *sql.DB, w http.ResponseWriter, r *http.Request) {
+	serveAdminPage(db, w, r, "overview")
 }
 
 func handleAdminLogout(w http.ResponseWriter, r *http.Request) {
+	if r.Method != http.MethodPost {
+		http.Error(w, "Method not allowed", 405)
+		return
+	}
 
 	session, err := store.Get(r, "admin-session")
 	if err != nil {
@@ -1863,342 +1376,25 @@ func handleAdminLogout(w http.ResponseWriter, r *http.Request) {
 }
 
 func handleAdminRequest(db *sql.DB, w http.ResponseWriter, r *http.Request) {
-
-	if r.Method != http.MethodPost {
-		http.Error(w, "Method not allowed", http.StatusMethodNotAllowed)
-		return
-	}
-
-	err := r.ParseForm()
-	if err != nil {
-		http.Error(w, "Could not read form", http.StatusBadRequest)
-		return
-	}
-
-	name := r.FormValue("name")
-	email := r.FormValue("email")
-	password := r.FormValue("password")
-	confirmPassword := r.FormValue("confirm-password")
-
-	// Check that the passwords match
-	if len(password) < 8 || len(password) > 72 {
-		http.Error(w, "Password must contain between 8 and 72 characters", http.StatusBadRequest)
-		return
-	}
-	if password != confirmPassword {
-		http.Error(w, "Passwords do not match", http.StatusBadRequest)
-		return
-	}
-
-	// Hash the password before saving it
-	hashedPassword, err := bcrypt.GenerateFromPassword(
-		[]byte(password),
-		bcrypt.DefaultCost,
-	)
-
-	if err != nil {
-		log.Println("Could not hash admin password:", err)
-		http.Error(w, "Could not create password", http.StatusInternalServerError)
-		return
-	}
-
-	// Save the request as pending
-	_, err = db.Exec(`
-		INSERT INTO admins (
-			name,
-			email,
-			password,
-			role,
-			status
-		)
-		VALUES (?, ?, ?, ?, ?)
-	`,
-		name,
-		email,
-		hashedPassword,
-		"admin",
-		"pending",
-	)
-
-	if err != nil {
-		log.Println("Could not save admin request:", err)
-		http.Error(w, "Could not send admin request", http.StatusInternalServerError)
-		return
-	}
-
-	// Tell the applicant that the request was sent
-	w.Header().Set("Content-Type", "text/html; charset=utf-8")
-
-	w.Write([]byte(`
-		<h2>Admin Request Sent</h2>
-		<p>Your request has been sent to the Main Admin.</p>
-		<p>Please wait for approval before signing in.</p>
-		<a href="/admin-login.html">Back to Admin Sign In</a>
-	`))
+	http.Error(w, "Public administrator registration is closed", http.StatusForbidden)
 }
 
 func handleAdminRequests(db *sql.DB, w http.ResponseWriter, r *http.Request) {
-
-	if r.Method != http.MethodGet {
-		http.Error(w, "Method not allowed", http.StatusMethodNotAllowed)
-		return
-	}
-
-	// Check admin session
-	session, err := store.Get(r, "admin-session")
-	if err != nil {
-		http.Error(w, "Could not get admin session", http.StatusInternalServerError)
-		return
-	}
-
-	adminID, ok := session.Values["admin_id"]
-	if !ok || adminID == nil {
-		http.Redirect(w, r, "/admin-login.html", http.StatusSeeOther)
-		return
-	}
-
-	// Check that the logged-in admin is the Super Admin
-	role, ok := session.Values["admin_role"]
-	if !ok || role != "super_admin" {
-		http.Error(w, "Access denied. Super Admin only.", http.StatusForbidden)
-		return
-	}
-
-	// Get admin requests
-	rows, err := db.Query(`
-		SELECT id, name, email, status
-		FROM admins
-		WHERE status = ?
-		ORDER BY id DESC
-	`, "pending")
-
-	if err != nil {
-		log.Println("Could not get admin requests:", err)
-		http.Error(w, "Could not load admin requests", http.StatusInternalServerError)
-		return
-	}
-	defer rows.Close()
-
-	var requests []AdminRequest
-
-	for rows.Next() {
-
-		var request AdminRequest
-
-		err := rows.Scan(
-			&request.ID,
-			&request.Name,
-			&request.Email,
-			&request.Status,
-		)
-
-		if err != nil {
-			log.Println("Could not read admin request:", err)
-			http.Error(w, "Could not read admin request", http.StatusInternalServerError)
-			return
-		}
-
-		requests = append(requests, request)
-	}
-
-	// Load the page
-	tmpl, err := template.ParseFiles("admin-requests.html")
-	if err != nil {
-		log.Println("Could not load admin requests page:", err)
-		http.Error(w, "Could not load admin requests page", http.StatusInternalServerError)
-		return
-	}
-
-	err = tmpl.Execute(w, requests)
-	if err != nil {
-		log.Println("Could not display admin requests:", err)
-		http.Error(w, "Could not display admin requests", http.StatusInternalServerError)
-		return
-	}
+	serveAdminPage(db, w, r, "team")
 }
 
 func handleApproveAdminRequest(db *sql.DB, w http.ResponseWriter, r *http.Request) {
-
-	if r.Method != http.MethodPost {
-		http.Error(w, "Method not allowed", http.StatusMethodNotAllowed)
-		return
-	}
-
-	// Check admin session
-	session, err := store.Get(r, "admin-session")
-	if err != nil {
-		http.Error(w, "Could not get admin session", http.StatusInternalServerError)
-		return
-	}
-
-	adminID, ok := session.Values["admin_id"]
-	if !ok || adminID == nil {
-		http.Redirect(w, r, "/admin-login.html", http.StatusSeeOther)
-		return
-	}
-
-	// Only Super Admin can approve requests
-	role, ok := session.Values["admin_role"]
-	if !ok || role != "super_admin" {
-		http.Error(w, "Access denied. Super Admin only.", http.StatusForbidden)
-		return
-	}
-
-	adminRequestID := r.FormValue("admin-id")
-
-	log.Println("Approving admin request:", adminRequestID)
-
-	// Approve the admin request
-	_, err = db.Exec(`
-		UPDATE admins
-		SET status = ?, role = ?
-		WHERE id = ? AND status = ?
-	`,
-		"approved",
-		"admin",
-		adminRequestID,
-		"pending",
-	)
-
-	if err != nil {
-		log.Println("Could not approve admin request:", err)
-		http.Error(w, "Could not approve admin request", http.StatusInternalServerError)
-		return
-	}
-
-	http.Redirect(w, r, "/admin-requests", http.StatusSeeOther)
+	r.ParseForm()
+	r.Form.Set("status", "approved")
+	manageTeam(db, w, r, "update")
 }
 
 func handleRejectAdminRequest(db *sql.DB, w http.ResponseWriter, r *http.Request) {
-
-	if r.Method != http.MethodPost {
-		http.Error(w, "Method not allowed", http.StatusMethodNotAllowed)
-		return
-	}
-
-	// Check admin session
-	session, err := store.Get(r, "admin-session")
-	if err != nil {
-		http.Error(w, "Could not get admin session", http.StatusInternalServerError)
-		return
-	}
-
-	adminID, ok := session.Values["admin_id"]
-	if !ok || adminID == nil {
-		http.Redirect(w, r, "/admin-login.html", http.StatusSeeOther)
-		return
-	}
-
-	// Only Super Admin can reject requests
-	role, ok := session.Values["admin_role"]
-	if !ok || role != "super_admin" {
-		http.Error(w, "Access denied. Super Admin only.", http.StatusForbidden)
-		return
-	}
-
-	adminRequestID := r.FormValue("admin-id")
-
-	log.Println("Rejecting admin request:", adminRequestID)
-
-	// Reject the admin request
-	_, err = db.Exec(`
-		UPDATE admins
-		SET status = ?, role = ?
-		WHERE id = ? AND status = ?
-	`,
-		"rejected",
-		"admin",
-		adminRequestID,
-		"pending",
-	)
-
-	if err != nil {
-		log.Println("Could not reject admin request:", err)
-		http.Error(w, "Could not reject admin request", http.StatusInternalServerError)
-		return
-	}
-
-	http.Redirect(w, r, "/admin-requests", http.StatusSeeOther)
+	r.ParseForm()
+	r.Form.Set("status", "rejected")
+	manageTeam(db, w, r, "update")
 }
 
 func handleAdminRequestStatus(db *sql.DB, w http.ResponseWriter, r *http.Request) {
-
-	if r.Method != http.MethodPost {
-		http.Error(w, "Method not allowed", http.StatusMethodNotAllowed)
-		return
-	}
-
-	err := r.ParseForm()
-	if err != nil {
-		http.Error(w, "Could not read form", http.StatusBadRequest)
-		return
-	}
-
-	email := r.FormValue("email")
-
-	var name string
-	var status string
-
-	err = db.QueryRow(`
-		SELECT name, status
-		FROM admins
-		WHERE email = ?
-	`, email).Scan(&name, &status)
-
-	if err != nil {
-		http.Error(w, "No admin request found for this email", http.StatusNotFound)
-		return
-	}
-
-	w.Header().Set("Content-Type", "text/html; charset=utf-8")
-
-	var message string
-
-	switch status {
-	case "pending":
-		message = "Your admin request is still pending. Please wait for the Main Admin to review it."
-
-	case "approved":
-		message = "Your admin request has been approved. You can now sign in as an admin."
-
-	case "rejected":
-		message = "Your admin request has been rejected. You cannot sign in as an admin."
-	}
-
-	w.Header().Set("Content-Type", "text/html; charset=utf-8")
-
-	w.Write([]byte(`
-		<!DOCTYPE html>
-		<html lang="en">
-		<head>
-			<meta charset="UTF-8">
-			<meta name="viewport" content="width=device-width, initial-scale=1.0">
-			<title>Admin Request Status</title>
-			<link rel="stylesheet" href="style.css">
-		</head>
-
-		<body>
-
-			<nav>
-				<h2>Marvellous Motors</h2>
-
-				<a href="index.html">Home</a>
-				<a href="cars.html">Cars</a>
-				<a href="about.html">About</a>
-				<a href="contact.html">Contact</a>
-			</nav>
-
-			<h1>Admin Request Status</h1>
-
-			<p>Name: ` + name + `</p>
-
-			<p>Status: <strong>` + status + `</strong></p>
-
-			<p>` + message + `</p>
-
-			<a href="/admin-login.html">Admin Sign In</a>
-
-		</body>
-		</html>
-	`))
+	http.Error(w, "Staff access is managed privately by the platform owner", http.StatusForbidden)
 }

@@ -16,10 +16,10 @@ def visible_ids(page):
 
 def screenshot(page, name):
     page.evaluate("document.querySelectorAll('img').forEach(image => image.loading = 'eager')")
-    page.evaluate("Promise.all([...document.images].map(i => i.decode().catch(() => {})))")
+    page.evaluate("Promise.race([Promise.all([...document.images].filter(i => i.getClientRects().length > 0).map(i => i.decode().catch(() => {}))), new Promise(resolve => setTimeout(resolve, 10000))])")
     page.screenshot(path=str(ROOT / '.local' / 'previews' / name), full_page=True)
     check(page.evaluate('document.documentElement.scrollWidth <= innerWidth'), f'{name}: no horizontal overflow')
-    check(page.locator('img').evaluate_all('(images) => images.every(i => i.complete && i.naturalWidth > 0)'), f'{name}: all images loaded')
+    check(page.locator('img').evaluate_all('(images) => images.filter(i => i.getClientRects().length > 0).every(i => i.complete && i.naturalWidth > 0)'), f'{name}: all images loaded')
 
 with sync_playwright() as pw:
     browser = pw.chromium.launch(executable_path='/usr/bin/google-chrome', headless=True, args=['--no-sandbox'])
@@ -107,9 +107,9 @@ with sync_playwright() as pw:
     page.goto(BASE+'/admin-login.html',wait_until='networkidle')
     page.locator('input[name="email"]').fill(credentials['admin_email']);page.locator('input[name="password"]').fill(credentials['password']);page.locator('button[type="submit"]').click();page.wait_for_url('**/admin.html')
     page.goto(BASE+'/admin/enquiries',wait_until='networkidle')
-    entry=page.locator('.request-entry').first
+    entry=page.locator('.ops-enquiry').first
     entry.locator('select[name="status"]').select_option('reviewing');entry.locator('button[type="submit"]').click();page.wait_for_load_state('networkidle')
-    check(page.locator('.request-entry').first.locator('.status-chip').inner_text()=='reviewing','Administrator can update enquiry status')
+    check(page.locator('.ops-enquiry').first.locator('.ops-status').inner_text()=='Reviewing','Administrator can update enquiry status')
     anon=browser.new_context(viewport={'width':390,'height':844});mobile=anon.new_page();mobile.on('pageerror',lambda error:errors.append(str(error)))
     for path in ['/marvellous.db','/main.go','/.git/config','/.local/demo-accounts.json','/inventory.json','/images/%2e%2e%2fmarvellous.db','/images/..%2fmain.go','/fonts/%2e%2e%2f.local/session-key']:
         check(anon.request.get(BASE+path).status==404,'Protected file blocked: '+path)

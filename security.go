@@ -142,8 +142,8 @@ func handlePrivateReceipt(db *sql.DB, w http.ResponseWriter, r *http.Request) {
 		http.NotFound(w, r)
 		return
 	}
-	admin, _ := store.Get(r, "admin-session")
-	if admin == nil || admin.Values["admin_id"] == nil {
+	_, adminErr := currentStaff(db, r)
+	if adminErr != nil {
 		customer, _ := store.Get(r, "customer-session")
 		if customer == nil || customer.Values["customer_id"] == nil {
 			http.Error(w, "Please sign in", http.StatusUnauthorized)

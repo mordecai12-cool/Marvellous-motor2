@@ -19,13 +19,17 @@ func testDatabase(t *testing.T) *sql.DB {
 		t.Fatal(err)
 	}
 	t.Cleanup(func() { db.Close() })
-	_, err = db.Exec(`CREATE TABLE customers(id INTEGER PRIMARY KEY, name TEXT, email TEXT UNIQUE, phone TEXT, password TEXT);
- CREATE TABLE orders(id INTEGER PRIMARY KEY AUTOINCREMENT,customer_id INTEGER,name TEXT,email TEXT,phone TEXT,address TEXT,city TEXT,state TEXT,status TEXT,car_name TEXT,car_price INTEGER);
- CREATE TABLE payments(id INTEGER PRIMARY KEY,order_id INTEGER,amount_paid REAL,payment_reference TEXT,receipt TEXT,payment_status TEXT);`)
+	_, err = db.Exec(`CREATE TABLE customers(id INTEGER PRIMARY KEY, name TEXT, email TEXT UNIQUE, phone TEXT, password TEXT,created_at TEXT DEFAULT CURRENT_TIMESTAMP);
+ CREATE TABLE orders(id INTEGER PRIMARY KEY AUTOINCREMENT,customer_id INTEGER,name TEXT,email TEXT,phone TEXT,address TEXT,city TEXT,state TEXT,status TEXT,car_name TEXT,car_price INTEGER,created_at TEXT DEFAULT CURRENT_TIMESTAMP);
+ CREATE TABLE payments(id INTEGER PRIMARY KEY,order_id INTEGER,amount_paid REAL,payment_reference TEXT,receipt TEXT,payment_status TEXT,created_at TEXT DEFAULT CURRENT_TIMESTAMP);
+ CREATE TABLE admins(id INTEGER PRIMARY KEY,name TEXT,email TEXT UNIQUE,password TEXT,role TEXT,status TEXT);`)
 	if err != nil {
 		t.Fatal(err)
 	}
 	if err = initRequestsDB(db); err != nil {
+		t.Fatal(err)
+	}
+	if err = initAdminPlatform(db); err != nil {
 		t.Fatal(err)
 	}
 	return db
