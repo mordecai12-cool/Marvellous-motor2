@@ -45,8 +45,10 @@ func seedLocalDemo(db *sql.DB) {
 	if _, err = db.Exec("INSERT OR IGNORE INTO customers(name,email,phone,password) VALUES(?,?,?,?)", "Demo Explorer", account.CustomerEmail, "08000000000", string(hash)); err != nil {
 		log.Fatal(err)
 	}
-	if _, err = db.Exec("INSERT OR IGNORE INTO admins(name,email,password,role,status) VALUES(?,?,?,?,?)", "Local Demo Administrator", account.AdminEmail, string(hash), "super_admin", "approved"); err != nil {
-		log.Fatal(err)
+	if !ownerOnlyAccess() {
+		if _, err = db.Exec("INSERT OR IGNORE INTO admins(name,email,password,role,status) VALUES(?,?,?,?,?)", "Local Demo Administrator", account.AdminEmail, string(hash), "super_admin", "approved"); err != nil {
+			log.Fatal(err)
+		}
 	}
 	log.Println("Fictional demo accounts enabled. Credentials are in .local/demo-accounts.json")
 }

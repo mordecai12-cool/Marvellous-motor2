@@ -62,7 +62,7 @@ func currentStaff(db *sql.DB, r *http.Request) (Staff, error) {
 	}
 	var s Staff
 	err = db.QueryRow("SELECT id,name,email,role,status FROM admins WHERE id = ?", id).Scan(&s.ID, &s.Name, &s.Email, &s.Role, &s.Status)
-	if err != nil || s.Status != "approved" || (s.Role != "admin" && s.Role != "super_admin") {
+	if err != nil || !authorizedStaff(s) {
 		return Staff{}, errAccess
 	}
 	return s, nil
@@ -200,6 +200,7 @@ type CustomerOverview struct {
 	Total                         float64
 }
 
+func (c CustomerOverview) IDLabel() string    { return fmt.Sprintf("MM-C%06d", c.ID) }
 func (c CustomerOverview) TotalLabel() string { return formatAmount(c.Total) }
 
 type Activity struct {
@@ -226,6 +227,11 @@ type AdminPage struct {
 	Customers                                           []CustomerOverview
 	Requests                                            []CustomerRequest
 	Team                                                []Staff
+	Invitations                                         []StaffInvitation
+	InviteURL, InviteEmail                              string
+	Shipment                                            ShipmentSnapshot
+	OwnerOnly                                           bool
+	SecondOwnerEmail                                    string
 	Activity                                            []Activity
 }
 
@@ -234,13 +240,21 @@ func initAdminPlatform(db *sql.DB) error {
  order_id INTEGER PRIMARY KEY REFERENCES orders(id),scheduled_date TEXT NOT NULL DEFAULT '',partner TEXT NOT NULL DEFAULT '',driver TEXT NOT NULL DEFAULT '',driver_phone TEXT NOT NULL DEFAULT '',reference TEXT NOT NULL DEFAULT '',note TEXT NOT NULL DEFAULT '',updated_at TEXT NOT NULL DEFAULT CURRENT_TIMESTAMP);
  CREATE TABLE IF NOT EXISTS order_events(id INTEGER PRIMARY KEY AUTOINCREMENT,order_id INTEGER NOT NULL REFERENCES orders(id),from_status TEXT NOT NULL,to_status TEXT NOT NULL,note TEXT NOT NULL,actor_id INTEGER NOT NULL,actor_name TEXT NOT NULL,created_at TEXT NOT NULL DEFAULT CURRENT_TIMESTAMP);
  CREATE INDEX IF NOT EXISTS order_events_order_idx ON order_events(order_id,id);
- CREATE TABLE IF NOT EXISTS admin_activity(id INTEGER PRIMARY KEY AUTOINCREMENT,actor_id INTEGER NOT NULL,actor_name TEXT NOT NULL,action TEXT NOT NULL,entity TEXT NOT NULL,created_at TEXT NOT NULL DEFAULT CURRENT_TIMESTAMP);`)
-	return err
+ CREATE TABLE IF NOT EXISTS admin_activity(id INTEGER PRIMARY KEY AUTOINCREMENT,actor_id INTEGER NOT NULL,actor_name TEXT NOT NULL,action TEXT NOT NULL,entity TEXT NOT NULL,created_at TEXT NOT NULL DEFAULT CURRENT_TIMESTAMP);
+ CREATE TABLE IF NOT EXISTS staff_invitations(id INTEGER PRIMARY KEY AUTOINCREMENT,email TEXT NOT NULL,token_hash TEXT NOT NULL UNIQUE,created_by INTEGER NOT NULL REFERENCES admins(id),expires_at INTEGER NOT NULL,used_at INTEGER,revoked_at INTEGER,created_at TEXT NOT NULL DEFAULT CURRENT_TIMESTAMP);`)
+	if err != nil {
+		return err
+	}
+	if err = initOwnerSignup(db); err != nil {
+		return err
+	}
+	return initCustomerServices(db)
 }
 func registerAdminPlatform(db *sql.DB) {
 	if err := initAdminPlatform(db); err != nil {
 		log.Fatal(err)
 	}
+	registerCustomerServices(db)
 	http.HandleFunc("/admin-login.html", func(w http.ResponseWriter, r *http.Request) {
 		if r.Method != http.MethodGet {
 			http.Error(w, "Method not allowed", 405)
@@ -255,6 +269,10 @@ func registerAdminPlatform(db *sql.DB) {
 	http.HandleFunc("/admin/delivery/save", func(w http.ResponseWriter, r *http.Request) { saveDelivery(db, w, r) })
 	http.HandleFunc("/admin/team/create", func(w http.ResponseWriter, r *http.Request) { manageTeam(db, w, r, "create") })
 	http.HandleFunc("/admin/team/update", func(w http.ResponseWriter, r *http.Request) { manageTeam(db, w, r, "update") })
+	http.HandleFunc("/admin/team/invite", func(w http.ResponseWriter, r *http.Request) { createStaffInvitation(db, w, r) })
+	http.HandleFunc("/admin/team/revoke-invite", func(w http.ResponseWriter, r *http.Request) { revokeStaffInvitation(db, w, r) })
+	http.HandleFunc("/admin-signup.html", func(w http.ResponseWriter, r *http.Request) { serveStaffSignup(db, w, r) })
+	http.HandleFunc("/admin-signup", func(w http.ResponseWriter, r *http.Request) { serveStaffSignup(db, w, r) })
 	http.HandleFunc("/admin/payments/reject", func(w http.ResponseWriter, r *http.Request) { reviewPayment(db, w, r, "rejected") })
 }
 func renderAdminLogin(w http.ResponseWriter, r *http.Request, code string) {
@@ -272,9 +290,11 @@ func renderAdminLogin(w http.ResponseWriter, r *http.Request, code string) {
 	}
 	w.Header().Set("Content-Type", "text/html; charset=utf-8")
 	t.Execute(w, struct {
-		Error  string
-		Closed bool
-	}{message, code == "registration-closed"})
+		Error     string
+		Closed    bool
+		Created   bool
+		OwnerOnly bool
+	}{message, code == "registration-closed", r.URL.Query().Get("notice") == "account-created", ownerOnlyAccess()})
 }
 func renderAdmin(w http.ResponseWriter, file string, data AdminPage) {
 	funcs := template.FuncMap{"statusLabel": statusLabel, "statusReached": statusReached, "amount": formatAmount}
@@ -400,6 +420,8 @@ func serveAdminPage(db *sql.DB, w http.ResponseWriter, r *http.Request, page str
 		return
 	}
 	data := AdminPage{Staff: staff, Page: page, Query: r.URL.Query().Get("q"), Filter: r.URL.Query().Get("status")}
+	data.OwnerOnly = ownerOnlyAccess()
+	data.SecondOwnerEmail = deploymentSecondOwnerEmail
 	var err error
 	data.Metrics, err = loadMetrics(db)
 	if err != nil {
@@ -407,7 +429,7 @@ func serveAdminPage(db *sql.DB, w http.ResponseWriter, r *http.Request, page str
 		http.Error(w, "Could not load operations", 500)
 		return
 	}
-	notices := map[string]string{"saved": "Delivery details saved. The customer can see the latest update.", "dispatched": "Vehicle dispatched. The delivery timeline has been updated.", "delivered": "Delivery confirmed and recorded.", "approved": "Payment evidence approved. The vehicle is ready for preparation.", "rejected": "Payment evidence rejected. The customer can submit a corrected receipt.", "created": "Staff account created. Share the credentials privately.", "updated": "Staff access updated."}
+	notices := map[string]string{"saved": "Delivery details saved. The customer can see the latest update.", "dispatched": "Vehicle dispatched. The delivery timeline has been updated.", "delivered": "Delivery confirmed and recorded.", "approved": "Payment evidence approved. The vehicle is ready for preparation.", "rejected": "Payment evidence rejected. The customer can submit a corrected receipt.", "created": "Staff account created. Share the credentials privately.", "updated": "Staff access updated.", "invite-revoked": "Invitation revoked. The signup link can no longer be used.", "checkpoint": "Shipment checkpoint recorded. The customer tracker will refresh automatically."}
 	data.Notice = notices[r.URL.Query().Get("notice")]
 	files := map[string]string{"overview": "admin.html", "orders": "admin-orders.html", "deliveries": "admin-deliveries.html", "order": "admin-order-detail.html", "payments": "admin-payments.html", "customers": "admin-customers.html", "team": "admin-team.html", "activity": "admin-activity.html"}
 	file := files[page]
@@ -461,6 +483,9 @@ func serveAdminPage(db *sql.DB, w http.ResponseWriter, r *http.Request, page str
 			data.Order = orders[0]
 			data.Order.Events, err = loadOrderEvents(db, id)
 		}
+		if err == nil {
+			data.Shipment, err = loadShipment(db, data.Order)
+		}
 		data.Title = fmt.Sprintf("Order #%04d", id)
 		data.Subtitle = "A clear picture of the customer, vehicle, and delivery."
 	case "payments":
@@ -489,7 +514,7 @@ func serveAdminPage(db *sql.DB, w http.ResponseWriter, r *http.Request, page str
 		data.Title = "The right people. The right access."
 		data.Subtitle = "Only the platform owner can create and manage administrator accounts."
 		var rows *sql.Rows
-		rows, err = db.Query("SELECT id,name,email,role,status FROM admins ORDER BY id")
+		rows, err = db.Query("SELECT id,name,email,role,status FROM admins WHERE status != 'setup_pending' ORDER BY id")
 		if err == nil {
 			defer rows.Close()
 			for rows.Next() {
@@ -502,6 +527,12 @@ func serveAdminPage(db *sql.DB, w http.ResponseWriter, r *http.Request, page str
 			if err == nil {
 				err = rows.Err()
 			}
+		}
+		if err == nil {
+			err = rows.Close()
+		}
+		if err == nil {
+			data.Invitations, err = loadStaffInvitations(db)
 		}
 	case "activity":
 		data.Title = "Every action, accounted for."
@@ -771,6 +802,7 @@ func manageTeam(db *sql.DB, w http.ResponseWriter, r *http.Request, action strin
 		email := strings.ToLower(strings.TrimSpace(r.FormValue("email")))
 		password := r.FormValue("password")
 		parsed, e := mail.ParseAddress(email)
+
 		if e != nil || parsed.Address != email || len(name) < 2 || len(name) > 100 || len(email) > 254 || len(password) < 12 || len(password) > 72 {
 			http.Error(w, "Enter a name, valid email and a password with 12–72 characters", 400)
 			return
@@ -780,7 +812,11 @@ func manageTeam(db *sql.DB, w http.ResponseWriter, r *http.Request, action strin
 			http.Error(w, "Could not secure staff account", 500)
 			return
 		}
-		if _, err = tx.Exec("INSERT INTO admins(name,email,password,role,status) VALUES(?,?,?,'admin','approved')", name, email, string(hash)); err != nil {
+		role := "admin"
+		if ownerOnlyAccess() && allowedOwnerEmail(email) {
+			role = "super_admin"
+		}
+		if _, err = tx.Exec("INSERT INTO admins(name,email,password,role,status) VALUES(?,?,?,?,'approved')", name, email, string(hash), role); err != nil {
 			http.Error(w, "Could not create staff account. Check whether this email already exists.", 409)
 			return
 		}

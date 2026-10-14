@@ -1,0 +1,56 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+  <title>Join operations · Marvellous Motors</title>
+  <link rel="icon" href="/favicon.svg"><link rel="stylesheet" href="/style.css"><link rel="stylesheet" href="/admin.css">
+  <script src="/security.js" defer></script><script src="/admin.js" defer></script>
+</head>
+<body class="staff-login staff-signup">
+  <main class="staff-login-layout">
+    <section class="staff-login-story">
+      <a class="brand ops-brand" href="/"><span class="brand-mark">M<span>↗</span></span><span>marvellous<span class="brand-sub">OPERATIONS</span></span></a>
+      <div class="staff-login-message">
+        <span class="ops-overline">GREAT SERVICE STARTS WITH GREAT PEOPLE</span>
+        <h1>Your place<br>behind the<br><em>next great drive.</em></h1>
+        <p>Join the people who turn every order into a carefully managed journey, from payment review to the final handover.</p>
+        <div class="login-trust"><span>◇</span><div><strong>Invited by the owner. Trusted by the team.</strong><small>Administrator access is granted by invitation.</small></div></div>
+      </div>
+      <div class="login-photo"><img src="/images/mercedes_benz.jpg" alt="Mercedes-Benz in the showroom"><span>EXCEPTIONAL CARS. EXCEPTIONAL CARE.</span></div>
+    </section>
+    <section class="staff-login-panel">
+      <a class="login-back" href="/admin-login.html">← Back to staff sign in</a>
+      <div class="staff-login-card">
+        <span class="login-lock"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" aria-hidden="true"><path d="M12 3l8 4v6c0 4-4 7-8 9-4-2-8-5-8-9V7zM8 12l3 3 5-6"/></svg></span>
+        <span class="ops-overline">{{if .Setup}}ONE RESERVED ADMIN SIGNUP{{else}}INVITATION-ONLY ADMIN SIGNUP{{end}}</span>
+        <h2>{{if .Valid}}Make yourself part of the team.{{else}}An invitation to do great things.{{end}}</h2>
+        <p>{{if .Valid}}{{if .Setup}}Choose a password to activate your administrator account immediately. No approval is required. This is the last public signup slot.{{else}}Your invitation is ready. Choose your own password to activate your administrator account.{{end}}{{else}}Ask the platform owner for an invitation link, or enter your invitation code below.{{end}}</p>
+        {{if .Error}}<div class="login-error" role="alert">{{.Error}}</div>{{end}}
+        {{if .Valid}}
+        <form action="/admin-signup" method="POST">
+          <input type="hidden" name="token" value="{{.Token}}">
+          {{if .CSRF}}<input type="hidden" name="csrf-token" value="{{.CSRF}}">{{end}}
+          <label for="staff-name">Full name</label><input id="staff-name" name="name" value="{{.Name}}" required minlength="2" maxlength="100" autocomplete="name" placeholder="Your full name">
+          <label for="staff-email">{{if .Setup}}Reserved work email{{else}}Invited work email{{end}}</label><input id="staff-email" name="email" type="email" value="{{.Email}}" readonly autocomplete="username" aria-describedby="email-help">
+          <small id="email-help" class="signup-field-help">This invitation is reserved for this email address.</small>
+          <label for="signup-password">Create password</label>
+          <div class="password-field"><input id="signup-password" name="password" type="password" required minlength="12" maxlength="72" autocomplete="new-password" aria-describedby="password-help" placeholder="At least 12 characters"><button type="button" data-toggle-password="signup-password" aria-label="Show password" aria-pressed="false">Show</button></div>
+          <small id="password-help" class="signup-field-help">Use 12–72 characters. Choose a password unique to this account.</small>
+          <label for="signup-confirm">Confirm password</label><input id="signup-confirm" name="confirm-password" type="password" required minlength="12" maxlength="72" autocomplete="new-password" placeholder="Enter your password again">
+          <button class="ops-button login-submit" type="submit">Create administrator account <span>→</span></button>
+        </form>
+        {{else}}
+        <form action="/admin-signup.html" method="GET">
+          <label for="invitation-token">Invitation code</label><input id="invitation-token" name="token" required pattern="[a-fA-F0-9]{64}" minlength="64" maxlength="64" autocomplete="off" spellcheck="false" placeholder="Paste the code from your invitation link" aria-describedby="invite-help">
+          <small id="invite-help" class="signup-field-help">The code is the text after <strong>token=</strong> in your invitation link.</small>
+          <button class="ops-button login-submit" type="submit">Continue with invitation <span>→</span></button>
+        </form>
+        {{end}}
+        <div class="login-access-note"><strong>Access stays in the owner's hands.</strong><p>Invitations expire after 48 hours and can be used once. Only the owner can invite, disable or restore staff.</p></div>
+        <p class="signup-signin">Already have an account? <a href="/admin-login.html">Sign in →</a></p>
+      </div>
+      <footer class="login-footer"><span>© 2026 Marvellous Motors</span><span>Approved staff only</span></footer>
+    </section>
+  </main>
+</body>
+</html>

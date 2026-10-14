@@ -4,7 +4,7 @@
 
 - Existing repository: https://github.com/mordecai12-cool/marvellous-motors
 - Original default branch: `main`, baseline commit `eaef005025274ef60e0c615d35f855be3e64d22b`.
-- Local development branch: `local/showroom-upgrade`.
+- Local development branch: `my-isolated-project` (based on `local/showroom-upgrade`).
 - Recent commits identify `mordecai12-cool` as the contributor responsible for the initial car page, Camry details, image uploads, admin requests, and account workflows. The original Git history has been preserved.
 - The clone was initially clean. No unrelated `mindgrow` files were modified.
 - Shared issues/PRs were not changed. No new repository, deployment, push, or pull request was created.

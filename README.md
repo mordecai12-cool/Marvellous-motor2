@@ -2,7 +2,7 @@
 
 Local upgrade of [mordecai12-cool/marvellous-motors](https://github.com/mordecai12-cool/marvellous-motors), preserving the existing Go, SQLite, HTML template, account, order, and administrative architecture.
 
-This milestone uses a royal-blue and sky-blue design, as requested. It is a **local development preview**, with fictional sample inventory and indicative prices. No production payments, supplier integrations, verified dealer badges, or live shipment updates are implied.
+This milestone uses the requested sky-blue backgrounds with dark-navy accents (`#0B1739`) and white cards. It is a **local development preview**, with fictional sample inventory and indicative prices. No production payments, supplier integrations, verified dealer badges, or automatic carrier/GPS integrations are implied. Staff-reported shipment updates and customer-care replies refresh automatically.
 
 ## Open the project
 
@@ -26,7 +26,7 @@ The server binds to `127.0.0.1:8080`. There is no deployment or GitHub push in t
 
 ## Operations and delivery
 
-A dedicated admin workspace now includes order and payment review, delivery scheduling/dispatch/handover, customers, enquiries, owner-controlled staff access, and audit logs. Public admin registration is closed. See [the operations guide](docs/ADMIN_DELIVERY.md).
+A dedicated admin workspace now includes order and payment review, delivery scheduling/dispatch/handover, customers, enquiries, owner-controlled staff access, and audit logs. One final owner signup is reserved for `marvellousmordecaiotiti@gmail.com` at `/admin-signup.html`, and activates without approval. Afterwards signup is invitation-only: an owner generates an email-bound link from **Staff & access**, and the invited person chooses their password. Invitations expire after 48 hours, work once and can be revoked. See [the operations guide](docs/ADMIN_DELIVERY.md).
 
 ```bash
 ./open-admin.sh
@@ -39,8 +39,9 @@ A dedicated admin workspace now includes order and payment review, delivery sche
 - Make/text, condition, body, fuel, budget, year range, mileage, location, origin category, availability, and transmission filters.
 - Sorting by price, year, and mileage; pagination; shareable search URLs.
 - Saved favourites and saved searches in the current browser; comparisons of up to three vehicles.
-- Model-specific photos, specifications, features, related vehicles, and sample prices in naira.
-- Existing customer registration, sign-in, profiles, order history, and order tracking.
+- Vehicle photo galleries with enlargement, available exterior/interior views, attribution, specifications, features, related vehicles, and sample prices in naira.
+- Customer registration and sign-in, stable customer IDs, professional dashboard/profile pages, private order history and shipment checkpoints.
+- Persistent customer-care chat and staff inbox with replies, unread counts, resolution and actual staff availability.
 - Correct selected-vehicle checkout with price determined on the server, including selection retention during sign-in.
 - Persisted vehicle sourcing, inspection, test-drive, finance, trade-in, dealer application, and support requests.
 - Signed-in customers' private request history; authenticated admin review queue and logged enquiry status updates.
@@ -54,7 +55,7 @@ Dealer applications are manual enquiries; they do not create verified dealers or
 
 `./start-local.sh` uses `.local/preview.db` and creates tables automatically. **The repository's original `marvellous.db` and original uploaded receipts are preserved.** No production/customer data is imported into the local preview.
 
-The local launch script enables fictional customer and admin accounts. Their generated credentials are saved privately on this machine in:
+The local launch script enables a fictional customer account. The configured platform owner is initialized on a fresh database in every mode from the code-stored email and bcrypt password hash; startup never resets an existing account. The private preview credentials file includes separate customer and administrator passwords. Their generated credentials are saved privately on this machine in:
 
 ```
 .local/demo-accounts.json
@@ -115,3 +116,7 @@ Stop the local server, copy `.local/preview.db` to a backup folder, then restart
 ## Production status
 
 See [the audit](docs/PROJECT_AUDIT.md) and [the development roadmap](docs/ROADMAP.md). This milestone is ready for local review, not live commerce. Payment instructions in the inherited workflow still need real business configuration. Payment provider verification/webhooks, dealer publishing, production email/password reset delivery, reservation concurrency, verified inspections, multi-currency rates, and carrier integrations remain separate milestones requiring configuration and implementation.
+
+Current verification results and local demonstration steps are in [docs/LOCAL_VERIFICATION.md](docs/LOCAL_VERIFICATION.md).
+
+The completed upgrades are saved on the local `my-isolated-project` branch. No merge or push has been performed.

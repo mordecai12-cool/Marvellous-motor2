@@ -14,13 +14,13 @@ nav {
 
     padding: 20px 50px;
 
-    background-color: #0B1F3A;
+    background-color: #0b1739;
 
 }
 
 nav h2 {
 
-    color: #38BDF8;
+    color:#0b1739;
 
 }
 
@@ -40,7 +40,7 @@ nav a {
 
     padding: 100px 20px;
 
-    background-color: #E0F2FE;
+    background-color: #87ceeb;
 
 }
 
@@ -48,7 +48,7 @@ nav a {
 
     font-size: 48px;
 
-    color: #0B1F3A;
+    color: #0b1739;
 
 }
 
@@ -56,7 +56,7 @@ nav a {
 
     font-size: 20px;
 
-    color: #475569;
+    color: #0b1739;
 
 }
 
@@ -68,7 +68,7 @@ nav a {
 
     padding: 15px 30px;
 
-    background-color: #38BDF8;
+    background-color: #87ceeb;
 
     color: white;
 
@@ -96,7 +96,7 @@ nav a {
 
     padding: 25px;
 
-    background-color: #E0F2FE;
+    background-color: #87ceeb;
 
     border-radius: 10px;
 
@@ -124,7 +124,7 @@ nav a {
 
     padding: 10px 20px;
 
-    background-color: #0B1F3A;
+    background-color: #0b1739;
 
     color: white;
 
@@ -140,7 +140,7 @@ nav a {
 
     text-align: center;
 
-    background-color: #E0F2FE;
+    background-color: #87ceeb;
 
 }
 
@@ -192,7 +192,7 @@ nav a {
 
     padding: 25px;
 
-    background-color: #E0F2FE;
+    background-color: #87ceeb;
 
     border-radius: 10px;
 
@@ -218,7 +218,7 @@ nav a {
 
     text-align: center;
 
-    background-color: #0B1F3A;
+    background-color: #0b1739;
 
     color: white;
 
@@ -244,7 +244,7 @@ footer {
 
     text-align: center;
 
-    background-color: #071426;
+    background-color: #0b1739;
 
     color: white;
 
@@ -280,7 +280,7 @@ footer {
 
     font-size: 18px;
 
-    color: #475569;
+    color: #0b1739;
 
 }
 
@@ -292,7 +292,7 @@ footer {
 
     padding: 20px;
 
-    background-color: #E0F2FE;
+    background-color: #87ceeb;
 
     border-radius: 10px;
 
@@ -332,7 +332,7 @@ footer {
 
     padding: 10px 20px;
 
-    background-color: #0B1F3A;
+    background-color: #0b1739;
 
     color: white;
 
@@ -397,7 +397,7 @@ footer {
 
     padding: 15px 30px;
 
-    background-color: #0B1F3A;
+    background-color: #0b1739;
 
     color: white;
 
@@ -437,7 +437,7 @@ footer {
 
     margin-bottom: 25px;
 
-    background-color: #E0F2FE;
+    background-color: #87ceeb;
 
     border-radius: 10px;
 
@@ -465,7 +465,7 @@ footer {
 
     padding: 12px;
 
-    border: 1px solid #7DD3FC;
+    border: 1px solid #87ceeb;
 
     border-radius: 5px;
 
@@ -479,7 +479,7 @@ footer {
 
     padding: 15px;
 
-    background-color: #0B1F3A;
+    background-color: #0b1739;
 
     color: white;
 
@@ -537,7 +537,7 @@ footer {
 
     font-size: 18px;
 
-    color: #475569;
+    color: #0b1739;
 
 }
 
@@ -547,7 +547,7 @@ footer {
 
     padding: 30px;
 
-    background-color: #E0F2FE;
+    background-color: #87ceeb;
 
     border-radius: 10px;
 
@@ -565,7 +565,7 @@ footer {
 
     padding: 12px 25px;
 
-    background-color: #0B1F3A;
+    background-color: #0b1739;
 
     color: white;
 
@@ -597,7 +597,7 @@ footer {
 
     text-align: center;
 
-    color: #475569;
+    color: #0b1739;
 
 }
 
@@ -621,7 +621,7 @@ footer {
 
     padding: 30px;
 
-    background-color: #E0F2FE;
+    background-color: #87ceeb;
 
     border-radius: 10px;
 
@@ -663,7 +663,7 @@ footer {
 
     font-size: 18px;
 
-    color: #475569;
+    color: #0b1739;
 
     margin-bottom: 40px;
 
@@ -691,9 +691,9 @@ footer {
 
     padding: 25px 20px;
 
-    background-color: #E0F2FE;
+    background-color: #87ceeb;
 
-    color: #0B1F3A;
+    color: #0b1739;
 
     text-decoration: none;
 
@@ -709,9 +709,9 @@ footer {
 
 .dashboard-links a:hover {
 
-    background-color: #38BDF8;
+    background-color: #87ceeb;
 
-    color: #0B1F3A;
+    color: #0b1739;
 
 }
 
@@ -727,18 +727,18 @@ footer {
     padding: 40px;
     background-color: white;
     border-radius: 12px;
-    border: 1px solid #BAE6FD;
+    border: 1px solid #87ceeb;
     text-align: center;
 }
 
 .login-box h1 {
     font-size: 36px;
-    color: #0B1F3A;
+    color: #0b1739;
     margin-bottom: 10px;
 }
 
 .login-box > p {
-    color: #475569;
+    color: #0b1739;
     margin-bottom: 30px;
 }
 
@@ -752,12 +752,12 @@ footer {
     margin-top: 15px;
     margin-bottom: 6px;
     font-weight: bold;
-    color: #0B1F3A;
+    color: #0b1739;
 }
 
 .login-box input {
     padding: 13px;
-    border: 1px solid #7DD3FC;
+    border: 1px solid #87ceeb;
     border-radius: 6px;
     font-size: 16px;
     box-sizing: border-box;
@@ -765,24 +765,24 @@ footer {
 
 .login-box input:focus {
     outline: none;
-    border-color: #0284C7;
+    border-color: #0b1739;
 }
 
 .forgot-password {
     margin-top: 12px;
-    color: #0284C7;
+    color: #0b1739;
     text-decoration: none;
     text-align: right;
 }
 
 .forgot-password:hover {
-    color: #0B1F3A;
+    color: #0b1739;
 }
 
 .login-box button {
     margin-top: 25px;
     padding: 14px;
-    background-color: #0B1F3A;
+    background-color: #0b1739;
     color: white;
     border: none;
     border-radius: 6px;
@@ -792,8 +792,8 @@ footer {
 }
 
 .login-box button:hover {
-    background-color: #38BDF8;
-    color: #0B1F3A;
+    background-color: #87ceeb;
+    color: #0b1739;
 }
 
 .create-account {
@@ -801,13 +801,13 @@ footer {
 }
 
 .create-account a {
-    color: #0284C7;
+    color: #0b1739;
     font-weight: bold;
     text-decoration: none;
 }
 
 .create-account a:hover {
-    color: #0B1F3A;
+    color: #0b1739;
 }
 
 /* Register Page */
@@ -830,7 +830,7 @@ footer {
 
     border-radius: 12px;
 
-    border: 1px solid #BAE6FD;
+    border: 1px solid #87ceeb;
 
     text-align: center;
 
@@ -840,7 +840,7 @@ footer {
 
     font-size: 36px;
 
-    color: #0B1F3A;
+    color: #0b1739;
 
     margin-bottom: 10px;
 
@@ -848,7 +848,7 @@ footer {
 
 .register-box > p {
 
-    color: #475569;
+    color: #0b1739;
 
     margin-bottom: 30px;
 
@@ -872,7 +872,7 @@ footer {
 
     font-weight: bold;
 
-    color: #0B1F3A;
+    color: #0b1739;
 
 }
 
@@ -880,7 +880,7 @@ footer {
 
     padding: 13px;
 
-    border: 1px solid #7DD3FC;
+    border: 1px solid #87ceeb;
 
     border-radius: 6px;
 
@@ -894,7 +894,7 @@ footer {
 
     outline: none;
 
-    border-color: #0284C7;
+    border-color: #0b1739;
 
 }
 
@@ -904,7 +904,7 @@ footer {
 
     padding: 14px;
 
-    background-color: #0B1F3A;
+    background-color: #0b1739;
 
     color: white;
 
@@ -922,9 +922,9 @@ footer {
 
 .register-box button:hover {
 
-    background-color: #38BDF8;
+    background-color: #87ceeb;
 
-    color: #0B1F3A;
+    color: #0b1739;
 
 }
 
@@ -936,7 +936,7 @@ footer {
 
 .login-link a {
 
-    color: #0284C7;
+    color: #0b1739;
 
     font-weight: bold;
 
@@ -946,7 +946,7 @@ footer {
 
 .login-link a:hover {
 
-    color: #0B1F3A;
+    color: #0b1739;
 
 }
 
@@ -970,7 +970,7 @@ footer {
 
     border-radius: 12px;
 
-    border: 1px solid #BAE6FD;
+    border: 1px solid #87ceeb;
 
     text-align: center;
 
@@ -980,7 +980,7 @@ footer {
 
     font-size: 36px;
 
-    color: #0B1F3A;
+    color: #0b1739;
 
     margin-bottom: 10px;
 
@@ -988,7 +988,7 @@ footer {
 
 .forgot-password-box > p {
 
-    color: #475569;
+    color: #0b1739;
 
     margin-bottom: 30px;
 
@@ -1010,7 +1010,7 @@ footer {
 
     font-weight: bold;
 
-    color: #0B1F3A;
+    color: #0b1739;
 
 }
 
@@ -1018,7 +1018,7 @@ footer {
 
     padding: 13px;
 
-    border: 1px solid #7DD3FC;
+    border: 1px solid #87ceeb;
 
     border-radius: 6px;
 
@@ -1032,7 +1032,7 @@ footer {
 
     outline: none;
 
-    border-color: #0284C7;
+    border-color: #0b1739;
 
 }
 
@@ -1042,7 +1042,7 @@ footer {
 
     padding: 14px;
 
-    background-color: #0B1F3A;
+    background-color: #0b1739;
 
     color: white;
 
@@ -1060,9 +1060,9 @@ footer {
 
 .forgot-password-box button:hover {
 
-    background-color: #38BDF8;
+    background-color: #87ceeb;
 
-    color: #0B1F3A;
+    color: #0b1739;
 
 }
 
@@ -1074,7 +1074,7 @@ footer {
 
 .back-to-login a {
 
-    color: #0284C7;
+    color: #0b1739;
 
     font-weight: bold;
 
@@ -1084,7 +1084,7 @@ footer {
 
 .back-to-login a:hover {
 
-    color: #0B1F3A;
+    color: #0b1739;
 
 }
 
@@ -1108,7 +1108,7 @@ footer {
 
     border-radius: 12px;
 
-    border: 1px solid #BAE6FD;
+    border: 1px solid #87ceeb;
 
     text-align: center;
 
@@ -1118,7 +1118,7 @@ footer {
 
     font-size: 36px;
 
-    color: #0B1F3A;
+    color: #0b1739;
 
     margin-bottom: 10px;
 
@@ -1126,7 +1126,7 @@ footer {
 
 .order-box > p {
 
-    color: #475569;
+    color: #0b1739;
 
     margin-bottom: 30px;
 
@@ -1150,7 +1150,7 @@ footer {
 
     font-weight: bold;
 
-    color: #0B1F3A;
+    color: #0b1739;
 
 }
 
@@ -1158,7 +1158,7 @@ footer {
 
     padding: 13px;
 
-    border: 1px solid #7DD3FC;
+    border: 1px solid #87ceeb;
 
     border-radius: 6px;
 
@@ -1172,7 +1172,7 @@ footer {
 
     outline: none;
 
-    border-color: #0284C7;
+    border-color: #0b1739;
 
 }
 
@@ -1182,7 +1182,7 @@ footer {
 
     padding: 14px;
 
-    background-color: #0B1F3A;
+    background-color: #0b1739;
 
     color: white;
 
@@ -1200,9 +1200,9 @@ footer {
 
 .order-box button:hover {
 
-    background-color: #38BDF8;
+    background-color: #87ceeb;
 
-    color: #0B1F3A;
+    color: #0b1739;
 
 }
 
@@ -1220,12 +1220,12 @@ footer {
 .about-page h1 {
     text-align: center;
     font-size: 42px;
-    color: #001f3f;
+    color: #0b1739;
     margin-bottom: 30px;
 }
 
 .about-page h2 {
-    color: #0077b6;
+    color: #0b1739;
     margin-top: 35px;
 }
 
@@ -1250,12 +1250,12 @@ footer {
 
 .contact-page h1 {
     font-size: 42px;
-    color: #001f3f;
+    color: #0b1739;
     margin-bottom: 25px;
 }
 
 .contact-page h2 {
-    color: #0077b6;
+    color: #0b1739;
     margin-top: 35px;
 }
 

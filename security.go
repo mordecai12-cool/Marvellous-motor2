@@ -106,7 +106,7 @@ func securityMiddleware(next http.Handler) http.Handler {
 				http.Error(w, "Please reload the page before submitting this form", http.StatusForbidden)
 				return
 			}
-			if r.URL.Path == "/login" || r.URL.Path == "/register" || r.URL.Path == "/admin-login" || r.URL.Path == "/forgot-password" {
+			if r.URL.Path == "/login" || r.URL.Path == "/register" || r.URL.Path == "/admin-login" || r.URL.Path == "/admin-signup" || r.URL.Path == "/admin-signup.html" || r.URL.Path == "/forgot-password" {
 				ip, _, _ := net.SplitHostPort(r.RemoteAddr)
 				authRates.Lock()
 				for key, value := range authRates.entries {

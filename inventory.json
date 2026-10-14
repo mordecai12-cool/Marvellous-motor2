@@ -13,7 +13,7 @@
     "transmission": "Automatic",
     "drive": "RWD",
     "engine": "2.0L turbo",
-    "image": "/images/mercedes_benz.jpg",
+    "image": "/images/gallery/mercedes-c300-matched-front.jpg",
     "tagline": "A little luxury. Every single day.",
     "description": "A refined sports sedan that brings an elegant cabin, smooth turbocharged performance, and intuitive technology to every journey.",
     "features": [
@@ -41,7 +41,7 @@
     "transmission": "e-CVT",
     "drive": "FWD",
     "engine": "2.5L hybrid",
-    "image": "/images/camry.webp",
+    "image": "/images/gallery/toyota-camry-front.jpg",
     "tagline": "Meet your everyday upgrade.",
     "description": "An efficient hybrid sedan with a spacious interior and driver assistance technology. A comfortable companion for the commute and the open road.",
     "features": [
@@ -69,7 +69,7 @@
     "transmission": "Automatic",
     "drive": "AWD",
     "engine": "2.4L turbo",
-    "image": "/images/lexus.png",
+    "image": "/images/gallery/lexus-rx350-front.jpg",
     "tagline": "Comfort, with a commanding presence.",
     "description": "Quiet luxury, a spacious cabin, and confident performance come together in this versatile premium SUV.",
     "features": [
@@ -97,7 +97,7 @@
     "transmission": "Automatic",
     "drive": "AWD",
     "engine": "3.0L turbo",
-    "image": "/images/bmw-x5.jpg",
+    "image": "/images/gallery/bmw-x5-matched-front.jpg",
     "tagline": "Make every mile an occasion.",
     "description": "A premium SUV that balances responsive handling with generous space and the assurance of BMW xDrive.",
     "features": [
@@ -125,7 +125,7 @@
     "transmission": "e-CVT",
     "drive": "AWD",
     "engine": "2.5L hybrid",
-    "image": "/images/rav4.jpg",
+    "image": "/images/gallery/rav4-hybrid-front.jpg",
     "tagline": "Ready for your next adventure.",
     "description": "Room for the family, hybrid efficiency, and all-wheel drive capability make the RAV4 an easy choice for busy lives.",
     "features": [
@@ -153,7 +153,7 @@
     "transmission": "CVT",
     "drive": "FWD",
     "engine": "1.5L turbo",
-    "image": "/images/accord.jpg",
+    "image": "/images/gallery/honda-accord-front.jpg",
     "tagline": "A smarter way to get there.",
     "description": "A roomy, thoughtfully designed sedan with smooth power delivery and helpful driver assistance for daily driving.",
     "features": [
@@ -181,7 +181,7 @@
     "transmission": "Automatic",
     "drive": "4WD",
     "engine": "2.8L turbo diesel",
-    "image": "/images/land-cruiser.jpg",
+    "image": "/images/gallery/land-cruiser-front.jpg",
     "tagline": "Go beyond the everyday.",
     "description": "A capable four-wheel drive SUV with a practical, spacious cabin. Built for family journeys that take you beyond the city.",
     "features": [
@@ -209,7 +209,7 @@
     "transmission": "Single-speed",
     "drive": "RWD",
     "engine": "Electric motor",
-    "image": "/images/model-y.jpg",
+    "image": "/images/gallery/tesla-model-y-front.jpg",
     "tagline": "A fresh perspective on driving.",
     "description": "An all-electric crossover with a minimalist cabin, useful cargo space, and a large central touchscreen.",
     "features": [
@@ -265,7 +265,7 @@
     "transmission": "Automatic",
     "drive": "FWD",
     "engine": "2.5L petrol",
-    "image": "/images/sportage.jpg",
+    "image": "/images/gallery/kia-sportage-front.jpg",
     "tagline": "Stand out. Set off.",
     "description": "Distinctive design meets a spacious interior in a versatile SUV made for everyday adventures.",
     "features": [
@@ -293,7 +293,7 @@
     "transmission": "Automatic",
     "drive": "FWD",
     "engine": "2.5L petrol",
-    "image": "/images/tucson.jpg",
+    "image": "/images/gallery/hyundai-tucson-matched-front.jpg",
     "tagline": "Your day, beautifully driven.",
     "description": "A comfortable crossover with bold styling, helpful safety technology, and room for everything your day brings.",
     "features": [
@@ -321,7 +321,7 @@
     "transmission": "CVT",
     "drive": "FWD",
     "engine": "2.0L petrol",
-    "image": "/images/corolla.jpg",
+    "image": "/images/gallery/toyota-corolla-matched-front.jpg",
     "tagline": "Great journeys start simply.",
     "description": "An accessible everyday sedan with an efficient engine, a practical cabin, and Toyota driver assistance technology.",
     "features": [
@@ -349,7 +349,7 @@
     "transmission": "PDK automatic",
     "drive": "RWD",
     "engine": "3.0L twin-turbo",
-    "image": "/images/porsche-911.jpg",
+    "image": "/images/gallery/porsche-911-front.jpg",
     "tagline": "For the love of the drive.",
     "description": "An iconic sports coupe with a rear-engine layout, precise handling, and the unmistakable character of the 911.",
     "features": [
@@ -405,7 +405,7 @@
     "transmission": "Automatic",
     "drive": "FWD",
     "engine": "2.5L petrol",
-    "image": "/images/camry.webp",
+    "image": "/images/gallery/camry-preowned-front.jpg",
     "tagline": "A familiar favourite, a fresh start.",
     "description": "A pre-owned Camry that offers generous space and composed driving. Explore a practical route into a comfortable family sedan.",
     "features": [
@@ -433,7 +433,7 @@
     "transmission": "Automatic",
     "drive": "AWD",
     "engine": "3.5L V6",
-    "image": "/images/lexus.png",
+    "image": "/images/gallery/lexus-preowned-front.jpg",
     "tagline": "Luxury that fits your next chapter.",
     "description": "A pre-owned luxury SUV with a smooth V6 engine, a welcoming cabin, and flexible room for family life.",
     "features": [

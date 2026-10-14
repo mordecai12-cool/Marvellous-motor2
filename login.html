@@ -28,6 +28,7 @@
 
             <p>Sign in to your Marvellous Motors account</p>
 
+            {{if .Error}}<div class="auth-error" role="alert">{{.Error}}</div>{{end}}
             <form action="/login" method="POST">
 
                 <label for="email">Email</label>

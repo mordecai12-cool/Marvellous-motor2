@@ -219,7 +219,15 @@ func main() {
 		log.Fatal(err)
 	}
 
+	if err := seedDeploymentOwner(db); err != nil {
+		log.Fatal("Could not initialize platform owner")
+	}
 	seedLocalDemo(db)
+	if os.Getenv("MM_DEMO_MODE") == "true" {
+		if err := seedConfiguredLocalOwner(db, ".local/owner-account.json"); err != nil {
+			log.Fatal("Could not load local owner configuration")
+		}
+	}
 	http.HandleFunc("/health", func(w http.ResponseWriter, r *http.Request) { handleHealth(db, w, r) })
 
 	registerShowroomRoutes()
@@ -259,6 +267,7 @@ func main() {
 	http.HandleFunc("/register", func(w http.ResponseWriter, r *http.Request) {
 		handleRegister(db, w, r)
 	})
+	http.HandleFunc("/login.html", serveCustomerSignIn)
 	http.HandleFunc("/login", func(w http.ResponseWriter, r *http.Request) {
 		handleLogin(db, w, r)
 	})
@@ -271,7 +280,7 @@ func main() {
 		handleCustomerOrders(db, w, r)
 	})
 	http.HandleFunc("/logout", handleLogout)
-	http.HandleFunc("/customer-dashboard.html", handleCustomerDashboard)
+	http.HandleFunc("/customer-dashboard.html", func(w http.ResponseWriter, r *http.Request) { handleCustomerDashboard(db, w, r) })
 	http.HandleFunc("/customer-profile", func(w http.ResponseWriter, r *http.Request) {
 		handleCustomerProfile(db, w, r)
 	})
@@ -677,7 +686,7 @@ func handleLogin(db *sql.DB, w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	email := r.FormValue("email")
+	email := strings.ToLower(strings.TrimSpace(r.FormValue("email")))
 	password := r.FormValue("password")
 
 	var storedPassword string
@@ -685,12 +694,12 @@ func handleLogin(db *sql.DB, w http.ResponseWriter, r *http.Request) {
 	err = db.QueryRow(`
         SELECT password
         FROM customers
-        WHERE email = ?
+        WHERE lower(email) = ?
     `, email).Scan(&storedPassword)
 
 	if err != nil {
 		log.Println("Could not find customer:", err)
-		http.Error(w, "Invalid email or password", http.StatusUnauthorized)
+		renderCustomerAuth(w, 401, "login.html", CustomerAuthPage{Error: "We could not sign you in. Check your email address and password."})
 		return
 	}
 
@@ -700,7 +709,7 @@ func handleLogin(db *sql.DB, w http.ResponseWriter, r *http.Request) {
 	)
 
 	if err != nil {
-		http.Error(w, "Invalid email or password", http.StatusUnauthorized)
+		renderCustomerAuth(w, 401, "login.html", CustomerAuthPage{Error: "We could not sign you in. Check your email address and password."})
 		return
 	}
 
@@ -710,7 +719,7 @@ func handleLogin(db *sql.DB, w http.ResponseWriter, r *http.Request) {
 	err = db.QueryRow(`
 	    SELECT id, name
         FROM customers
-        WHERE email = ?
+        WHERE lower(email) = ?
 	`, email).Scan(&customerID, &customerName)
 
 	if err != nil {
@@ -764,201 +773,14 @@ func handleLogout(w http.ResponseWriter, r *http.Request) {
 
 	http.Redirect(w, r, "/login.html", http.StatusSeeOther)
 }
-func handleCustomerDashboard(w http.ResponseWriter, r *http.Request) {
-
-	if r.Method != http.MethodGet {
-		http.Error(w, "Method not allowed", http.StatusMethodNotAllowed)
-		return
-	}
-
-	session, err := store.Get(r, "customer-session")
-	if err != nil {
-		http.Error(w, "Could not get customer session", http.StatusInternalServerError)
-		return
-	}
-
-	customerName, ok := session.Values["customer_name"]
-	if !ok {
-		http.Error(w, "Please sign in first", http.StatusUnauthorized)
-		return
-	}
-
-	data := struct {
-		Name string
-	}{
-		Name: customerName.(string),
-	}
-
-	tmpl, err := template.ParseFiles("customer-dashboard.html")
-	if err != nil {
-		http.Error(w, "Could not load dashboard", http.StatusInternalServerError)
-		return
-	}
-
-	err = tmpl.Execute(w, data)
-	if err != nil {
-		http.Error(w, "Could not display dashboard", http.StatusInternalServerError)
-		return
-	}
+func handleCustomerDashboard(db *sql.DB, w http.ResponseWriter, r *http.Request) {
+	serveCustomerAccount(db, w, r, "dashboard")
 }
-
 func handleCustomerProfile(db *sql.DB, w http.ResponseWriter, r *http.Request) {
-
-	if r.Method != http.MethodGet {
-		http.Error(w, "Method not allowed", http.StatusMethodNotAllowed)
-		return
-	}
-
-	session, err := store.Get(r, "customer-session")
-	if err != nil {
-		http.Error(w, "Could not get customer session", http.StatusInternalServerError)
-		return
-	}
-
-	customerIDValue, ok := session.Values["customer_id"]
-	if !ok {
-		http.Error(w, "Please sign in first", http.StatusUnauthorized)
-		return
-	}
-
-	customerID := customerIDValue.(int64)
-
-	var name string
-	var email string
-	var phone string
-
-	err = db.QueryRow(`
-        SELECT name, email, phone
-        FROM customers
-        WHERE id = ?
-    `, customerID).Scan(&name, &email, &phone)
-
-	if err != nil {
-		log.Println("Could not get customer profile:", err)
-		http.Error(w, "Could not get profile", http.StatusInternalServerError)
-		return
-	}
-
-	data := struct {
-		Name  string
-		Email string
-		Phone string
-	}{
-		Name:  name,
-		Email: email,
-		Phone: phone,
-	}
-
-	tmpl, err := template.ParseFiles("customer-profile.html")
-	if err != nil {
-		log.Println("Could not load customer profile page:", err)
-		http.Error(w, "Could not load profile page", http.StatusInternalServerError)
-		return
-	}
-
-	err = tmpl.Execute(w, data)
-	if err != nil {
-		log.Println("Could not display customer profile:", err)
-		http.Error(w, "Could not display profile", http.StatusInternalServerError)
-		return
-	}
+	serveCustomerAccount(db, w, r, "profile")
 }
-
 func handleEditProfile(db *sql.DB, w http.ResponseWriter, r *http.Request) {
-
-	session, err := store.Get(r, "customer-session")
-	if err != nil {
-		http.Error(w, "Could not get customer session", http.StatusInternalServerError)
-		return
-	}
-
-	customerIDValue, ok := session.Values["customer_id"]
-	if !ok {
-		http.Error(w, "Please sign in first", http.StatusUnauthorized)
-		return
-	}
-
-	customerID := customerIDValue.(int64)
-
-	if r.Method == http.MethodGet {
-
-		var name string
-		var email string
-		var phone string
-
-		err = db.QueryRow(`
-            SELECT name, email, phone
-            FROM customers
-            WHERE id = ?
-        `, customerID).Scan(&name, &email, &phone)
-
-		if err != nil {
-			log.Println("Could not get customer details:", err)
-			http.Error(w, "Could not get profile", http.StatusInternalServerError)
-			return
-		}
-
-		data := struct {
-			Name  string
-			Email string
-			Phone string
-		}{
-			Name:  name,
-			Email: email,
-			Phone: phone,
-		}
-
-		tmpl, err := template.ParseFiles("edit-profile.html")
-		if err != nil {
-			http.Error(w, "Could not load edit profile page", http.StatusInternalServerError)
-			return
-		}
-
-		err = tmpl.Execute(w, data)
-		if err != nil {
-			http.Error(w, "Could not display edit profile page", http.StatusInternalServerError)
-			return
-		}
-
-		return
-	}
-
-	if r.Method == http.MethodPost {
-
-		err := r.ParseForm()
-		if err != nil {
-			http.Error(w, "Could not read form", http.StatusBadRequest)
-			return
-		}
-
-		name := r.FormValue("name")
-		phone := r.FormValue("phone")
-
-		_, err = db.Exec(`
-            UPDATE customers
-            SET name = ?, phone = ?
-            WHERE id = ?
-        `, name, phone, customerID)
-
-		if err != nil {
-			log.Println("Could not update profile:", err)
-			http.Error(w, "Could not update profile", http.StatusInternalServerError)
-			return
-		}
-
-		session.Values["customer_name"] = name
-
-		err = session.Save(r, w)
-		if err != nil {
-			http.Error(w, "Could not save session", http.StatusInternalServerError)
-			return
-		}
-
-		http.Redirect(w, r, "/customer-profile", http.StatusSeeOther)
-		return
-	}
-
-	http.Error(w, "Method not allowed", http.StatusMethodNotAllowed)
+	serveCustomerAccount(db, w, r, "edit-profile")
 }
 
 func handleForgotPassword(db *sql.DB, w http.ResponseWriter, r *http.Request) {
@@ -987,18 +809,18 @@ func handleForgotPassword(db *sql.DB, w http.ResponseWriter, r *http.Request) {
 			return
 		}
 
-		email := r.FormValue("email")
+		email := strings.ToLower(strings.TrimSpace(r.FormValue("email")))
 
 		var customerID int64
 
 		err = db.QueryRow(`
             SELECT id
             FROM customers
-            WHERE email = ?
+            WHERE lower(email) = ?
         `, email).Scan(&customerID)
 
 		if err != nil {
-			http.Error(w, "Email not found", http.StatusNotFound)
+			renderCustomerAuth(w, 200, "forgot-password.html", CustomerAuthPage{Notice: "Your request has been received. Contact customer care for help recovering access."})
 			return
 		}
 
@@ -1030,7 +852,7 @@ func handleForgotPassword(db *sql.DB, w http.ResponseWriter, r *http.Request) {
 
 		log.Println("Password reset request created; email delivery must be configured")
 
-		http.Error(w, "Password reset request received", http.StatusOK)
+		renderCustomerAuth(w, 200, "forgot-password.html", CustomerAuthPage{Notice: "Your request has been received. Contact customer care for help recovering access."})
 		return
 	}
 
@@ -1308,7 +1130,7 @@ func handleAdminLogin(db *sql.DB, w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	if status != "approved" || (role != "admin" && role != "super_admin") {
+	if !authorizedStaff(Staff{Email: email, Role: role, Status: status}) {
 		http.Redirect(w, r, "/admin-login.html?error=invalid", http.StatusSeeOther)
 		return
 	}

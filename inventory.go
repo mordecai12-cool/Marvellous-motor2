@@ -158,5 +158,8 @@ func registerShowroomRoutes() {
 }
 
 func inventoryAsset(path string) bool {
+	if path == "/account.css" || path == "/gallery.js" || path == "/gallery.css" || path == "/customer-care.js" || path == "/customer-care.css" || path == "/shipment.js" {
+		return true
+	}
 	return strings.HasPrefix(path, "/images/") || path == "/admin.css" || path == "/admin.js" || path == "/delivery.css" || path == "/style.css" || path == "/legacy.css" || path == "/favicon.svg" || path == "/showroom.js" || strings.HasPrefix(path, "/fonts/") || path == "/image-credits.html"
 }

@@ -11,6 +11,7 @@ import (
 
 func adminFixture(t *testing.T) *sql.DB {
 	t.Helper()
+	t.Setenv("MM_OWNER_ONLY", "false")
 	db := testDatabase(t)
 	_, err := db.Exec("INSERT INTO admins(id,name,email,password,role,status) VALUES(1,'Test Owner','owner@example.test','unused','super_admin','approved'),(2,'Test Staff','staff@example.test','unused','admin','approved'),(3,'Pending Staff','pending@example.test','unused','admin','pending')")
 	if err != nil {

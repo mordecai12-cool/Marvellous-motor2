@@ -1,0 +1,13 @@
+<!DOCTYPE html><html lang="en"><head>{{template "admin-head" .}}</head><body class="ops-body">
+{{template "admin-open" .}}
+<section class="ops-panel invite-ready">
+  <span class="invite-ready-icon" aria-hidden="true">✓</span>
+  <span class="ops-overline">INVITATION CREATED</span><h2>Let them make it their own.</h2>
+  <p>Your invitation is reserved for <strong>{{.InviteEmail}}</strong>. They will choose their own password and receive administrator access.</p>
+  <label for="invitation-link">Private signup link</label>
+  <div class="invite-copy-row"><input id="invitation-link" value="{{.InviteURL}}" readonly><button class="ops-button" type="button" data-copy-invite="invitation-link">Copy link</button></div>
+  <p class="invite-copy-status" role="status" aria-live="polite"></p>
+  <div class="invite-sharing-note"><strong>Share privately. Valid for 48 hours. One use.</strong><p>This link is displayed once. If you lose it, generate a replacement from Staff &amp; access; the earlier link will stop working. No email is sent automatically.</p></div>
+  <a class="ops-button secondary" href="/admin/team">← Back to staff &amp; access</a>
+</section>
+{{template "admin-close" .}}</body></html>
