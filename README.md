@@ -22,7 +22,7 @@ The site runs at **http://localhost:8080**. Go 1.26 is declared in `go.mod`; the
 
 On this Linux desktop, the start script uses a transient systemd user service, so the site remains available after the terminal closes. On other systems it falls back to `nohup`. To reload Go code or inventory changes, stop and start the server. HTML, CSS, and JavaScript changes are available on browser refresh.
 
-The server binds to `127.0.0.1:8080`. There is no deployment or GitHub push in this workflow.
+The server binds to `127.0.0.1:8080`. Starting the site locally does not deploy it or push to GitHub.
 
 ## Operations and delivery
 
@@ -119,4 +119,4 @@ See [the audit](docs/PROJECT_AUDIT.md) and [the development roadmap](docs/ROADMA
 
 Current verification results and local demonstration steps are in [docs/LOCAL_VERIFICATION.md](docs/LOCAL_VERIFICATION.md).
 
-The completed upgrades are saved on the local `my-isolated-project` branch. No merge or push has been performed.
+The completed upgrades are published on [`my-isolated-project` in Marvellous-motor2](https://github.com/mordecai12-cool/Marvellous-motor2/tree/my-isolated-project). No merge into `main` was performed, and the original `marvellous-motors` repository was not changed.

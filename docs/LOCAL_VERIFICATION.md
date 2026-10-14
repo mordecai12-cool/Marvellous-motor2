@@ -1,6 +1,6 @@
 # Local verification — 14 October 2026
 
-The saved project is `/home/student/marvellous-motors`, on `my-isolated-project`. No automotive commit was pushed or deployment published.
+The saved project is `/home/student/marvellous-motors`, on `my-isolated-project`. The verification below was completed locally before the separate-branch publication recorded at the end. No deployment was published.
 
 ## Actual final results
 
@@ -99,3 +99,9 @@ Latest logs and review screenshots are under `.local/photo-correction/`. The ser
 ## Completed local branch
 
 The final navy accent is dark navy `#0B1739`, replacing the earlier bright CSS navy. Sky-blue page backgrounds remain `#87CEEB`. Browser measurements confirmed the top bar, brand and hero headings use dark navy, with readable text on the sky-blue surface. The local branch is `my-isolated-project`; its changes have not been pushed or merged into `main`. Unused mismatched sample photos are archived privately under `.local/archive/gallery-unused`; only the 40 actively displayed gallery assets are included in the branch.
+
+## Separate-branch publication — 14 October 2026
+
+At the user's request, `my-isolated-project` was pushed to `mordecai12-cool/Marvellous-motor2`. The initial published upgrade commit is `23b2fd4`. A documentation follow-up records the publication status. Only `refs/heads/my-isolated-project` was pushed; no merge or `main` update was performed. The original `mordecai12-cool/marvellous-motors` remote remains unchanged. The local branch tracks `motor2/my-isolated-project`.
+
+Published branch: https://github.com/mordecai12-cool/Marvellous-motor2/tree/my-isolated-project
