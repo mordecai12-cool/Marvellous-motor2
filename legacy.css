@@ -1,0 +1,1266 @@
+body {
+
+    font-family: Arial, sans-serif;
+
+}
+
+nav {
+
+    display: flex;
+
+    justify-content: space-between;
+
+    align-items: center;
+
+    padding: 20px 50px;
+
+    background-color: #0B1F3A;
+
+}
+
+nav h2 {
+
+    color: #38BDF8;
+
+}
+
+nav a {
+
+    color: white;
+
+    text-decoration: none;
+
+    margin-left: 20px;
+
+}
+
+.hero {
+
+    text-align: center;
+
+    padding: 100px 20px;
+
+    background-color: #E0F2FE;
+
+}
+
+.hero h1 {
+
+    font-size: 48px;
+
+    color: #0B1F3A;
+
+}
+
+.hero p {
+
+    font-size: 20px;
+
+    color: #475569;
+
+}
+
+.hero a {
+
+    display: inline-block;
+
+    margin-top: 20px;
+
+    padding: 15px 30px;
+
+    background-color: #38BDF8;
+
+    color: white;
+
+    text-decoration: none;
+
+    border-radius: 5px;
+
+}
+
+.featured-cars {
+
+    padding: 60px 50px;
+
+    text-align: center;
+
+}
+
+.featured-cars > div {
+
+    display: inline-block;
+
+    width: 250px;
+
+    margin: 15px;
+
+    padding: 25px;
+
+    background-color: #E0F2FE;
+
+    border-radius: 10px;
+
+}
+
+.featured-cars h2 {
+
+    font-size: 32px;
+
+    margin-bottom: 30px;
+
+}
+
+.featured-cars h3 {
+
+    font-size: 22px;
+
+}
+
+.featured-cars a {
+
+    display: inline-block;
+
+    margin-top: 10px;
+
+    padding: 10px 20px;
+
+    background-color: #0B1F3A;
+
+    color: white;
+
+    text-decoration: none;
+
+    border-radius: 5px;
+
+}
+
+.why-choose-us {
+
+    padding: 60px 50px;
+
+    text-align: center;
+
+    background-color: #E0F2FE;
+
+}
+
+.why-choose-us > div {
+
+    display: inline-block;
+
+    width: 250px;
+
+    margin: 15px;
+
+    padding: 25px;
+
+    background-color: white;
+
+    border-radius: 10px;
+
+}
+
+.why-choose-us h2 {
+
+    font-size: 32px;
+
+    margin-bottom: 30px;
+
+}
+
+.why-choose-us h3 {
+
+    font-size: 22px;
+
+}
+
+.how-it-works {
+
+    padding: 60px 50px;
+
+    text-align: center;
+
+}
+
+.how-it-works > div {
+
+    display: inline-block;
+
+    width: 200px;
+
+    margin: 15px;
+
+    padding: 25px;
+
+    background-color: #E0F2FE;
+
+    border-radius: 10px;
+
+}
+
+.how-it-works h2 {
+
+    font-size: 32px;
+
+    margin-bottom: 30px;
+
+}
+
+.how-it-works h3 {
+
+    font-size: 20px;
+
+}
+
+.contact-us {
+
+    padding: 60px 50px;
+
+    text-align: center;
+
+    background-color: #0B1F3A;
+
+    color: white;
+
+}
+
+.contact-us h2 {
+
+    font-size: 32px;
+
+    margin-bottom: 20px;
+
+}
+
+.contact-us p {
+
+    margin: 10px;
+
+}
+
+footer {
+
+    padding: 20px;
+
+    text-align: center;
+
+    background-color: #071426;
+
+    color: white;
+
+}
+
+.featured-cars img {
+
+    width: 100%;
+
+    height: 180px;
+
+    object-fit: cover;
+
+    border-radius: 8px;
+
+}
+
+.cars-page {
+
+    padding: 60px 50px;
+
+    text-align: center;
+
+}
+
+.cars-page h1 {
+
+    font-size: 40px;
+
+}
+
+.cars-page p {
+
+    font-size: 18px;
+
+    color: #475569;
+
+}
+
+.car-card {
+
+    width: 300px;
+
+    margin: 40px auto;
+
+    padding: 20px;
+
+    background-color: #E0F2FE;
+
+    border-radius: 10px;
+
+    text-align: center;
+
+}
+
+.car-card img {
+
+    width: 100%;
+
+    height: 200px;
+
+    object-fit: cover;
+
+    border-radius: 8px;
+
+}
+
+.car-card h2 {
+
+    margin-top: 15px;
+
+}
+
+.car-card h3 {
+
+    font-size: 22px;
+
+}
+
+.car-card a {
+
+    display: inline-block;
+
+    margin-top: 10px;
+
+    padding: 10px 20px;
+
+    background-color: #0B1F3A;
+
+    color: white;
+
+    text-decoration: none;
+
+    border-radius: 5px;
+
+}
+
+.cars-list {
+
+    display: flex;
+
+    justify-content: center;
+
+    gap: 30px;
+
+    flex-wrap: wrap;
+
+}
+
+.cars-list .car-card {
+
+    margin: 40px 0;
+
+}
+
+.car-details {
+    max-width: 1000px;
+    margin: auto;
+    padding: 60px 20px;
+    text-align: center;
+}
+
+.car-details img {
+    width: 100%;
+    max-width: 900px;
+    height: 500px;
+    object-fit: cover;
+    border-radius: 12px;
+    display: block;
+    margin: 0 auto 40px;
+}
+
+.car-details h1 {
+
+    font-size: 40px;
+
+}
+
+.car-details h2 {
+
+    font-size: 28px;
+
+}
+
+.car-details a {
+
+    display: inline-block;
+
+    margin-top: 20px;
+
+    padding: 15px 30px;
+
+    background-color: #0B1F3A;
+
+    color: white;
+
+    text-decoration: none;
+
+    border-radius: 5px;
+
+}
+
+.payment-page {
+
+    max-width: 700px;
+
+    margin: auto;
+
+    padding: 60px 20px;
+
+}
+
+.payment-page > h1 {
+
+    text-align: center;
+
+    font-size: 40px;
+
+    margin-bottom: 40px;
+
+}
+
+.order-summary,
+
+.delivery-summary,
+
+.payment-section {
+
+    padding: 25px;
+
+    margin-bottom: 25px;
+
+    background-color: #E0F2FE;
+
+    border-radius: 10px;
+
+}
+
+.payment-section form {
+
+    display: flex;
+
+    flex-direction: column;
+
+}
+
+.payment-section label {
+
+    margin-top: 15px;
+
+    margin-bottom: 5px;
+
+    font-weight: bold;
+
+}
+
+.payment-section input {
+
+    padding: 12px;
+
+    border: 1px solid #7DD3FC;
+
+    border-radius: 5px;
+
+    font-size: 16px;
+
+}
+
+.payment-section button {
+
+    margin-top: 20px;
+
+    padding: 15px;
+
+    background-color: #0B1F3A;
+
+    color: white;
+
+    border: none;
+
+    border-radius: 5px;
+
+    font-size: 16px;
+
+    cursor: pointer;
+
+}
+
+.payment-section p {
+
+    margin: 10px 0;
+
+}
+
+.payment-section input[type="number"],
+
+.payment-section input[type="text"] {
+
+    width: 100%;
+
+    box-sizing: border-box;
+
+}
+
+.payment-section input[type="file"] {
+
+    padding: 10px 0;
+
+}
+
+.payment-pending {
+
+    max-width: 600px;
+
+    margin: auto;
+
+    padding: 80px 20px;
+
+    text-align: center;
+
+}
+
+.payment-pending h1 {
+
+    font-size: 40px;
+
+}
+
+.success-message {
+
+    font-size: 18px;
+
+    color: #475569;
+
+}
+
+.pending-box {
+
+    margin: 30px 0;
+
+    padding: 30px;
+
+    background-color: #E0F2FE;
+
+    border-radius: 10px;
+
+}
+
+.pending-box h2 {
+
+    margin-top: 20px;
+
+}
+
+.payment-pending > a {
+
+    display: inline-block;
+
+    padding: 12px 25px;
+
+    background-color: #0B1F3A;
+
+    color: white;
+
+    text-decoration: none;
+
+    border-radius: 5px;
+
+}
+
+.admin-dashboard {
+
+    max-width: 1000px;
+
+    margin: auto;
+
+    padding: 60px 20px;
+
+}
+
+.admin-dashboard h1 {
+
+    text-align: center;
+
+    font-size: 40px;
+
+}
+
+.admin-dashboard > p {
+
+    text-align: center;
+
+    color: #475569;
+
+}
+
+.admin-cards {
+
+    display: flex;
+
+    justify-content: center;
+
+    gap: 30px;
+
+    margin-top: 40px;
+
+    flex-wrap: wrap;
+
+}
+
+.admin-card {
+
+    width: 250px;
+
+    padding: 30px;
+
+    background-color: #E0F2FE;
+
+    border-radius: 10px;
+
+    text-align: center;
+
+}
+
+/* Customer Dashboard */
+
+.customer-dashboard {
+
+    max-width: 1000px;
+
+    margin: auto;
+
+    padding: 60px 20px;
+
+    text-align: center;
+
+}
+
+.customer-dashboard h1 {
+
+    font-size: 40px;
+
+    margin-bottom: 15px;
+
+}
+
+.customer-dashboard h2 {
+
+    font-size: 28px;
+
+    margin-bottom: 15px;
+
+}
+
+.customer-dashboard > p {
+
+    font-size: 18px;
+
+    color: #475569;
+
+    margin-bottom: 40px;
+
+}
+
+.dashboard-links {
+
+    display: flex;
+
+    justify-content: center;
+
+    gap: 25px;
+
+    flex-wrap: wrap;
+
+    margin-top: 30px;
+
+}
+
+.dashboard-links a {
+
+    display: block;
+
+    width: 200px;
+
+    padding: 25px 20px;
+
+    background-color: #E0F2FE;
+
+    color: #0B1F3A;
+
+    text-decoration: none;
+
+    border-radius: 10px;
+
+    font-size: 18px;
+
+    font-weight: bold;
+
+    box-sizing: border-box;
+
+}
+
+.dashboard-links a:hover {
+
+    background-color: #38BDF8;
+
+    color: #0B1F3A;
+
+}
+
+/* Login Page */
+
+.login-page {
+    max-width: 500px;
+    margin: auto;
+    padding: 80px 20px;
+}
+
+.login-box {
+    padding: 40px;
+    background-color: white;
+    border-radius: 12px;
+    border: 1px solid #BAE6FD;
+    text-align: center;
+}
+
+.login-box h1 {
+    font-size: 36px;
+    color: #0B1F3A;
+    margin-bottom: 10px;
+}
+
+.login-box > p {
+    color: #475569;
+    margin-bottom: 30px;
+}
+
+.login-box form {
+    display: flex;
+    flex-direction: column;
+    text-align: left;
+}
+
+.login-box label {
+    margin-top: 15px;
+    margin-bottom: 6px;
+    font-weight: bold;
+    color: #0B1F3A;
+}
+
+.login-box input {
+    padding: 13px;
+    border: 1px solid #7DD3FC;
+    border-radius: 6px;
+    font-size: 16px;
+    box-sizing: border-box;
+}
+
+.login-box input:focus {
+    outline: none;
+    border-color: #0284C7;
+}
+
+.forgot-password {
+    margin-top: 12px;
+    color: #0284C7;
+    text-decoration: none;
+    text-align: right;
+}
+
+.forgot-password:hover {
+    color: #0B1F3A;
+}
+
+.login-box button {
+    margin-top: 25px;
+    padding: 14px;
+    background-color: #0B1F3A;
+    color: white;
+    border: none;
+    border-radius: 6px;
+    font-size: 17px;
+    font-weight: bold;
+    cursor: pointer;
+}
+
+.login-box button:hover {
+    background-color: #38BDF8;
+    color: #0B1F3A;
+}
+
+.create-account {
+    margin-top: 25px;
+}
+
+.create-account a {
+    color: #0284C7;
+    font-weight: bold;
+    text-decoration: none;
+}
+
+.create-account a:hover {
+    color: #0B1F3A;
+}
+
+/* Register Page */
+
+.register-page {
+
+    max-width: 500px;
+
+    margin: auto;
+
+    padding: 70px 20px;
+
+}
+
+.register-box {
+
+    padding: 40px;
+
+    background-color: white;
+
+    border-radius: 12px;
+
+    border: 1px solid #BAE6FD;
+
+    text-align: center;
+
+}
+
+.register-box h1 {
+
+    font-size: 36px;
+
+    color: #0B1F3A;
+
+    margin-bottom: 10px;
+
+}
+
+.register-box > p {
+
+    color: #475569;
+
+    margin-bottom: 30px;
+
+}
+
+.register-box form {
+
+    display: flex;
+
+    flex-direction: column;
+
+    text-align: left;
+
+}
+
+.register-box label {
+
+    margin-top: 15px;
+
+    margin-bottom: 6px;
+
+    font-weight: bold;
+
+    color: #0B1F3A;
+
+}
+
+.register-box input {
+
+    padding: 13px;
+
+    border: 1px solid #7DD3FC;
+
+    border-radius: 6px;
+
+    font-size: 16px;
+
+    box-sizing: border-box;
+
+}
+
+.register-box input:focus {
+
+    outline: none;
+
+    border-color: #0284C7;
+
+}
+
+.register-box button {
+
+    margin-top: 25px;
+
+    padding: 14px;
+
+    background-color: #0B1F3A;
+
+    color: white;
+
+    border: none;
+
+    border-radius: 6px;
+
+    font-size: 17px;
+
+    font-weight: bold;
+
+    cursor: pointer;
+
+}
+
+.register-box button:hover {
+
+    background-color: #38BDF8;
+
+    color: #0B1F3A;
+
+}
+
+.login-link {
+
+    margin-top: 25px;
+
+}
+
+.login-link a {
+
+    color: #0284C7;
+
+    font-weight: bold;
+
+    text-decoration: none;
+
+}
+
+.login-link a:hover {
+
+    color: #0B1F3A;
+
+}
+
+/* Forgot Password Page */
+
+.forgot-password-page {
+
+    max-width: 500px;
+
+    margin: auto;
+
+    padding: 80px 20px;
+
+}
+
+.forgot-password-box {
+
+    padding: 40px;
+
+    background-color: white;
+
+    border-radius: 12px;
+
+    border: 1px solid #BAE6FD;
+
+    text-align: center;
+
+}
+
+.forgot-password-box h1 {
+
+    font-size: 36px;
+
+    color: #0B1F3A;
+
+    margin-bottom: 10px;
+
+}
+
+.forgot-password-box > p {
+
+    color: #475569;
+
+    margin-bottom: 30px;
+
+}
+
+.forgot-password-box form {
+
+    display: flex;
+
+    flex-direction: column;
+
+    text-align: left;
+
+}
+
+.forgot-password-box label {
+
+    margin-bottom: 6px;
+
+    font-weight: bold;
+
+    color: #0B1F3A;
+
+}
+
+.forgot-password-box input {
+
+    padding: 13px;
+
+    border: 1px solid #7DD3FC;
+
+    border-radius: 6px;
+
+    font-size: 16px;
+
+    box-sizing: border-box;
+
+}
+
+.forgot-password-box input:focus {
+
+    outline: none;
+
+    border-color: #0284C7;
+
+}
+
+.forgot-password-box button {
+
+    margin-top: 25px;
+
+    padding: 14px;
+
+    background-color: #0B1F3A;
+
+    color: white;
+
+    border: none;
+
+    border-radius: 6px;
+
+    font-size: 17px;
+
+    font-weight: bold;
+
+    cursor: pointer;
+
+}
+
+.forgot-password-box button:hover {
+
+    background-color: #38BDF8;
+
+    color: #0B1F3A;
+
+}
+
+.back-to-login {
+
+    margin-top: 25px;
+
+}
+
+.back-to-login a {
+
+    color: #0284C7;
+
+    font-weight: bold;
+
+    text-decoration: none;
+
+}
+
+.back-to-login a:hover {
+
+    color: #0B1F3A;
+
+}
+
+/* Order Page */
+
+.order-page {
+
+    max-width: 600px;
+
+    margin: auto;
+
+    padding: 70px 20px;
+
+}
+
+.order-box {
+
+    padding: 40px;
+
+    background-color: white;
+
+    border-radius: 12px;
+
+    border: 1px solid #BAE6FD;
+
+    text-align: center;
+
+}
+
+.order-box h1 {
+
+    font-size: 36px;
+
+    color: #0B1F3A;
+
+    margin-bottom: 10px;
+
+}
+
+.order-box > p {
+
+    color: #475569;
+
+    margin-bottom: 30px;
+
+}
+
+.order-box form {
+
+    display: flex;
+
+    flex-direction: column;
+
+    text-align: left;
+
+}
+
+.order-box label {
+
+    margin-top: 15px;
+
+    margin-bottom: 6px;
+
+    font-weight: bold;
+
+    color: #0B1F3A;
+
+}
+
+.order-box input {
+
+    padding: 13px;
+
+    border: 1px solid #7DD3FC;
+
+    border-radius: 6px;
+
+    font-size: 16px;
+
+    box-sizing: border-box;
+
+}
+
+.order-box input:focus {
+
+    outline: none;
+
+    border-color: #0284C7;
+
+}
+
+.order-box button {
+
+    margin-top: 25px;
+
+    padding: 14px;
+
+    background-color: #0B1F3A;
+
+    color: white;
+
+    border: none;
+
+    border-radius: 6px;
+
+    font-size: 17px;
+
+    font-weight: bold;
+
+    cursor: pointer;
+
+}
+
+.order-box button:hover {
+
+    background-color: #38BDF8;
+
+    color: #0B1F3A;
+
+}
+
+/* About Page */
+
+.about-page {
+    max-width: 900px;
+    margin: 50px auto;
+    padding: 50px;
+    background-color: #ffffff;
+    border-radius: 15px;
+    box-shadow: 0 5px 20px rgba(0, 31, 63, 0.12);
+}
+
+.about-page h1 {
+    text-align: center;
+    font-size: 42px;
+    color: #001f3f;
+    margin-bottom: 30px;
+}
+
+.about-page h2 {
+    color: #0077b6;
+    margin-top: 35px;
+}
+
+.about-page p {
+    font-size: 18px;
+    line-height: 1.8;
+    color: #444;
+}
+
+
+/* Contact Page */
+
+.contact-page {
+    max-width: 900px;
+    margin: 50px auto;
+    padding: 50px;
+    background-color: #ffffff;
+    border-radius: 15px;
+    box-shadow: 0 5px 20px rgba(0, 31, 63, 0.12);
+    text-align: center;
+}
+
+.contact-page h1 {
+    font-size: 42px;
+    color: #001f3f;
+    margin-bottom: 25px;
+}
+
+.contact-page h2 {
+    color: #0077b6;
+    margin-top: 35px;
+}
+
+.contact-page p {
+    font-size: 18px;
+    line-height: 1.8;
+    color: #444;
+}

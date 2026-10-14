@@ -1,0 +1,14 @@
+.local/
+.env
+.env.*
+!.env.example
+*.db-shm
+*.db-wal
+marvellous-motors
+*.log
+.DS_Store
+__pycache__/
+.venv/
+# New receipts and databases must stay local; inherited tracked files are preserved.
+uploads/*
+*.db

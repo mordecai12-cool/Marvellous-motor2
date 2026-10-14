@@ -3,7 +3,7 @@
 <head>
     <title>Payment - Marvellous Motors</title>
     <link rel="stylesheet" href="style.css">
-</head>
+<script src="/security.js" defer></script></head>
 
 <body>
 
@@ -23,12 +23,12 @@
         <div class="order-summary">
             <h2>Order Details</h2>
 
-            <p>Car: Toyota Camry</p>
-            <p>Year: 2025</p>
-            <p>Transmission: Automatic</p>
-            <p>Fuel: Petrol</p>
+            <p>Car: {{.Vehicle.Name}} {{.Vehicle.Trim}}</p>
+            <p>Year: {{.Vehicle.Year}} · {{.Vehicle.Condition}}</p>
+            <p>Transmission: {{.Vehicle.Transmission}}</p>
+            <p>Fuel: {{.Vehicle.Fuel}}</p>
 
-            <h2>Amount to Pay: ₦25,000,000</h2>
+            <h2>Amount to Pay: {{.Vehicle.PriceLabel}}</h2>
         </div>
 
         <div class="delivery-summary">
