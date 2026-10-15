@@ -22,17 +22,17 @@ import (
 func newSessionStore() *sessions.CookieStore {
 	key := []byte(os.Getenv("MM_SESSION_SECRET"))
 	if len(key) == 0 {
-		if err := os.MkdirAll(".local", 0700); err != nil {
+		if err := os.MkdirAll(dataDirectory(), 0700); err != nil {
 			log.Fatal(err)
 		}
 		var err error
-		key, err = os.ReadFile(".local/session-key")
+		key, err = os.ReadFile(filepath.Join(dataDirectory(), "session-key"))
 		if os.IsNotExist(err) {
 			key = make([]byte, 32)
 			if _, err = rand.Read(key); err != nil {
 				log.Fatal(err)
 			}
-			if err = os.WriteFile(".local/session-key", key, 0600); err != nil {
+			if err = os.WriteFile(filepath.Join(dataDirectory(), "session-key"), key, 0600); err != nil {
 				log.Fatal(err)
 			}
 		} else if err != nil {
@@ -43,7 +43,7 @@ func newSessionStore() *sessions.CookieStore {
 		log.Fatal("MM_SESSION_SECRET must contain at least 32 bytes")
 	}
 	s := sessions.NewCookieStore(key)
-	s.Options = &sessions.Options{Path: "/", MaxAge: 12 * 60 * 60, HttpOnly: true, SameSite: http.SameSiteLaxMode, Secure: os.Getenv("MM_SECURE_COOKIES") == "true"}
+	s.Options = &sessions.Options{Path: "/", MaxAge: 12 * 60 * 60, HttpOnly: true, SameSite: http.SameSiteLaxMode, Secure: secureCookiesEnabled()}
 	return s
 }
 
@@ -75,7 +75,7 @@ func securityMiddleware(next http.Handler) http.Handler {
 				http.Error(w, "Could not initialise session", 500)
 				return
 			}
-			http.SetCookie(w, &http.Cookie{Name: "mm-csrf", Value: hex.EncodeToString(bytes), Path: "/", MaxAge: 43200, SameSite: http.SameSiteLaxMode, Secure: os.Getenv("MM_SECURE_COOKIES") == "true"})
+			http.SetCookie(w, &http.Cookie{Name: "mm-csrf", Value: hex.EncodeToString(bytes), Path: "/", MaxAge: 43200, SameSite: http.SameSiteLaxMode, Secure: secureCookiesEnabled()})
 		}
 		if r.Method != http.MethodGet && r.Method != http.MethodHead && r.Method != http.MethodOptions {
 			if origin := r.Header.Get("Origin"); origin != "" {
@@ -157,5 +157,5 @@ func handlePrivateReceipt(db *sql.DB, w http.ResponseWriter, r *http.Request) {
 		}
 	}
 	w.Header().Set("Content-Disposition", "attachment")
-	http.ServeFile(w, r, filepath.Join("uploads", filename))
+	http.ServeFile(w, r, filepath.Join(uploadDirectory(), filename))
 }

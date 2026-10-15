@@ -1,0 +1,22 @@
+{
+  "$schema": "https://schema.railpack.com",
+  "provider": "golang",
+  "deploy": {
+    "startCommand": "./out",
+    "inputs": [
+      {
+        "step": "build",
+        "include": [
+          "out",
+          "*.html",
+          "*.css",
+          "*.js",
+          "*.svg",
+          "image-credits.json",
+          "images",
+          "fonts"
+        ]
+      }
+    ]
+  }
+}

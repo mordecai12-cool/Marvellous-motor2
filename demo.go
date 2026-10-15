@@ -14,7 +14,7 @@ import (
 
 // Demo credentials are generated on this machine and never served by HTTP.
 func seedLocalDemo(db *sql.DB) {
-	if os.Getenv("MM_DEMO_MODE") != "true" {
+	if productionMode() || os.Getenv("MM_DEMO_MODE") != "true" {
 		return
 	}
 	type credentials struct {
@@ -63,5 +63,9 @@ func handleHealth(db *sql.DB, w http.ResponseWriter, r *http.Request) {
 		return
 	}
 	w.Header().Set("Content-Type", "application/json")
-	w.Write([]byte(`{"status":"ok","mode":"local-preview"}`))
+	mode := "local-preview"
+	if productionMode() {
+		mode = "production"
+	}
+	serviceJSON(w, 200, map[string]string{"status": "ok", "mode": mode})
 }

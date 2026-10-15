@@ -120,3 +120,9 @@ See [the audit](docs/PROJECT_AUDIT.md) and [the development roadmap](docs/ROADMA
 Current verification results and local demonstration steps are in [docs/LOCAL_VERIFICATION.md](docs/LOCAL_VERIFICATION.md).
 
 The completed upgrades are published on [`my-isolated-project` in Marvellous-motor2](https://github.com/mordecai12-cool/Marvellous-motor2/tree/my-isolated-project). No merge into `main` was performed, and the original `marvellous-motors` repository was not changed.
+
+## Public HTTPS hosting
+
+The hosting budget is **free only**. The full Go application is prepared for Railway from `my-isolated-project`, using its Free plan subject to account eligibility and available credits. `railpack.json` packages the application and public assets without bundling local databases, receipts or credentials. The provider account must be connected and its Free plan verified before creating services. No paid Render configuration is included, and no public deployment has been verified yet.
+
+See [the deployment guide](docs/DEPLOYMENT.md) for account setup, production settings, persistent storage and verification.

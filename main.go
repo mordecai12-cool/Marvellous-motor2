@@ -87,10 +87,7 @@ func formatAmount(amount float64) string {
 var store = newSessionStore()
 
 func main() {
-	dbPath := os.Getenv("MM_DB_PATH")
-	if dbPath == "" {
-		dbPath = ".local/preview.db"
-	}
+	dbPath := databasePath()
 	if err := os.MkdirAll(filepath.Dir(dbPath), 0700); err != nil {
 		log.Fatal(err)
 	}
@@ -100,7 +97,7 @@ func main() {
 	}
 	defer db.Close()
 
-	err = os.MkdirAll("uploads", 0755)
+	err = os.MkdirAll(uploadDirectory(), 0700)
 	if err != nil {
 		log.Fatal(err)
 	}
@@ -223,7 +220,7 @@ func main() {
 		log.Fatal("Could not initialize platform owner")
 	}
 	seedLocalDemo(db)
-	if os.Getenv("MM_DEMO_MODE") == "true" {
+	if !productionMode() && os.Getenv("MM_DEMO_MODE") == "true" {
 		if err := seedConfiguredLocalOwner(db, ".local/owner-account.json"); err != nil {
 			log.Fatal("Could not load local owner configuration")
 		}
@@ -331,9 +328,7 @@ func main() {
 		http.NotFound(w, r)
 	})
 
-	log.Println("Marvellous Motors is running on http://localhost:8080")
-
-	err = http.ListenAndServe("127.0.0.1:8080", securityMiddleware(adminAccessMiddleware(db, http.DefaultServeMux)))
+	err = runHTTPServer(securityMiddleware(adminAccessMiddleware(db, http.DefaultServeMux)))
 	if err != nil {
 		log.Fatal(err)
 	}
@@ -568,7 +563,7 @@ func handlePayment(db *sql.DB, w http.ResponseWriter, r *http.Request) {
 
 	log.Println("Payment saved to database")
 
-	destination, err := os.Create("uploads/" + filename)
+	destination, err := os.OpenFile(filepath.Join(uploadDirectory(), filename), os.O_WRONLY|os.O_CREATE|os.O_TRUNC, 0600)
 	if err != nil {
 		http.Error(w, "Could not save receipt", http.StatusInternalServerError)
 		return
