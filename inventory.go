@@ -61,6 +61,10 @@ func (v Vehicle) EngineLayoutLabel() string {
 		return "I4 · inline four-cylinder"
 	case "I6":
 		return "I6 · inline six-cylinder"
+	case "V10":
+		return "V10 · ten-cylinder V engine"
+	case "Rotary":
+		return "Rotary engine · twin rotor"
 	case "V8":
 		return "V8 · eight-cylinder V engine"
 	case "Flat4":

@@ -35,14 +35,14 @@ A dedicated admin workspace now includes order and payment review, delivery sche
 ## What's available
 
 - Responsive homepage, collection, vehicle detail, about, contact, order, and enquiry pages.
-- 16 listings, 14 distinct models, 9 makes; 7 new and 9 pre-owned vehicles.
+- 50 listings, 44 distinct models, 22 makes; 7 new and 43 pre-owned sample vehicles.
 - Make/text, condition, body, fuel, budget, year range, mileage, location, origin category, availability, and transmission filters.
 - Sorting by price, year, and mileage; pagination; shareable search URLs.
 - Saved favourites and saved searches in the current browser; comparisons of up to three vehicles.
 - Vehicle photo galleries with enlargement, available exterior/interior views, attribution, specifications, features, related vehicles, and sample prices in naira.
 - Customer registration and sign-in, stable customer IDs, professional dashboard/profile pages, private order history and shipment checkpoints.
 - Persistent customer-care chat and staff inbox with replies, private picture/file attachments, unread counts, resolution and actual staff availability.
-- Sports and Luxury collections, engine-configuration filters (including V6 and inline-six), engine details on listing cards and vehicle comparisons. See [vehicle browsing and complaint attachments](docs/VEHICLES_AND_CHAT.md).
+- Sports, Classic, Luxury, Everyday and Limited Edition collections, engine-configuration filters (including V6, V10, rotary and boxer layouts), engine details on listing cards and vehicle comparisons. See [vehicle browsing and complaint attachments](docs/VEHICLES_AND_CHAT.md).
 - Correct selected-vehicle checkout with price determined on the server, including selection retention during sign-in.
 - Persisted vehicle sourcing, inspection, test-drive, finance, trade-in, dealer application, and support requests.
 - Signed-in customers' private request history; authenticated admin review queue and logged enquiry status updates.
@@ -120,7 +120,7 @@ See [the audit](docs/PROJECT_AUDIT.md) and [the development roadmap](docs/ROADMA
 
 Current verification results and local demonstration steps are in [docs/LOCAL_VERIFICATION.md](docs/LOCAL_VERIFICATION.md).
 
-The completed upgrades are published on [`my-isolated-project` in Marvellous-motor2](https://github.com/mordecai12-cool/Marvellous-motor2/tree/my-isolated-project). No merge into `main` was performed, and the original `marvellous-motors` repository was not changed.
+The project branch is [`my-isolated-project` in Marvellous-motor2](https://github.com/mordecai12-cool/Marvellous-motor2/tree/my-isolated-project). No merge into `main` was performed, and the original `marvellous-motors` repository was not changed.
 
 ## Public HTTPS hosting
 
@@ -131,3 +131,5 @@ See [the deployment guide](docs/DEPLOYMENT.md) for account setup, production set
 ## Admin and payment settings verification
 
 Run `go test ./...` and `go vet ./...`. With the local server running and Python Playwright installed, run `.venv/bin/python tests/settings_browser_check.py`. This checks both built-in logins, admin creation and invitation, password updates, bank details in checkout and mobile layouts. It restores the original payment account after testing. Database-backed settings require persistent storage in deployment as described in [the deployment guide](docs/DEPLOYMENT.md).
+
+The showroom contains 50 sample vehicles, including 30 Sports and 16 Classic entries (some cars belong to both). See [showroom operations](docs/SHOWROOM_OPERATIONS.md) for model details, photo attribution, admin inventory controls and verification.

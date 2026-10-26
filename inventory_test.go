@@ -56,8 +56,8 @@ func customerCookie(t *testing.T, id int64, selected string) *http.Cookie {
 }
 
 func TestInventoryIntegrity(t *testing.T) {
-	if len(vehicles) < 16 {
-		t.Fatalf("Expected expanded inventory, got %d", len(vehicles))
+	if len(vehicles) != 50 {
+		t.Fatalf("Expected exactly 50 vehicles, got %d", len(vehicles))
 	}
 	ids := map[string]bool{}
 	newCount, usedCount := 0, 0

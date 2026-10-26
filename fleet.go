@@ -219,7 +219,7 @@ func saveFleetVehicle(db *sql.DB, r *http.Request, staff Staff) (Vehicle, error)
 	if len(v.Categories) == 0 {
 		v.Categories = []string{"Everyday"}
 	}
-	if !oneOf(v.StockStatus, "Draft", "Available", "Reserved", "Sold") || !oneOf(v.Condition, "New", "Used") || !oneOf(v.Body, "Sedan", "SUV", "Coupe", "Hatchback", "Pickup", "Van", "Convertible") || !oneOf(v.Fuel, "Petrol", "Diesel", "Hybrid", "Electric") || !oneOf(v.EngineLayout, "I4", "I6", "V6", "V8", "Flat4", "Flat6", "Electric", "Unconfirmed") || !oneOf(v.Transmission, "Automatic", "Manual", "CVT", "e-CVT", "PDK automatic", "Single-speed") {
+	if !oneOf(v.StockStatus, "Draft", "Available", "Reserved", "Sold") || !oneOf(v.Condition, "New", "Used") || !oneOf(v.Body, "Sedan", "SUV", "Coupe", "Hatchback", "Pickup", "Van", "Convertible") || !oneOf(v.Fuel, "Petrol", "Diesel", "Hybrid", "Electric") || !oneOf(v.EngineLayout, "I4", "I6", "V6", "V8", "V10", "Rotary", "Flat4", "Flat6", "Electric", "Unconfirmed") || !oneOf(v.Transmission, "Automatic", "Manual", "CVT", "e-CVT", "PDK automatic", "Single-speed") {
 		return v, errors.New("Choose valid stock and vehicle specification options.")
 	}
 	year, err := integerField(r, "year", 1950, int64(time.Now().Year()+2))

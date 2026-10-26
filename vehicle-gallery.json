@@ -514,5 +514,329 @@
       "license_url": "https://creativecommons.org/licenses/by-sa/4.0",
       "photo_set": "2023porsche911sportclassic"
     }
+  ],
+  "bmw-m4-csl": [
+    {
+      "image": "/images/gallery/bmw-m4-csl-exterior.jpg",
+      "label": "Exterior",
+      "caption": "2022 BMW M4 CSL FOS22.jpg",
+      "source": "https://commons.wikimedia.org/wiki/File:2022_BMW_M4_CSL_FOS22.jpg",
+      "artist": "MrWalkr",
+      "license": "CC BY-SA 4.0",
+      "license_url": "https://creativecommons.org/licenses/by-sa/4.0",
+      "photo_set": "bmw-m4-csl"
+    }
+  ],
+  "bmw-m2": [
+    {
+      "image": "/images/gallery/bmw-m2-exterior.jpg",
+      "label": "Exterior",
+      "caption": "BMW G87 M2 1X7A6997.jpg",
+      "source": "https://commons.wikimedia.org/wiki/File:BMW_G87_M2_1X7A6997.jpg",
+      "artist": "Alexander-93",
+      "license": "CC BY-SA 4.0",
+      "license_url": "https://creativecommons.org/licenses/by-sa/4.0",
+      "photo_set": "bmw-m2"
+    }
+  ],
+  "audi-r8": [
+    {
+      "image": "/images/gallery/audi-r8-exterior.jpg",
+      "label": "Exterior",
+      "caption": "2017 Audi R8 V10.jpg",
+      "source": "https://commons.wikimedia.org/wiki/File:2017_Audi_R8_V10.jpg",
+      "artist": "Vauxford",
+      "license": "CC BY-SA 4.0",
+      "license_url": "https://creativecommons.org/licenses/by-sa/4.0",
+      "photo_set": "audi-r8"
+    }
+  ],
+  "audi-tt": [
+    {
+      "image": "/images/gallery/audi-tt-exterior.jpg",
+      "label": "Exterior",
+      "caption": "Audi TT 2016 (1).jpg",
+      "source": "https://commons.wikimedia.org/wiki/File:Audi_TT_2016_(1).jpg",
+      "artist": "Ethan Llamas",
+      "license": "CC BY-SA 4.0",
+      "license_url": "https://creativecommons.org/licenses/by-sa/4.0",
+      "photo_set": "audi-tt"
+    }
+  ],
+  "nissan-370z": [
+    {
+      "image": "/images/gallery/nissan-370z-exterior.jpg",
+      "label": "Exterior",
+      "caption": "Nissan 370Z Nismo 2015 (24060669894).jpg",
+      "source": "https://commons.wikimedia.org/wiki/File:Nissan_370Z_Nismo_2015_(24060669894).jpg",
+      "artist": "Falcon® Photography from France",
+      "license": "CC BY-SA 2.0",
+      "license_url": "https://creativecommons.org/licenses/by-sa/2.0",
+      "photo_set": "nissan-370z"
+    }
+  ],
+  "nissan-gtr": [
+    {
+      "image": "/images/gallery/nissan-gtr-exterior.jpg",
+      "label": "Exterior",
+      "caption": "2017 Nissan GT-R Premium, Front Right, 07-12-2021.jpg",
+      "source": "https://commons.wikimedia.org/wiki/File:2017_Nissan_GT-R_Premium,_Front_Right,_07-12-2021.jpg",
+      "artist": "Elise240SX",
+      "license": "CC BY-SA 4.0",
+      "license_url": "https://creativecommons.org/licenses/by-sa/4.0",
+      "photo_set": "nissan-gtr"
+    }
+  ],
+  "chevrolet-corvette-c7": [
+    {
+      "image": "/images/gallery/chevrolet-corvette-c7-exterior.jpg",
+      "label": "Exterior",
+      "caption": "Chevrolet Corvette C7 Stingray.jpg",
+      "source": "https://commons.wikimedia.org/wiki/File:Chevrolet_Corvette_C7_Stingray.jpg",
+      "artist": "Calreyn88",
+      "license": "CC BY-SA 4.0",
+      "license_url": "https://creativecommons.org/licenses/by-sa/4.0",
+      "photo_set": "chevrolet-corvette-c7"
+    }
+  ],
+  "chevrolet-camaro-ss": [
+    {
+      "image": "/images/gallery/chevrolet-camaro-ss-exterior.jpg",
+      "label": "Exterior",
+      "caption": "2017 Chevrolet Camaro SS Convertible.jpg",
+      "source": "https://commons.wikimedia.org/wiki/File:2017_Chevrolet_Camaro_SS_Convertible.jpg",
+      "artist": "Calreyn88",
+      "license": "CC BY-SA 4.0",
+      "license_url": "https://creativecommons.org/licenses/by-sa/4.0",
+      "photo_set": "chevrolet-camaro-ss"
+    }
+  ],
+  "dodge-challenger-rt": [
+    {
+      "image": "/images/gallery/dodge-challenger-rt-exterior.jpg",
+      "label": "Exterior",
+      "caption": "2015 Dodge Challenger RT 2.JPG",
+      "source": "https://commons.wikimedia.org/wiki/File:2015_Dodge_Challenger_RT_2.JPG",
+      "artist": "Hunttriumph1500",
+      "license": "CC BY-SA 4.0",
+      "license_url": "https://creativecommons.org/licenses/by-sa/4.0",
+      "photo_set": "dodge-challenger-rt"
+    }
+  ],
+  "ford-mustang-ecoboost": [
+    {
+      "image": "/images/gallery/ford-mustang-ecoboost-exterior.jpg",
+      "label": "Exterior",
+      "caption": "2018 Ford Mustang Ecoboost Front.jpg",
+      "source": "https://commons.wikimedia.org/wiki/File:2018_Ford_Mustang_Ecoboost_Front.jpg",
+      "artist": "Koenigseggvibes",
+      "license": "CC BY-SA 4.0",
+      "license_url": "https://creativecommons.org/licenses/by-sa/4.0",
+      "photo_set": "ford-mustang-ecoboost"
+    }
+  ],
+  "mercedes-amg-gt": [
+    {
+      "image": "/images/gallery/mercedes-amg-gt-exterior.jpg",
+      "label": "Exterior",
+      "caption": "2016 Mercedes AMG GT Premium Auto 2.jpg",
+      "source": "https://commons.wikimedia.org/wiki/File:2016_Mercedes_AMG_GT_Premium_Auto_2.jpg",
+      "artist": "Calreyn88",
+      "license": "CC BY-SA 4.0",
+      "license_url": "https://creativecommons.org/licenses/by-sa/4.0",
+      "photo_set": "mercedes-amg-gt"
+    }
+  ],
+  "toyota-gt86": [
+    {
+      "image": "/images/gallery/toyota-gt86-exterior.jpg",
+      "label": "Exterior",
+      "caption": "2017 Toyota GT86 PRO D-4S 2.0 Front.jpg",
+      "source": "https://commons.wikimedia.org/wiki/File:2017_Toyota_GT86_PRO_D-4S_2.0_Front.jpg",
+      "artist": "Vauxford",
+      "license": "CC BY-SA 4.0",
+      "license_url": "https://creativecommons.org/licenses/by-sa/4.0",
+      "photo_set": "toyota-gt86"
+    }
+  ],
+  "subaru-brz": [
+    {
+      "image": "/images/gallery/subaru-brz-exterior.jpg",
+      "label": "Exterior",
+      "caption": "2013 Subaru BRZ.jpg",
+      "source": "https://commons.wikimedia.org/wiki/File:2013_Subaru_BRZ.jpg",
+      "artist": "Hugh Llewelyn",
+      "license": "CC BY-SA 2.0",
+      "license_url": "https://creativecommons.org/licenses/by-sa/2.0",
+      "photo_set": "subaru-brz"
+    }
+  ],
+  "mazda-rx8": [
+    {
+      "image": "/images/gallery/mazda-rx8-exterior.jpg",
+      "label": "Exterior",
+      "caption": "2004 Mazda RX-8.jpg",
+      "source": "https://commons.wikimedia.org/wiki/File:2004_Mazda_RX-8.jpg",
+      "artist": "Oleg Yunakov",
+      "license": "CC BY-SA 4.0",
+      "license_url": "https://creativecommons.org/licenses/by-sa/4.0",
+      "photo_set": "mazda-rx8"
+    }
+  ],
+  "porsche-944-classic": [
+    {
+      "image": "/images/gallery/porsche-944-classic-exterior.jpg",
+      "label": "Exterior",
+      "caption": "1986 Porsche 944 (36404).jpg",
+      "source": "https://commons.wikimedia.org/wiki/File:1986_Porsche_944_(36404).jpg",
+      "artist": "Calreyn88",
+      "license": "CC BY-SA 4.0",
+      "license_url": "https://creativecommons.org/licenses/by-sa/4.0",
+      "photo_set": "porsche-944-classic"
+    }
+  ],
+  "porsche-928-classic": [
+    {
+      "image": "/images/gallery/porsche-928-classic-exterior.jpg",
+      "label": "Exterior",
+      "caption": "Front of Porsche 928 S4, Auckland, NZL.jpg",
+      "source": "https://commons.wikimedia.org/wiki/File:Front_of_Porsche_928_S4,_Auckland,_NZL.jpg",
+      "artist": "Yourong Wang",
+      "license": "CC BY-SA 4.0",
+      "license_url": "https://creativecommons.org/licenses/by-sa/4.0",
+      "photo_set": "porsche-928-classic"
+    }
+  ],
+  "bmw-325i-classic": [
+    {
+      "image": "/images/gallery/bmw-325i-classic-exterior.jpg",
+      "label": "Exterior",
+      "caption": "BMW E30 325i Convertible.jpg",
+      "source": "https://commons.wikimedia.org/wiki/File:BMW_E30_325i_Convertible.jpg",
+      "artist": "Oleg Yunakov",
+      "license": "CC BY-SA 4.0",
+      "license_url": "https://creativecommons.org/licenses/by-sa/4.0",
+      "photo_set": "bmw-325i-classic"
+    }
+  ],
+  "bmw-635csi-classic": [
+    {
+      "image": "/images/gallery/bmw-635csi-classic-exterior.jpg",
+      "label": "Exterior",
+      "caption": "BMW 635 CSi (E24) 6170176.jpg",
+      "source": "https://commons.wikimedia.org/wiki/File:BMW_635_CSi_(E24)_6170176.jpg",
+      "artist": "Ermell",
+      "license": "CC BY-SA 4.0",
+      "license_url": "https://creativecommons.org/licenses/by-sa/4.0",
+      "photo_set": "bmw-635csi-classic"
+    }
+  ],
+  "mercedes-280se-classic": [
+    {
+      "image": "/images/gallery/mercedes-280se-classic-exterior.jpg",
+      "label": "Exterior",
+      "caption": "1972 Mercedes-Benz 280 SE (W108) (7755646382).jpg",
+      "source": "https://commons.wikimedia.org/wiki/File:1972_Mercedes-Benz_280_SE_(W108)_(7755646382).jpg",
+      "artist": "Spanish Coches",
+      "license": "CC BY 2.0",
+      "license_url": "https://creativecommons.org/licenses/by/2.0",
+      "photo_set": "mercedes-280se-classic"
+    }
+  ],
+  "mercedes-230e-classic": [
+    {
+      "image": "/images/gallery/mercedes-230e-classic-exterior.jpg",
+      "label": "Exterior",
+      "caption": "1985 Mercedes 230E Auto (14761746058).jpg",
+      "source": "https://commons.wikimedia.org/wiki/File:1985_Mercedes_230E_Auto_(14761746058).jpg",
+      "artist": "Kieran White from Manchester, England",
+      "license": "CC BY 2.0",
+      "license_url": "https://creativecommons.org/licenses/by/2.0",
+      "photo_set": "mercedes-230e-classic"
+    }
+  ],
+  "jaguar-etype-classic": [
+    {
+      "image": "/images/gallery/jaguar-etype-classic-exterior.jpg",
+      "label": "Exterior",
+      "caption": "Jaguar E-Type Coupe Series 1 (1967) - 15149313858.jpg",
+      "source": "https://commons.wikimedia.org/wiki/File:Jaguar_E-Type_Coupe_Series_1_(1967)_-_15149313858.jpg",
+      "artist": "SG2012",
+      "license": "CC BY 2.0",
+      "license_url": "https://creativecommons.org/licenses/by/2.0",
+      "photo_set": "jaguar-etype-classic"
+    }
+  ],
+  "mg-mgb-classic": [
+    {
+      "image": "/images/gallery/mg-mgb-classic-exterior.jpg",
+      "label": "Exterior",
+      "caption": "MG MGB Roadster (1972) (50918378833).jpg",
+      "source": "https://commons.wikimedia.org/wiki/File:MG_MGB_Roadster_(1972)_(50918378833).jpg",
+      "artist": "Andrew Bone from Weymouth, England",
+      "license": "CC BY 2.0",
+      "license_url": "https://creativecommons.org/licenses/by/2.0",
+      "photo_set": "mg-mgb-classic"
+    }
+  ],
+  "triumph-tr6-classic": [
+    {
+      "image": "/images/gallery/triumph-tr6-classic-exterior.jpg",
+      "label": "Exterior",
+      "caption": "1974 Triumph TR6 (13984).jpg",
+      "source": "https://commons.wikimedia.org/wiki/File:1974_Triumph_TR6_(13984).jpg",
+      "artist": "Calreyn88",
+      "license": "CC BY-SA 4.0",
+      "license_url": "https://creativecommons.org/licenses/by-sa/4.0",
+      "photo_set": "triumph-tr6-classic"
+    }
+  ],
+  "volvo-p1800-classic": [
+    {
+      "image": "/images/gallery/volvo-p1800-classic-exterior.jpg",
+      "label": "Exterior",
+      "caption": "1967 Volvo 1800 S (27195843733).jpg",
+      "source": "https://commons.wikimedia.org/wiki/File:1967_Volvo_1800_S_(27195843733).jpg",
+      "artist": "Greg Gjerdingen from Willmar, USA",
+      "license": "CC BY 2.0",
+      "license_url": "https://creativecommons.org/licenses/by/2.0",
+      "photo_set": "volvo-p1800-classic"
+    }
+  ],
+  "ford-capri-classic": [
+    {
+      "image": "/images/gallery/ford-capri-classic-exterior.jpg",
+      "label": "Exterior",
+      "caption": "1973 Ford Capri Mk I 3000 GT (23564233851).jpg",
+      "source": "https://commons.wikimedia.org/wiki/File:1973_Ford_Capri_Mk_I_3000_GT_(23564233851).jpg",
+      "artist": "Sicnag",
+      "license": "CC BY 2.0",
+      "license_url": "https://creativecommons.org/licenses/by/2.0",
+      "photo_set": "ford-capri-classic"
+    }
+  ],
+  "chevrolet-corvette-c3-classic": [
+    {
+      "image": "/images/gallery/chevrolet-corvette-c3-classic-exterior.jpg",
+      "label": "Exterior",
+      "caption": "1978 Chevrolet Corvette, front right, 07-19-2023.jpg",
+      "source": "https://commons.wikimedia.org/wiki/File:1978_Chevrolet_Corvette,_front_right,_07-19-2023.jpg",
+      "artist": "MercurySable99",
+      "license": "CC BY-SA 4.0",
+      "license_url": "https://creativecommons.org/licenses/by-sa/4.0",
+      "photo_set": "chevrolet-corvette-c3-classic"
+    }
+  ],
+  "datsun-240z-classic": [
+    {
+      "image": "/images/gallery/datsun-240z-classic-exterior.jpg",
+      "label": "Exterior",
+      "caption": "1972 Datsun 240Z S30.jpg",
+      "source": "https://commons.wikimedia.org/wiki/File:1972_Datsun_240Z_S30.jpg",
+      "artist": "MrWalkr",
+      "license": "CC BY-SA 4.0",
+      "license_url": "https://creativecommons.org/licenses/by-sa/4.0",
+      "photo_set": "datsun-240z-classic"
+    }
   ]
 }
