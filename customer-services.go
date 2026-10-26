@@ -38,7 +38,7 @@ func registerCustomerServices(db *sql.DB) {
 	http.HandleFunc("/api/support", func(w http.ResponseWriter, r *http.Request) { customerSupportAPI(db, w, r, "get") })
 	http.HandleFunc("/api/support/send", func(w http.ResponseWriter, r *http.Request) { customerSupportAPI(db, w, r, "send") })
 	http.HandleFunc("/api/support/read", func(w http.ResponseWriter, r *http.Request) { customerSupportAPI(db, w, r, "read") })
-	for _, action := range []string{"get", "send", "read", "status", "presence"} {
+	for _, action := range []string{"get", "send", "read", "status", "presence", "case"} {
 		path := "/api/admin/support/" + action
 		if action == "get" {
 			path = "/api/admin/support"

@@ -17,7 +17,7 @@
     <div>
       <section class="delivery-panel receipt-summary" aria-labelledby="payment-summary-heading">
         <div class="receipt-summary-heading"><div><span class="eyebrow">PAYMENT SUMMARY</span><h2 id="payment-summary-heading">{{if eq .Payment.Status "verified"}}Payment reviewed &amp; approved.{{else if eq .Payment.Status "rejected"}}Let's get your payment details right.{{else if .Payment.ID}}Your receipt is safely submitted.{{else}}Complete your payment details.{{end}}</h2></div><span class="receipt-state {{.Payment.Status}}">{{.Payment.StatusLabel}}</span></div>
-        <dl class="receipt-details"><div><dt>Vehicle total</dt><dd>{{.Order.PriceLabel}}</dd></div><div><dt>Submitted amount</dt><dd>{{if .Payment.ID}}{{.Payment.AmountLabel}}{{else}}Not submitted{{end}}</dd></div><div><dt>Payment reference</dt><dd>{{if .Payment.Reference}}{{.Payment.Reference}}{{else}}Not provided{{end}}</dd></div><div><dt>Receipt submitted</dt><dd>{{if .Payment.ID}}{{.Payment.DateLabel}}{{else}}Awaiting your receipt{{end}}</dd></div></dl>
+        <dl class="receipt-details"><div><dt>Order total</dt><dd>{{.Order.PriceLabel}}</dd></div><div><dt>Submitted amount</dt><dd>{{if .Payment.ID}}{{.Payment.AmountLabel}}{{else}}Not submitted{{end}}</dd></div><div><dt>Payment reference</dt><dd>{{if .Payment.Reference}}{{.Payment.Reference}}{{else}}Not provided{{end}}</dd></div><div><dt>Receipt submitted</dt><dd>{{if .Payment.ID}}{{.Payment.DateLabel}}{{else}}Awaiting your receipt{{end}}</dd></div></dl>
         {{if .NeedsEvidence}}<a class="button button-small" href="/order-payment?order-id={{.Order.ID}}">{{if eq .Payment.Status "rejected"}}Submit corrected evidence{{else}}Submit payment evidence{{end}} {{template "arrow"}}</a>{{else if .Payment.Receipt}}<a class="receipt-download" href="/uploads/{{.Payment.Receipt}}">View submitted receipt {{template "arrow"}}</a>{{end}}
         {{if eq .Payment.Status "pending"}}<p class="receipt-review-note"><span aria-hidden="true">◷</span> Payment remains unconfirmed until our team reviews and approves your evidence. We will update this page when the review is recorded.</p>{{end}}
       </section>
@@ -33,7 +33,7 @@
       <a class="continue-browsing" href="/cars.html">Explore more vehicles {{template "arrow"}}</a>
     </aside>
   </section>
-</main>{{template "footer" .}}</body></html>
+{{if and .Order.Vehicle.DocumentItems (or (eq .Order.Status "processing") (eq .Order.Status "out_for_delivery") (eq .Order.Status "delivered"))}}<section class="delivery-panel"><h2>Your vehicle documents</h2><p>Inspection and ownership documents shared with your order.</p>{{range .Order.Vehicle.DocumentItems}}<p><a class="text-link" href="{{.URL}}">Download {{.Name}} →</a></p>{{end}}</section>{{end}}</main>{{template "footer" .}}</body></html>
 
 {{end}}
 {{template "customer-order-page" .}}

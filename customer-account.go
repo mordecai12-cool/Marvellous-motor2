@@ -8,10 +8,12 @@ import (
 	"net/http"
 	"regexp"
 	"strings"
+	"time"
 	"unicode/utf8"
 )
 
 type CustomerAccountPage struct {
+	UpcomingVisits []Appointment
 	ShowroomData
 	Name, Email, Phone, Joined, Error, Notice              string
 	CustomerID                                             int64
@@ -91,6 +93,13 @@ func serveCustomerAccount(db *sql.DB, w http.ResponseWriter, r *http.Request, pa
 		data.Notice = "Your profile changes have been saved."
 	}
 	if page == "dashboard" {
+		visits, _ := loadAppointments(db, c.ID)
+		for _, visit := range visits {
+			start, e := time.Parse(time.RFC3339, visit.StartsAt)
+			if e == nil && visit.CanCancel() && start.After(time.Now()) {
+				data.UpcomingVisits = append(data.UpcomingVisits, visit)
+			}
+		}
 		data.Orders, err = loadOrders(db, "WHERE o.customer_id=?", c.ID)
 		if err != nil {
 			http.Error(w, "Could not load your orders", 500)

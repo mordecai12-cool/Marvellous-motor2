@@ -32,6 +32,10 @@ func testDatabase(t *testing.T) *sql.DB {
 	if err = initAdminPlatform(db); err != nil {
 		t.Fatal(err)
 	}
+	_, err = db.Exec("INSERT INTO delivery_rates(origin,country,state,city,delivery,fees,label,complete,estimated) VALUES('Lagos','Nigeria','Lagos','',0,0,'Test rate',1,0),('Abuja','Nigeria','Abuja','',0,0,'Test rate',1,0),('Abuja','Nigeria','Lagos','',0,0,'Test rate',1,0)")
+	if err != nil {
+		t.Fatal(err)
+	}
 	return db
 }
 

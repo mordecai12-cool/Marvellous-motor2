@@ -14,6 +14,10 @@ import (
 )
 
 type SupportConversation struct {
+	CaseReference  string `json:"case_reference"`
+	CaseStatus     string `json:"case_status"`
+	Assignee       string `json:"assignee"`
+	AssignedID     int64  `json:"assigned_id"`
 	ID             int64  `json:"id"`
 	CustomerID     int64  `json:"customer_id"`
 	Name           string `json:"name"`
@@ -37,6 +41,7 @@ type SupportMessage struct {
 	ClientID   string             `json:"client_id"`
 }
 type SupportSnapshot struct {
+	Staff         []CaseStaff           `json:"available_staff,omitempty"`
 	Conversation  *SupportConversation  `json:"conversation"`
 	Conversations []SupportConversation `json:"conversations,omitempty"`
 	Messages      []SupportMessage      `json:"messages"`
@@ -47,8 +52,8 @@ type SupportSnapshot struct {
 const supportConversationSelect = `SELECT c.id,c.customer_id,u.name,u.email,c.status,c.customer_read_id,c.staff_read_id,
  (SELECT COUNT(*) FROM support_messages m WHERE m.conversation_id=c.id AND m.sender_kind='staff' AND m.id>c.customer_read_id),
  (SELECT COUNT(*) FROM support_messages m WHERE m.conversation_id=c.id AND m.sender_kind='customer' AND m.id>c.staff_read_id),
- COALESCE((SELECT m.body FROM support_messages m WHERE m.conversation_id=c.id ORDER BY m.id DESC LIMIT 1),''),c.updated_at
- FROM support_conversations c JOIN customers u ON u.id=c.customer_id `
+ COALESCE((SELECT m.body FROM support_messages m WHERE m.conversation_id=c.id ORDER BY m.id DESC LIMIT 1),''),c.updated_at,COALESCE(k.status,c.status),COALESCE(k.assigned_to,0),COALESCE(a.name,'')
+ FROM support_conversations c JOIN customers u ON u.id=c.customer_id LEFT JOIN support_cases k ON k.conversation_id=c.id LEFT JOIN admins a ON a.id=k.assigned_to `
 
 func loadSupportConversations(db *sql.DB, where string, args ...any) ([]SupportConversation, error) {
 	rows, err := db.Query(supportConversationSelect+where+" ORDER BY c.updated_at DESC,c.id DESC LIMIT 100", args...)
@@ -59,9 +64,10 @@ func loadSupportConversations(db *sql.DB, where string, args ...any) ([]SupportC
 	list := []SupportConversation{}
 	for rows.Next() {
 		var c SupportConversation
-		if err = rows.Scan(&c.ID, &c.CustomerID, &c.Name, &c.Email, &c.Status, &c.CustomerReadID, &c.StaffReadID, &c.UnreadCustomer, &c.UnreadStaff, &c.LastMessage, &c.UpdatedAt); err != nil {
+		if err = rows.Scan(&c.ID, &c.CustomerID, &c.Name, &c.Email, &c.Status, &c.CustomerReadID, &c.StaffReadID, &c.UnreadCustomer, &c.UnreadStaff, &c.LastMessage, &c.UpdatedAt, &c.CaseStatus, &c.AssignedID, &c.Assignee); err != nil {
 			return nil, err
 		}
+		c.CaseReference = fmt.Sprintf("MM-S%06d", c.ID)
 		list = append(list, c)
 	}
 	return list, rows.Err()
@@ -203,6 +209,10 @@ func staffSupportAPI(db *sql.DB, w http.ResponseWriter, r *http.Request, action 
 		serviceError(w, 401, "Your staff session has ended. Sign in again.")
 		return
 	}
+	if action == "case" {
+		updateSupportCase(db, w, r, staff)
+		return
+	}
 	if action == "presence" {
 		available := r.FormValue("available")
 		if available != "true" && available != "false" {
@@ -238,6 +248,7 @@ func staffSupportAPI(db *sql.DB, w http.ResponseWriter, r *http.Request, action 
 			return
 		}
 		s := SupportSnapshot{Conversations: list, Messages: []SupportMessage{}}
+		s.Staff, _ = availableCaseStaff(db)
 		if raw := r.URL.Query().Get("id"); raw != "" {
 			id, err := serviceQueryID(r, "id")
 			if err != nil || id < 1 {
@@ -308,6 +319,10 @@ func staffSupportAPI(db *sql.DB, w http.ResponseWriter, r *http.Request, action 
 		}
 		if err != nil {
 			serviceError(w, 500, "Could not record conversation update.")
+			return
+		}
+		if _, err = tx.Exec("INSERT INTO support_cases(conversation_id,status) VALUES(?,?) ON CONFLICT(conversation_id) DO UPDATE SET status=excluded.status,updated_at=CURRENT_TIMESTAMP", id, status); err != nil {
+			serviceError(w, 500, "Could not save complaint status.")
 			return
 		}
 		if err = tx.Commit(); err != nil {
@@ -489,6 +504,15 @@ func sendSupportMessage(db *sql.DB, w http.ResponseWriter, r *http.Request, cust
 	}
 	if _, err = tx.Exec("UPDATE support_conversations SET status='open',updated_at=? WHERE id=?", now, conversationID); err != nil {
 		serviceError(w, 500, "Could not update conversation.")
+		return
+	}
+	caseStatus := "open"
+	if staff.ID > 0 {
+		caseStatus = "awaiting_customer"
+	}
+	_, err = tx.Exec("INSERT INTO support_cases(conversation_id,status,assigned_to) VALUES(?,?,?) ON CONFLICT(conversation_id) DO UPDATE SET status=CASE WHEN excluded.status='awaiting_customer' THEN excluded.status ELSE CASE WHEN support_cases.status IN ('resolved','awaiting_customer') THEN 'open' ELSE support_cases.status END END,assigned_to=COALESCE(support_cases.assigned_to,excluded.assigned_to),updated_at=CURRENT_TIMESTAMP", conversationID, caseStatus, nullableID(staff.ID))
+	if err != nil {
+		serviceError(w, 500, "Could not update complaint.")
 		return
 	}
 	if staff.ID > 0 {

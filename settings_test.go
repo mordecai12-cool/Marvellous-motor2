@@ -100,6 +100,7 @@ func TestCustomerPasswordRequiresCurrentPasswordAndClearsResetTokens(t *testing.
 	hash, _ := bcrypt.GenerateFromPassword([]byte("OriginalPassword"), bcrypt.DefaultCost)
 	db.Exec("INSERT INTO customers(id,name,email,password) VALUES(1,'Customer','customer@example.test',?)", string(hash))
 	db.Exec("INSERT INTO password_reset_tokens(customer_id,token) VALUES(1,'old-token')")
+	db.Exec("INSERT INTO account_recovery_links(token_hash,customer_id,expires_at) VALUES('old-hash',1,'2099-01-01T00:00:00Z')")
 	fields := url.Values{"current-password": {"wrong"}, "new-password": {"NextPassword123"}, "confirm-password": {"NextPassword123"}}
 	if _, status := changeAccountPassword(db, adminPost(t, "/account/settings", fields, 0), "customers", 1); status != 400 {
 		t.Fatal("Incorrect current password accepted")
@@ -110,6 +111,11 @@ func TestCustomerPasswordRequiresCurrentPasswordAndClearsResetTokens(t *testing.
 	}
 	var count int
 	db.QueryRow("SELECT COUNT(*) FROM password_reset_tokens WHERE customer_id=1").Scan(&count)
+	var recoveryCount int
+	db.QueryRow("SELECT COUNT(*) FROM account_recovery_links WHERE customer_id=1").Scan(&recoveryCount)
+	if recoveryCount != 0 {
+		t.Fatal("Password change left an assisted recovery link valid")
+	}
 	if count != 0 {
 		t.Fatal("Old recovery tokens still valid")
 	}

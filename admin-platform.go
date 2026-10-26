@@ -109,6 +109,7 @@ func (e OrderEvent) Label() string     { return statusLabel(e.ToStatus) }
 func (e OrderEvent) TimeLabel() string { return displayTime(e.CreatedAt) }
 
 type ManagedOrder struct {
+	Quote                                                                DeliveredQuote
 	ID, CustomerID                                                       int64
 	Name, Email, Phone, Address, City, State, CarName, Status, CreatedAt string
 	CarPrice                                                             float64
@@ -147,6 +148,8 @@ func (o ManagedOrder) NextStep() string {
 }
 func statusLabel(status string) string {
 	switch status {
+	case "cancelled":
+		return "Cancelled"
 	case "payment_pending":
 		return "Awaiting review"
 	case "processing":
@@ -218,6 +221,20 @@ type AdminMetrics struct {
 func (m AdminMetrics) TotalLabel() string { return formatAmount(m.ReviewedTotal) }
 
 type AdminPage struct {
+	RecoveryPeople                  []RecoveryCustomer
+	RecoveryLink, RecoveryRecipient string
+	CollectionOptions               []string
+	SalesStages                     []string
+	Fleet                           []Vehicle
+	Editing                         Vehicle
+	Rates                           []DeliveryRate
+	Slots                           []VisitSlot
+	Appointments                    []Appointment
+	Leads                           []SalesLead
+	StaffOptions                    []CaseStaff
+	Business                        BusinessProfile
+	Reviews                         []Review
+
 	Bank                                                BankAccount
 	Staff                                               Staff
 	Page, Title, Subtitle, Notice, Error, Query, Filter string
@@ -252,7 +269,10 @@ func initAdminPlatform(db *sql.DB) error {
 	if err = initSettings(db); err != nil {
 		return err
 	}
-	return initCustomerServices(db)
+	if err = initCustomerServices(db); err != nil {
+		return err
+	}
+	return initBusiness(db)
 }
 func registerAdminPlatform(db *sql.DB) {
 	if err := initAdminPlatform(db); err != nil {
@@ -260,6 +280,7 @@ func registerAdminPlatform(db *sql.DB) {
 	}
 	registerCustomerServices(db)
 	registerSettings(db)
+	registerBusiness(db)
 	http.HandleFunc("/admin-login.html", func(w http.ResponseWriter, r *http.Request) {
 		if r.Method != http.MethodGet {
 			http.Error(w, "Method not allowed", 405)
@@ -357,7 +378,7 @@ func loadOrders(db *sql.DB, where string, args ...any) ([]ManagedOrder, error) {
 		if err = rows.Scan(&o.ID, &o.CustomerID, &o.Name, &o.Email, &o.Phone, &o.Address, &o.City, &o.State, &o.CarName, &o.CarPrice, &o.Status, &o.CreatedAt, &o.Delivery.ScheduledDate, &o.Delivery.Partner, &o.Delivery.Driver, &o.Delivery.DriverPhone, &o.Delivery.Reference, &o.Delivery.Note, &o.PaymentCount); err != nil {
 			return nil, err
 		}
-		for _, v := range vehicles {
+		for _, v := range publicVehicles() {
 			if strings.Contains(o.CarName, v.Name()) && strings.Contains(o.CarName, strconv.Itoa(v.Year)) {
 				o.Vehicle = v
 				break
@@ -365,7 +386,17 @@ func loadOrders(db *sql.DB, where string, args ...any) ([]ManagedOrder, error) {
 		}
 		list = append(list, o)
 	}
-	return list, rows.Err()
+	err = rows.Err()
+	rows.Close()
+	for i := range list {
+		list[i].Quote = storedOrderQuote(db, list[i].ID)
+		if list[i].Quote.VehicleID != "" {
+			if v, e := fleetVehicle(db, list[i].Quote.VehicleID, true); e == nil {
+				list[i].Vehicle = v
+			}
+		}
+	}
+	return list, err
 }
 func loadOrderEvents(db *sql.DB, id int64) ([]OrderEvent, error) {
 	rows, err := db.Query("SELECT id,from_status,to_status,note,actor_name,CAST(created_at AS TEXT) FROM order_events WHERE order_id=? ORDER BY id DESC", id)
@@ -425,6 +456,9 @@ func serveAdminPage(db *sql.DB, w http.ResponseWriter, r *http.Request, page str
 		return
 	}
 	data := AdminPage{Staff: staff, Page: page, Query: r.URL.Query().Get("q"), Filter: r.URL.Query().Get("status")}
+	if issue, ok := r.Context().Value(teamIssueKey{}).(teamIssue); ok {
+		data.Error = issue.Message
+	}
 	data.OwnerOnly = ownerOnlyAccess()
 	data.SecondOwnerEmail = deploymentSecondOwnerEmail
 	var err error
@@ -552,7 +586,11 @@ func serveAdminPage(db *sql.DB, w http.ResponseWriter, r *http.Request, page str
 		http.Error(w, "Could not load workspace", 500)
 		return
 	}
-	renderAdmin(w, file, data)
+	if issue, ok := r.Context().Value(teamIssueKey{}).(teamIssue); ok {
+		renderAdminStatus(w, issue.Status, file, data)
+	} else {
+		renderAdmin(w, file, data)
+	}
 }
 func addActivity(tx *sql.Tx, staff Staff, action, entity string) error {
 	_, err := tx.Exec("INSERT INTO admin_activity(actor_id,actor_name,action,entity) VALUES(?,?,?,?)", staff.ID, staff.Name, action, entity)
@@ -713,6 +751,12 @@ func transitionDelivery(db *sql.DB, w http.ResponseWriter, r *http.Request, next
 		http.Error(w, "Could not record delivery update", 500)
 		return
 	}
+	if next == "delivered" {
+		if _, err = tx.Exec("UPDATE fleet_vehicles SET status='Sold',updated_at=CURRENT_TIMESTAMP WHERE id=(SELECT vehicle_id FROM order_pricing WHERE order_id=?)", id); err != nil {
+			http.Error(w, "Could not update stock", 500)
+			return
+		}
+	}
 	if err = tx.Commit(); err != nil {
 		http.Error(w, "Could not save delivery", 500)
 		return
@@ -791,6 +835,7 @@ func manageTeam(db *sql.DB, w http.ResponseWriter, r *http.Request, action strin
 	if !ok {
 		return
 	}
+	fail := func(status int, message string) { renderTeamFailure(db, w, r, status, message) }
 	if action != "create" && staff.Role != "super_admin" {
 		http.Error(w, "Only the platform owner can manage staff", 403)
 		return
@@ -809,7 +854,16 @@ func manageTeam(db *sql.DB, w http.ResponseWriter, r *http.Request, action strin
 		parsed, e := mail.ParseAddress(email)
 
 		if e != nil || parsed.Address != email || len(name) < 2 || len(name) > 100 || len(email) > 254 || len(password) < 12 || len(password) > 72 {
-			http.Error(w, "Enter a name, valid email and a password with 12–72 characters", 400)
+			fail(400, "Enter a name, valid email and a password with 12–72 characters.")
+			return
+		}
+		var duplicate bool
+		if e = tx.QueryRow("SELECT EXISTS(SELECT 1 FROM admins WHERE lower(email)=?)", email).Scan(&duplicate); e != nil {
+			fail(500, "Could not check administrator details. Please try again.")
+			return
+		}
+		if duplicate {
+			fail(409, "These details already exist. An administrator with this email is already registered.")
 			return
 		}
 		hash, e := bcrypt.GenerateFromPassword([]byte(password), bcrypt.DefaultCost)
@@ -822,7 +876,11 @@ func manageTeam(db *sql.DB, w http.ResponseWriter, r *http.Request, action strin
 			role = "super_admin"
 		}
 		if _, err = tx.Exec("INSERT INTO admins(name,email,password,role,status) VALUES(?,?,?,?,'approved')", name, email, string(hash), role); err != nil {
-			http.Error(w, "Could not create staff account. Check whether this email already exists.", 409)
+			if strings.Contains(strings.ToLower(err.Error()), "unique") {
+				fail(409, "These details already exist. An administrator with this email is already registered.")
+			} else {
+				fail(500, "Could not save administrator details. Please try again.")
+			}
 			return
 		}
 		err = addActivity(tx, staff, "Staff account created", email)
@@ -858,4 +916,16 @@ func manageTeam(db *sql.DB, w http.ResponseWriter, r *http.Request, action strin
 		return
 	}
 	http.Redirect(w, r, "/admin/team?notice="+notice, 303)
+}
+
+type teamIssueKey struct{}
+type teamIssue struct {
+	Status  int
+	Message string
+}
+
+func renderTeamFailure(db *sql.DB, w http.ResponseWriter, r *http.Request, status int, message string) {
+	request := r.Clone(context.WithValue(r.Context(), teamIssueKey{}, teamIssue{status, message}))
+	request.Method = http.MethodGet
+	serveAdminPage(db, w, request, "team")
 }

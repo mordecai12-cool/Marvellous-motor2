@@ -28,13 +28,13 @@
 
             <p>Join Marvellous Motors and start your journey.</p>
 
-            <form action="/register" method="POST">
+            {{if .Error}}<div class="auth-error" role="alert">{{.Error}}</div>{{end}}<form action="/register" method="POST">
 
                 <label for="name">Full Name</label>
                 <input
                     type="text"
                     id="name"
-                    name="name"
+                    name="name" value="{{.Name}}"
                     placeholder="Enter your full name"
                     required
                 >
@@ -43,7 +43,7 @@
                 <input
                     type="email"
                     id="email"
-                    name="email"
+                    name="email" value="{{.Email}}"
                     placeholder="Enter your email"
                     required
                 >
@@ -52,7 +52,7 @@
                 <input
                     type="tel"
                     id="phone"
-                    name="phone"
+                    name="phone" value="{{.Phone}}"
                     placeholder="Enter your phone number"
                     required
                 >

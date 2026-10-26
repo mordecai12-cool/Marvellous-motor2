@@ -1,16 +1,12 @@
 package main
 
 import (
-	"crypto/rand"
 	"database/sql"
-	"encoding/hex"
 	"fmt"
-	"html/template"
 	"io"
 	"log"
 	"math"
 	"net/http"
-	"net/mail"
 	"os"
 	"path/filepath"
 	"strconv"
@@ -23,7 +19,8 @@ import (
 )
 
 type OrderData struct {
-	Bank BankAccount
+	Quote DeliveredQuote
+	Bank  BankAccount
 	ShowroomData
 	Vehicle Vehicle
 	OrderID int64
@@ -231,6 +228,8 @@ func main() {
 	registerShowroomRoutes()
 	registerRequestRoutes(db)
 	registerAdminPlatform(db)
+	showroomDB = db
+	seedLocalBusinessDemo(db)
 	http.HandleFunc("/order-payment", func(w http.ResponseWriter, r *http.Request) { serveCustomerPayment(db, w, r) })
 
 	http.HandleFunc("/start-order", func(w http.ResponseWriter, r *http.Request) {
@@ -265,6 +264,7 @@ func main() {
 	http.HandleFunc("/register", func(w http.ResponseWriter, r *http.Request) {
 		handleRegister(db, w, r)
 	})
+	http.HandleFunc("/register.html", func(w http.ResponseWriter, r *http.Request) { serveRegistration(db, w, r) })
 	http.HandleFunc("/login.html", serveCustomerSignIn)
 	http.HandleFunc("/login", func(w http.ResponseWriter, r *http.Request) {
 		handleLogin(db, w, r)
@@ -329,134 +329,13 @@ func main() {
 		http.NotFound(w, r)
 	})
 
-	err = runHTTPServer(securityMiddleware(adminAccessMiddleware(db, http.DefaultServeMux)))
+	err = runHTTPServer(securityMiddleware(recoverySessionMiddleware(db, adminAccessMiddleware(db, http.DefaultServeMux))))
 	if err != nil {
 		log.Fatal(err)
 	}
 }
 
-func handleOrder(db *sql.DB, w http.ResponseWriter, r *http.Request) {
-	if r.Method != http.MethodPost {
-		http.Error(w, "Method not allowed", http.StatusMethodNotAllowed)
-		return
-	}
-
-	err := r.ParseForm()
-	if err != nil {
-		http.Error(w, "Could not read form", http.StatusBadRequest)
-		return
-	}
-
-	session, err := store.Get(r, "customer-session")
-	if err != nil {
-		http.Error(w, "Could not get customer session", http.StatusInternalServerError)
-		return
-	}
-
-	customerIDValue, ok := session.Values["customer_id"]
-	if !ok {
-		http.Error(w, "Please sign in before placing an order", http.StatusUnauthorized)
-		return
-	}
-
-	customerID := customerIDValue.(int64)
-
-	var name string
-	var email string
-	var phone string
-
-	err = db.QueryRow(`
-	    SELECT name, email, phone
-        FROM customers
-        WHERE id = ?
-	`, customerID).Scan(&name, &email, &phone)
-
-	if err != nil {
-		log.Println("Could not get customer details:", err)
-		http.Error(w, "Could not get customer details", http.StatusInternalServerError)
-		return
-	}
-
-	address := r.FormValue("address")
-	city := r.FormValue("city")
-	state := r.FormValue("state")
-
-	vehicle, found := findVehicle(r.FormValue("vehicle-id"))
-	if !found {
-		http.Error(w, "Please select an available vehicle", http.StatusBadRequest)
-		return
-	}
-	if address == "" || city == "" || state == "" {
-		http.Error(w, "Complete all delivery details", http.StatusBadRequest)
-		return
-	}
-	carName := fmt.Sprintf("%d %s %s (%s)", vehicle.Year, vehicle.Name(), vehicle.Trim, vehicle.Condition)
-	carPrice := vehicle.Price
-
-	log.Println("Order received successfully")
-
-	result, err := db.Exec(`
-        INSERT INTO orders (
-		    customer_id,
-            name,
-            email,
-            phone,
-            address,
-            city,
-            state,
-            status,
-			car_name,
-			car_price
-        )
-        VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
-    `, customerID, name, email, phone, address, city, state, "payment_pending", carName, carPrice)
-
-	if err != nil {
-		log.Println("Database error:", err)
-		http.Error(w, "Could not save order", http.StatusInternalServerError)
-		return
-	}
-
-	orderID, err := result.LastInsertId()
-	if err != nil {
-		log.Println("Could not get order ID:", err)
-		http.Error(w, "Could not get order ID", http.StatusInternalServerError)
-		return
-	}
-
-	log.Println("Order ID:", orderID)
-
-	orderData := OrderData{
-		ShowroomData: ShowroomData{SignedIn: true},
-		Vehicle:      vehicle,
-		OrderID:      orderID,
-		Name:         name,
-		Email:        email,
-		Phone:        phone,
-		Address:      address,
-		City:         city,
-		State:        state,
-	}
-
-	orderData.Bank, err = loadBankAccount(db)
-	if err != nil {
-		http.Error(w, "Could not load payment details", 500)
-		return
-	}
-	log.Println("Order saved to database")
-
-	tmpl, err := template.ParseFiles("payment.html", "partials.html")
-	if err != nil {
-		http.Error(w, "Could not load payment page", http.StatusInternalServerError)
-		return
-	}
-
-	err = tmpl.Execute(w, orderData)
-	if err != nil {
-		http.Error(w, "Could not display payment page", http.StatusInternalServerError)
-		return
-	}
-}
+func handleOrder(db *sql.DB, w http.ResponseWriter, r *http.Request) { placeVehicleOrder(db, w, r) }
 
 func handlePayment(db *sql.DB, w http.ResponseWriter, r *http.Request) {
 	if r.Method != http.MethodPost {
@@ -613,66 +492,7 @@ func handleCustomerOrders(db *sql.DB, w http.ResponseWriter, r *http.Request) {
 	serveCustomerOrders(db, w, r)
 }
 
-func handleRegister(db *sql.DB, w http.ResponseWriter, r *http.Request) {
-
-	if r.Method != http.MethodPost {
-		http.Error(w, "Method not allowed", http.StatusMethodNotAllowed)
-		return
-	}
-
-	err := r.ParseForm()
-	if err != nil {
-		http.Error(w, "Could not read form", http.StatusBadRequest)
-		return
-	}
-
-	name := r.FormValue("name")
-	email := r.FormValue("email")
-	phone := r.FormValue("phone")
-	if _, err := mail.ParseAddress(email); err != nil || len(name) < 2 || len(phone) < 5 {
-		http.Error(w, "Please enter a valid name, email and phone", http.StatusBadRequest)
-		return
-	}
-	password := r.FormValue("password")
-	confirmPassword := r.FormValue("confirm-password")
-
-	if len(password) < 8 || len(password) > 72 {
-		http.Error(w, "Password must contain between 8 and 72 characters", http.StatusBadRequest)
-		return
-	}
-	if password != confirmPassword {
-		http.Error(w, "Passwords do not match", http.StatusBadRequest)
-		return
-	}
-
-	hashedPassword, err := bcrypt.GenerateFromPassword(
-		[]byte(password),
-		bcrypt.DefaultCost,
-	)
-	if err != nil {
-		log.Println("Could not hash password:", err)
-		http.Error(w, "Could not create account", http.StatusInternalServerError)
-		return
-	}
-
-	_, err = db.Exec(`
-        INSERT INTO customers (
-            name,
-            email,
-            phone,
-            password
-        )
-        VALUES (?, ?, ?, ?)
-    `, name, email, phone, hashedPassword)
-
-	if err != nil {
-		log.Println("Could not create customer:", err)
-		http.Error(w, "Could not create account", http.StatusInternalServerError)
-		return
-	}
-
-	http.Redirect(w, r, "/login.html", http.StatusSeeOther)
-}
+func handleRegister(db *sql.DB, w http.ResponseWriter, r *http.Request) { serveRegistration(db, w, r) }
 
 func handleLogin(db *sql.DB, w http.ResponseWriter, r *http.Request) {
 
@@ -741,6 +561,7 @@ func handleLogin(db *sql.DB, w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
+	session.Values["auth_epoch"] = customerEpoch(db, customerID)
 	session.Values["customer_id"] = customerID
 	session.Values["customer_name"] = customerName
 
@@ -790,211 +611,10 @@ func handleEditProfile(db *sql.DB, w http.ResponseWriter, r *http.Request) {
 }
 
 func handleForgotPassword(db *sql.DB, w http.ResponseWriter, r *http.Request) {
-
-	if r.Method == http.MethodGet {
-		tmpl, err := template.ParseFiles("forgot-password.html")
-		if err != nil {
-			http.Error(w, "Could not load forgot password page", http.StatusInternalServerError)
-			return
-		}
-
-		err = tmpl.Execute(w, nil)
-		if err != nil {
-			http.Error(w, "Could not display forgot password page", http.StatusInternalServerError)
-			return
-		}
-
-		return
-	}
-
-	if r.Method == http.MethodPost {
-
-		err := r.ParseForm()
-		if err != nil {
-			http.Error(w, "Could not read form", http.StatusBadRequest)
-			return
-		}
-
-		email := strings.ToLower(strings.TrimSpace(r.FormValue("email")))
-
-		var customerID int64
-
-		err = db.QueryRow(`
-            SELECT id
-            FROM customers
-            WHERE lower(email) = ?
-        `, email).Scan(&customerID)
-
-		if err != nil {
-			renderCustomerAuth(w, 200, "forgot-password.html", CustomerAuthPage{Notice: "Your request has been received. Contact customer care for help recovering access."})
-			return
-		}
-
-		tokenBytes := make([]byte, 32)
-
-		_, err = rand.Read(tokenBytes)
-		if err != nil {
-			log.Println("Could not generate reset token:", err)
-			http.Error(w, "Could not create reset request", http.StatusInternalServerError)
-			return
-		}
-
-		token := hex.EncodeToString(tokenBytes)
-
-		_, err = db.Exec(`
-		    INSERT INTO password_reset_tokens (
-			    customer_id,
-                token,
-                expires_at
-			)
-			VALUES (?, ?, datetime('now', '+30 minutes'))
-		`, customerID, token)
-
-		if err != nil {
-			log.Println("Could not save reset token:", err)
-			http.Error(w, "Could not create reset request", http.StatusInternalServerError)
-			return
-		}
-
-		log.Println("Password reset request created; email delivery must be configured")
-
-		renderCustomerAuth(w, 200, "forgot-password.html", CustomerAuthPage{Notice: "Your request has been received. Contact customer care for help recovering access."})
-		return
-	}
-
-	http.Error(w, "Method not allowed", http.StatusMethodNotAllowed)
+	serveRecoveryRequest(db, w, r)
 }
-
 func handleResetPassword(db *sql.DB, w http.ResponseWriter, r *http.Request) {
-
-	token := r.URL.Query().Get("token")
-
-	if r.Method == http.MethodGet {
-
-		if token == "" {
-			http.Error(w, "Invalid reset link", http.StatusBadRequest)
-			return
-		}
-
-		var customerID int64
-		var expiresAt time.Time
-
-		err := db.QueryRow(`
-            SELECT customer_id, expires_at
-            FROM password_reset_tokens
-            WHERE token = ?
-        `, token).Scan(&customerID, &expiresAt)
-
-		if err != nil {
-			log.Println("Could not validate reset token:", err)
-			http.Error(w, "Invalid or expired reset link", http.StatusBadRequest)
-			return
-		}
-
-		if time.Now().After(expiresAt) {
-			http.Error(w, "Reset link has expired", http.StatusBadRequest)
-			return
-		}
-
-		data := struct {
-			Token string
-		}{
-			Token: token,
-		}
-
-		tmpl, err := template.ParseFiles("reset-password.html")
-		if err != nil {
-			http.Error(w, "Could not load reset password page", http.StatusInternalServerError)
-			return
-		}
-
-		err = tmpl.Execute(w, data)
-		if err != nil {
-			http.Error(w, "Could not display reset password page", http.StatusInternalServerError)
-			return
-		}
-
-		return
-	}
-
-	if r.Method == http.MethodPost {
-
-		err := r.ParseForm()
-		if err != nil {
-			http.Error(w, "Could not read form", http.StatusBadRequest)
-			return
-		}
-
-		token := r.FormValue("token")
-		password := r.FormValue("password")
-		confirmPassword := r.FormValue("confirm-password")
-
-		if len(password) < 8 || len(password) > 72 {
-			http.Error(w, "Password must contain between 8 and 72 characters", http.StatusBadRequest)
-			return
-		}
-		if password != confirmPassword {
-			http.Error(w, "Passwords do not match", http.StatusBadRequest)
-			return
-		}
-
-		var customerID int64
-		var expiresAt time.Time
-
-		err = db.QueryRow(`
-		    SELECT customer_id, expires_at
-            FROM password_reset_tokens
-            WHERE token = ?
-		`, token).Scan(&customerID, &expiresAt)
-
-		if err != nil {
-			log.Println("Could not validate reset token:", err)
-			http.Error(w, "Invalid or expired reset link", http.StatusBadRequest)
-			return
-		}
-
-		if time.Now().After(expiresAt) {
-			http.Error(w, "Reset link has expired", http.StatusBadRequest)
-			return
-		}
-
-		hashedPassword, err := bcrypt.GenerateFromPassword(
-			[]byte(password),
-			bcrypt.DefaultCost,
-		)
-
-		if err != nil {
-			log.Println("Could not hash new password:", err)
-			http.Error(w, "Could not reset password", http.StatusInternalServerError)
-			return
-		}
-
-		_, err = db.Exec(`
-		    UPDATE customers
-            SET password = ?
-            WHERE id = ? 
-		`, hashedPassword, customerID)
-
-		if err != nil {
-			log.Println("Could not update password:", err)
-			http.Error(w, "Could not reset password", http.StatusInternalServerError)
-			return
-		}
-
-		_, err = db.Exec(`
-		    DELETE FROM password_reset_tokens
-            WHERE token = ?
-		`, token)
-
-		if err != nil {
-			log.Println("Could not remove reset token:", err)
-		}
-
-		http.Redirect(w, r, "/login.html", http.StatusSeeOther)
-		return
-	}
-
-	http.Error(w, "Method not allowed", http.StatusMethodNotAllowed)
+	redeemRecoveryLink(db, w, r)
 }
 
 func statusReached(currentStatus, stepStatus string) bool {
@@ -1035,6 +655,11 @@ func handleStartOrder(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 	session.Values["selected_vehicle"] = id
+	for _, key := range []string{"country", "state", "city"} {
+		if value := strings.TrimSpace(r.URL.Query().Get(key)); value != "" && len(value) <= 100 {
+			session.Values["quote_"+key] = value
+		}
+	}
 	if err := session.Save(r, w); err != nil {
 		http.Error(w, "Could not save selection", http.StatusInternalServerError)
 		return
@@ -1047,7 +672,11 @@ func handleStartOrder(w http.ResponseWriter, r *http.Request) {
 }
 
 func handleHome(w http.ResponseWriter, r *http.Request) {
-	renderShowroom(w, r, "index.html", ShowroomData{Page: "home", Vehicles: vehicles[:6]})
+	values := publicVehicles()
+	if len(values) > 6 {
+		values = values[:6]
+	}
+	renderShowroom(w, r, "index.html", ShowroomData{Page: "home", Vehicles: values})
 }
 
 func createSuperAdmin(db *sql.DB) {

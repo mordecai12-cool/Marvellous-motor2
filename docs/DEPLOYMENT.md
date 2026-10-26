@@ -41,7 +41,7 @@ Render's free web service cannot persist this app's SQLite database and receipts
 
 The templates and public assets must remain alongside the binary. Use one instance with one persistent disk; independent SQLite replicas do not share customer data. SIGTERM triggers graceful shutdown before closing the database.
 
-A fresh production database initializes the configured owner once using its existing bcrypt hash. It does not copy local preview accounts/orders/receipts, seed fictional demo users, or reset existing passwords. The one reserved additional owner signup remains available without approval, as requested; subsequent staff must be invited or created by an owner.
+A fresh production database initializes both configured owners once using their existing bcrypt hashes. It does not copy local preview accounts/orders/receipts, seed fictional demo users, or reset existing passwords. Other admins must be invited or created by approved admins; account owners manage staff access status. See [showroom operations](SHOWROOM_OPERATIONS.md) for inventory, pricing, appointments and password recovery.
 
 Listings, prices and checkout instructions are demonstration business data until the business supplies verified details. Hosting does not configure bank verification, a payment provider, email delivery or carrier GPS.
 

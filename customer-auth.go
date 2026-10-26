@@ -8,7 +8,7 @@ import (
 	"net/http"
 )
 
-type CustomerAuthPage struct{ Error, Notice string }
+type CustomerAuthPage struct{ Error, Notice, Name, Email, Phone string }
 
 func renderCustomerAuth(w http.ResponseWriter, status int, file string, data CustomerAuthPage) {
 	t, err := template.ParseFiles(file)

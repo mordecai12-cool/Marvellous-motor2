@@ -68,6 +68,11 @@ func changeAccountPassword(db *sql.DB, r *http.Request, table string, id int64) 
 		if _, err = tx.Exec("DELETE FROM password_reset_tokens WHERE customer_id=?", id); err != nil {
 			return "Could not update password recovery.", 500
 		}
+		for _, recoveryTable := range []string{"account_recovery_links", "account_recovery_requests"} {
+			if _, err = tx.Exec("DELETE FROM "+recoveryTable+" WHERE customer_id=?", id); err != nil {
+				return "Could not update password recovery.", 500
+			}
+		}
 	}
 	if err = tx.Commit(); err != nil {
 		return "Could not save your password.", 500

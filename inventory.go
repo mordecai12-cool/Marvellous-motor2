@@ -14,6 +14,21 @@ import (
 var inventoryJSON []byte
 
 type Vehicle struct {
+	VIN             string            `json:"vin"`
+	StockStatus     string            `json:"stock_status"`
+	Sample          bool              `json:"sample"`
+	ActualPhotos    bool              `json:"actual_photos"`
+	ServiceHistory  string            `json:"service_history"`
+	ConditionReport string            `json:"condition_report"`
+	PreviousOwners  int               `json:"previous_owners"`
+	Documents       string            `json:"documents"`
+	PhotoItems      []VehiclePhoto    `json:"photos,omitempty"`
+	DocumentItems   []VehicleDocument `json:"documents_files,omitempty"`
+	OfferName       string            `json:"offer_name"`
+	OfferDiscount   int               `json:"offer_discount"`
+	OfferStart      string            `json:"offer_start"`
+	OfferEnd        string            `json:"offer_end"`
+
 	EngineLayout string   `json:"engine_layout"`
 	Categories   []string `json:"categories"`
 	Location     string   `json:"location"`
@@ -77,6 +92,10 @@ var vehicles = func() []Vehicle {
 }()
 
 func findVehicle(id string) (Vehicle, bool) {
+	if showroomDB != nil {
+		v, err := fleetVehicle(showroomDB, id, false)
+		return v, err == nil
+	}
 	for _, v := range vehicles {
 		if v.ID == id {
 			return v, true
@@ -86,17 +105,22 @@ func findVehicle(id string) (Vehicle, bool) {
 }
 
 type ShowroomData struct {
-	SignedIn bool
-	Page     string
-	Vehicles []Vehicle
-	Vehicle  Vehicle
-	Related  []Vehicle
+	Error, Address, City, State, Country string
+	Business                             BusinessProfile
+	SignedIn                             bool
+	Page                                 string
+	Vehicles                             []Vehicle
+	Vehicle                              Vehicle
+	Related                              []Vehicle
 }
 
 func renderShowroom(w http.ResponseWriter, r *http.Request, page string, data ShowroomData) {
 	if r.Method != http.MethodGet {
 		http.Error(w, "Method not allowed", http.StatusMethodNotAllowed)
 		return
+	}
+	if showroomDB != nil {
+		data.Business, _ = loadBusinessProfile(showroomDB)
 	}
 	session, _ := store.Get(r, "customer-session")
 	data.SignedIn = session != nil && session.Values["customer_id"] != nil
@@ -113,7 +137,7 @@ func renderShowroom(w http.ResponseWriter, r *http.Request, page string, data Sh
 }
 
 func handleCatalogue(w http.ResponseWriter, r *http.Request) {
-	renderShowroom(w, r, "cars.html", ShowroomData{Page: "cars", Vehicles: vehicles})
+	renderShowroom(w, r, "cars.html", ShowroomData{Page: "cars", Vehicles: publicVehicles()})
 }
 
 func handleVehicle(w http.ResponseWriter, r *http.Request) {
@@ -127,7 +151,7 @@ func handleVehicle(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 	var related []Vehicle
-	for _, other := range vehicles {
+	for _, other := range publicVehicles() {
 		if other.ID != id && other.Body == v.Body && len(related) < 3 {
 			related = append(related, other)
 		}
@@ -141,7 +165,7 @@ func handleVehicleAPI(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 	w.Header().Set("Content-Type", "application/json")
-	w.Write(inventoryJSON)
+	json.NewEncoder(w).Encode(publicVehicles())
 }
 
 func handleOrderPage(w http.ResponseWriter, r *http.Request) {
@@ -161,7 +185,11 @@ func handleOrderPage(w http.ResponseWriter, r *http.Request) {
 		http.Redirect(w, r, "/cars.html", http.StatusSeeOther)
 		return
 	}
-	renderShowroom(w, r, "order.html", ShowroomData{Page: "cars", Vehicle: v})
+	d := ShowroomData{Page: "cars", Vehicle: v}
+	d.Country, _ = session.Values["quote_country"].(string)
+	d.State, _ = session.Values["quote_state"].(string)
+	d.City, _ = session.Values["quote_city"].(string)
+	renderShowroom(w, r, "order.html", d)
 }
 
 func registerShowroomRoutes() {
@@ -178,6 +206,9 @@ func registerShowroomRoutes() {
 }
 
 func inventoryAsset(path string) bool {
+	if path == "/commerce.js" || path == "/business.css" || path == "/business.js" {
+		return true
+	}
 	if path == "/account.css" || path == "/gallery.js" || path == "/gallery.css" || path == "/customer-care.js" || path == "/customer-care.css" || path == "/shipment.js" {
 		return true
 	}

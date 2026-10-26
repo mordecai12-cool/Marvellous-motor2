@@ -29,6 +29,9 @@ var vehicleGalleries = func() map[string][]VehiclePhoto {
 }()
 
 func (v Vehicle) Photos() []VehiclePhoto {
+	if len(v.PhotoItems) > 0 {
+		return v.PhotoItems
+	}
 	source := vehicleGalleries[v.ID]
 	primarySet := ""
 	for _, photo := range source {

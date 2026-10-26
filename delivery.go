@@ -183,7 +183,7 @@ func serveCustomerPayment(db *sql.DB, w http.ResponseWriter, r *http.Request) {
 	if v.ID == "" {
 		v = Vehicle{Brand: o.CarName, Price: int(o.CarPrice)}
 	}
-	data := OrderData{ShowroomData: ShowroomData{SignedIn: true}, Vehicle: v, OrderID: o.ID, Name: o.Name, Email: o.Email, Phone: o.Phone, Address: o.Address, City: o.City, State: o.State}
+	data := OrderData{Quote: storedOrderQuote(db, id), ShowroomData: ShowroomData{SignedIn: true}, Vehicle: v, OrderID: o.ID, Name: o.Name, Email: o.Email, Phone: o.Phone, Address: o.Address, City: o.City, State: o.State}
 	data.Bank, err = loadBankAccount(db)
 	if err != nil {
 		http.Error(w, "Could not load payment details", 500)

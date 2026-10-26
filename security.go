@@ -86,6 +86,9 @@ func securityMiddleware(next http.Handler) http.Handler {
 				}
 			}
 			limit := int64(5 << 20)
+			if r.URL.Path == "/admin/inventory" {
+				limit = 60 << 20
+			}
 			if r.URL.Path == "/api/support/send" || r.URL.Path == "/api/admin/support/send" {
 				limit = 6 << 20
 			}
@@ -110,7 +113,7 @@ func securityMiddleware(next http.Handler) http.Handler {
 				http.Error(w, "Please reload the page before submitting this form", http.StatusForbidden)
 				return
 			}
-			if r.URL.Path == "/admin/settings" || r.URL.Path == "/account/settings" || r.URL.Path == "/login" || r.URL.Path == "/register" || r.URL.Path == "/admin-login" || r.URL.Path == "/admin-signup" || r.URL.Path == "/admin-signup.html" || r.URL.Path == "/forgot-password" {
+			if r.URL.Path == "/admin/settings" || r.URL.Path == "/account/settings" || r.URL.Path == "/login" || r.URL.Path == "/register" || r.URL.Path == "/admin-login" || r.URL.Path == "/admin-signup" || r.URL.Path == "/admin-signup.html" || r.URL.Path == "/forgot-password" || r.URL.Path == "/reset-password" || r.URL.Path == "/admin/recovery" {
 				ip, _, _ := net.SplitHostPort(r.RemoteAddr)
 				authRates.Lock()
 				for key, value := range authRates.entries {
