@@ -14,6 +14,8 @@ import (
 var inventoryJSON []byte
 
 type Vehicle struct {
+	EngineLayout string   `json:"engine_layout"`
+	Categories   []string `json:"categories"`
 	Location     string   `json:"location"`
 	Origin       string   `json:"origin"`
 	Availability string   `json:"availability"`
@@ -35,6 +37,24 @@ type Vehicle struct {
 	Tagline      string   `json:"tagline"`
 	Description  string   `json:"description"`
 	Features     []string `json:"features"`
+}
+
+func (v Vehicle) CategoryLabel() string { return strings.Join(v.Categories, " · ") }
+func (v Vehicle) EngineLayoutLabel() string {
+	switch v.EngineLayout {
+	case "I4":
+		return "I4 · inline four-cylinder"
+	case "I6":
+		return "I6 · inline six-cylinder"
+	case "V6":
+		return "V6 · six-cylinder V engine"
+	case "Flat6":
+		return "Flat-six boxer"
+	case "Electric":
+		return "Electric motor · no combustion cylinders"
+	default:
+		return "Confirm engine configuration with dealer"
+	}
 }
 
 func (v Vehicle) Name() string         { return v.Brand + " " + v.Model }

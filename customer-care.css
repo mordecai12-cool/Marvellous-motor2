@@ -8,3 +8,17 @@
 .support-page{background:#87ceeb}.care-launcher,.care-header,.care-message.customer,.care-send,.inbox-unread{background:#0b1739}
 
 .care-header,.care-header small,.care-header strong,.care-message.customer,.care-message.customer small{color:#fff}
+
+.care-file-picker{display:flex;flex-wrap:wrap;align-items:center;gap:6px 10px;margin:9px 0;min-width:0}
+.care-file-picker label{font-size:11px;font-weight:700;display:block;min-width:0;flex:1 1 180px}
+.care-file-picker input[type=file]{display:block;width:100%;max-width:100%;font-size:11px;margin:6px 0;padding:6px;border:1px solid #bbd8e6;border-radius:6px;background:#fff;color:#0b1739}
+.care-file-picker small{font-size:10px;color:#52667b;flex-basis:100%}
+.care-file-clear{background:transparent;color:#8c2338;padding:5px;font-size:11px}
+.care-attachment{display:flex;flex-direction:column;gap:7px;max-width:100%;color:#125986;font-size:11px;overflow-wrap:anywhere;margin:10px 0;text-decoration:underline}
+.care-attachment img{display:block;max-width:100%;width:220px;max-height:200px;object-fit:contain;border-radius:8px;background:#fff}
+.care-compose{max-height:45vh;overflow-y:auto}
+.inbox-compose .care-file-picker{display:flex;justify-content:flex-start}
+.care-message.mine .care-attachment,.care-message.mine p{color:#fff}
+.care-message.mine .care-message-name,.care-message.mine small{color:#d4e9f5}
+.care-message.theirs{background:#fff}
+.care-messages{min-height:140px}

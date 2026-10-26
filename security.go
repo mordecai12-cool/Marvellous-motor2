@@ -85,7 +85,11 @@ func securityMiddleware(next http.Handler) http.Handler {
 					return
 				}
 			}
-			r.Body = http.MaxBytesReader(w, r.Body, 5<<20)
+			limit := int64(5 << 20)
+			if r.URL.Path == "/api/support/send" || r.URL.Path == "/api/admin/support/send" {
+				limit = 6 << 20
+			}
+			r.Body = http.MaxBytesReader(w, r.Body, limit)
 			if strings.HasPrefix(r.Header.Get("Content-Type"), "multipart/form-data") {
 				if err := r.ParseMultipartForm(1 << 20); err != nil {
 					http.Error(w, "Invalid or oversized form", http.StatusBadRequest)

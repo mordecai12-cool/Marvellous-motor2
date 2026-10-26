@@ -5,6 +5,7 @@ import (
 	"errors"
 	"fmt"
 	"net/http"
+	"os"
 	"regexp"
 	"strconv"
 	"strings"
@@ -26,13 +27,14 @@ type SupportConversation struct {
 	UpdatedAt      int64  `json:"updated_at"`
 }
 type SupportMessage struct {
-	ID         int64  `json:"id"`
-	SenderKind string `json:"sender_kind"`
-	SenderName string `json:"sender_name"`
-	Body       string `json:"body"`
-	OrderID    int64  `json:"order_id"`
-	CreatedAt  int64  `json:"created_at"`
-	ClientID   string `json:"client_id"`
+	Attachment *SupportAttachment `json:"attachment,omitempty"`
+	ID         int64              `json:"id"`
+	SenderKind string             `json:"sender_kind"`
+	SenderName string             `json:"sender_name"`
+	Body       string             `json:"body"`
+	OrderID    int64              `json:"order_id"`
+	CreatedAt  int64              `json:"created_at"`
+	ClientID   string             `json:"client_id"`
 }
 type SupportSnapshot struct {
 	Conversation  *SupportConversation  `json:"conversation"`
@@ -79,16 +81,21 @@ func supportMessages(db *sql.DB, id, before int64) ([]SupportMessage, bool, erro
 	if before == 0 {
 		before = 1 << 62
 	}
-	rows, err := db.Query("SELECT id,sender_kind,sender_name,body,COALESCE(order_id,0),client_id,created_at FROM support_messages WHERE conversation_id=? AND id<? ORDER BY id DESC LIMIT 100", id, before)
+	rows, err := db.Query("SELECT m.id,m.sender_kind,m.sender_name,m.body,COALESCE(m.order_id,0),m.client_id,m.created_at,COALESCE(a.name,''),COALESCE(a.media_type,''),COALESCE(a.size,0) FROM support_messages m LEFT JOIN support_attachments a ON a.message_id=m.id WHERE m.conversation_id=? AND m.id<? ORDER BY m.id DESC LIMIT 100", id, before)
 	if err != nil {
 		return nil, false, err
 	}
 	messages := []SupportMessage{}
 	for rows.Next() {
 		var m SupportMessage
-		if err = rows.Scan(&m.ID, &m.SenderKind, &m.SenderName, &m.Body, &m.OrderID, &m.ClientID, &m.CreatedAt); err != nil {
+		var attachment SupportAttachment
+		if err = rows.Scan(&m.ID, &m.SenderKind, &m.SenderName, &m.Body, &m.OrderID, &m.ClientID, &m.CreatedAt, &attachment.Name, &attachment.Type, &attachment.Size); err != nil {
 			rows.Close()
 			return nil, false, err
+		}
+		if attachment.Name != "" {
+			attachment.URL = supportAttachmentURL(m.ID)
+			m.Attachment = &attachment
 		}
 		messages = append(messages, m)
 	}
@@ -343,6 +350,15 @@ var supportClientID = regexp.MustCompile(`^[a-zA-Z0-9-]{16,80}$`)
 func sendSupportMessage(db *sql.DB, w http.ResponseWriter, r *http.Request, customer ServiceCustomer, staff Staff) {
 	body := strings.TrimSpace(r.FormValue("message"))
 	clientID := r.FormValue("client-id")
+	file, fileErr := readSupportFile(r)
+	if fileErr != nil {
+		serviceError(w, 400, fileErr.Error())
+		return
+	}
+	if body == "" && file != nil {
+		body = "Attachment: " + file.Name
+	}
+
 	if !utf8.ValidString(body) || utf8.RuneCountInString(body) < 1 || utf8.RuneCountInString(body) > 2000 || !supportClientID.MatchString(clientID) {
 		serviceError(w, 400, "Enter a message of 1–2,000 characters and retry the send.")
 		return
@@ -408,6 +424,16 @@ func sendSupportMessage(db *sql.DB, w http.ResponseWriter, r *http.Request, cust
 	var existingBody string
 	err = tx.QueryRow("SELECT id,body,COALESCE(order_id,0) FROM support_messages WHERE conversation_id=? AND sender_kind=? AND sender_id=? AND client_id=?", conversationID, kind, senderID, clientID).Scan(&existingID, &existingBody, &existingOrder)
 	if err == nil {
+		var digest, name string
+		attachmentErr := tx.QueryRow("SELECT digest,name FROM support_attachments WHERE message_id=?", existingID).Scan(&digest, &name)
+		if attachmentErr != nil && !errors.Is(attachmentErr, sql.ErrNoRows) {
+			serviceError(w, 500, "Could not check attachment.")
+			return
+		}
+		if (file == nil && attachmentErr == nil) || (file != nil && (attachmentErr != nil || digest != file.Digest || name != file.Name)) {
+			serviceError(w, 409, "This send reference was already used for a different attachment.")
+			return
+		}
 		if existingBody != body || existingOrder != orderID {
 			serviceError(w, 409, "This send reference was already used for a different message.")
 			return
@@ -447,6 +473,20 @@ func sendSupportMessage(db *sql.DB, w http.ResponseWriter, r *http.Request, cust
 		serviceError(w, 500, "Could not confirm message delivery.")
 		return
 	}
+	var storedFile string
+	committed := false
+	defer func() {
+		if storedFile != "" && !committed {
+			os.Remove(storedFile)
+		}
+	}()
+	if file != nil {
+		storedFile, err = saveSupportFile(tx, id, file)
+		if err != nil {
+			serviceError(w, 500, "Your attachment was not saved. Please retry.")
+			return
+		}
+	}
 	if _, err = tx.Exec("UPDATE support_conversations SET status='open',updated_at=? WHERE id=?", now, conversationID); err != nil {
 		serviceError(w, 500, "Could not update conversation.")
 		return
@@ -461,5 +501,6 @@ func sendSupportMessage(db *sql.DB, w http.ResponseWriter, r *http.Request, cust
 		serviceError(w, 500, "Your message was not saved. Please retry.")
 		return
 	}
+	committed = true
 	serviceJSON(w, 201, map[string]any{"id": id, "replayed": false})
 }

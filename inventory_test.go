@@ -281,3 +281,22 @@ func TestEncodedTraversalCannotReachPrivateFiles(t *testing.T) {
 		}
 	}
 }
+
+func TestEngineConfigurationsAndCollectionsMatchSampleVehicles(t *testing.T) {
+	for id, want := range map[string]string{"lexus-preowned": "V6", "bmw-x5": "I6", "porsche-911": "Flat6", "tesla-model-y": "Electric", "toyota-camry": "I4"} {
+		v, ok := findVehicle(id)
+		if !ok || v.EngineLayout != want {
+			t.Fatalf("%s: engine configuration %s, want %s", id, v.EngineLayout, want)
+		}
+	}
+	for _, v := range vehicles {
+		if len(v.Categories) == 0 || v.EngineLayout == "" {
+			t.Fatalf("Missing browsing details for %s", v.ID)
+		}
+	}
+	w := httptest.NewRecorder()
+	handleCatalogue(w, httptest.NewRequest("GET", "/cars.html?category=Sports&engine=Flat6", nil))
+	if w.Code != 200 || !strings.Contains(w.Body.String(), `name="category"`) || !strings.Contains(w.Body.String(), `data-engine-layout="V6"`) {
+		t.Fatal("Catalogue missing engine or collection filters")
+	}
+}

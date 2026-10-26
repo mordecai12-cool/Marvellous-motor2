@@ -12,7 +12,7 @@
     "fuel": "Petrol",
     "transmission": "Automatic",
     "drive": "RWD",
-    "engine": "2.0L turbo",
+    "engine": "2.0L turbo · inline four-cylinder",
     "image": "/images/gallery/mercedes-c300-matched-front.jpg",
     "tagline": "A little luxury. Every single day.",
     "description": "A refined sports sedan that brings an elegant cabin, smooth turbocharged performance, and intuitive technology to every journey.",
@@ -25,7 +25,11 @@
     "location": "Lagos, Nigeria",
     "origin": "Brand new",
     "availability": "Available",
-    "seller": "Marvellous Motors"
+    "seller": "Marvellous Motors",
+    "engine_layout": "I4",
+    "categories": [
+      "Luxury"
+    ]
   },
   {
     "id": "toyota-camry",
@@ -40,7 +44,7 @@
     "fuel": "Hybrid",
     "transmission": "e-CVT",
     "drive": "FWD",
-    "engine": "2.5L hybrid",
+    "engine": "2.5L hybrid · inline four-cylinder",
     "image": "/images/gallery/toyota-camry-front.jpg",
     "tagline": "Meet your everyday upgrade.",
     "description": "An efficient hybrid sedan with a spacious interior and driver assistance technology. A comfortable companion for the commute and the open road.",
@@ -53,7 +57,11 @@
     "location": "Lagos, Nigeria",
     "origin": "Brand new",
     "availability": "Available",
-    "seller": "Marvellous Motors"
+    "seller": "Marvellous Motors",
+    "engine_layout": "I4",
+    "categories": [
+      "Everyday"
+    ]
   },
   {
     "id": "lexus-rx350",
@@ -68,7 +76,7 @@
     "fuel": "Petrol",
     "transmission": "Automatic",
     "drive": "AWD",
-    "engine": "2.4L turbo",
+    "engine": "2.4L turbo · inline four-cylinder",
     "image": "/images/gallery/lexus-rx350-front.jpg",
     "tagline": "Comfort, with a commanding presence.",
     "description": "Quiet luxury, a spacious cabin, and confident performance come together in this versatile premium SUV.",
@@ -81,7 +89,11 @@
     "location": "Lagos, Nigeria",
     "origin": "Brand new",
     "availability": "Available",
-    "seller": "Marvellous Motors"
+    "seller": "Marvellous Motors",
+    "engine_layout": "I4",
+    "categories": [
+      "Luxury"
+    ]
   },
   {
     "id": "bmw-x5",
@@ -96,7 +108,7 @@
     "fuel": "Petrol",
     "transmission": "Automatic",
     "drive": "AWD",
-    "engine": "3.0L turbo",
+    "engine": "3.0L turbo · inline six-cylinder",
     "image": "/images/gallery/bmw-x5-matched-front.jpg",
     "tagline": "Make every mile an occasion.",
     "description": "A premium SUV that balances responsive handling with generous space and the assurance of BMW xDrive.",
@@ -109,7 +121,11 @@
     "location": "Abuja, Nigeria",
     "origin": "Foreign used",
     "availability": "Available",
-    "seller": "Marvellous Motors"
+    "seller": "Marvellous Motors",
+    "engine_layout": "I6",
+    "categories": [
+      "Luxury"
+    ]
   },
   {
     "id": "rav4-hybrid",
@@ -124,7 +140,7 @@
     "fuel": "Hybrid",
     "transmission": "e-CVT",
     "drive": "AWD",
-    "engine": "2.5L hybrid",
+    "engine": "2.5L hybrid · inline four-cylinder",
     "image": "/images/gallery/rav4-hybrid-front.jpg",
     "tagline": "Ready for your next adventure.",
     "description": "Room for the family, hybrid efficiency, and all-wheel drive capability make the RAV4 an easy choice for busy lives.",
@@ -137,7 +153,11 @@
     "location": "Lagos, Nigeria",
     "origin": "Brand new",
     "availability": "Available",
-    "seller": "Marvellous Motors"
+    "seller": "Marvellous Motors",
+    "engine_layout": "I4",
+    "categories": [
+      "Everyday"
+    ]
   },
   {
     "id": "honda-accord",
@@ -152,7 +172,7 @@
     "fuel": "Petrol",
     "transmission": "CVT",
     "drive": "FWD",
-    "engine": "1.5L turbo",
+    "engine": "1.5L turbo · inline four-cylinder",
     "image": "/images/gallery/honda-accord-front.jpg",
     "tagline": "A smarter way to get there.",
     "description": "A roomy, thoughtfully designed sedan with smooth power delivery and helpful driver assistance for daily driving.",
@@ -165,7 +185,11 @@
     "location": "Lagos, Nigeria",
     "origin": "Nigerian used",
     "availability": "Available",
-    "seller": "Marvellous Motors"
+    "seller": "Marvellous Motors",
+    "engine_layout": "I4",
+    "categories": [
+      "Everyday"
+    ]
   },
   {
     "id": "land-cruiser",
@@ -180,7 +204,7 @@
     "fuel": "Diesel",
     "transmission": "Automatic",
     "drive": "4WD",
-    "engine": "2.8L turbo diesel",
+    "engine": "2.8L turbo diesel · inline four-cylinder",
     "image": "/images/gallery/land-cruiser-front.jpg",
     "tagline": "Go beyond the everyday.",
     "description": "A capable four-wheel drive SUV with a practical, spacious cabin. Built for family journeys that take you beyond the city.",
@@ -193,7 +217,11 @@
     "location": "Abuja, Nigeria",
     "origin": "Foreign used",
     "availability": "Available",
-    "seller": "Marvellous Motors"
+    "seller": "Marvellous Motors",
+    "engine_layout": "I4",
+    "categories": [
+      "Everyday"
+    ]
   },
   {
     "id": "tesla-model-y",
@@ -221,7 +249,11 @@
     "location": "Lagos, Nigeria",
     "origin": "Brand new",
     "availability": "On request",
-    "seller": "Marvellous Motors"
+    "seller": "Marvellous Motors",
+    "engine_layout": "Electric",
+    "categories": [
+      "Everyday"
+    ]
   },
   {
     "id": "honda-crv",
@@ -236,7 +268,7 @@
     "fuel": "Petrol",
     "transmission": "CVT",
     "drive": "FWD",
-    "engine": "1.5L turbo",
+    "engine": "1.5L turbo · inline four-cylinder",
     "image": "/images/cr-v.jpg",
     "tagline": "More room for what matters.",
     "description": "A practical SUV with a comfortable interior, flexible cargo room, and the convenience features a family needs.",
@@ -249,7 +281,11 @@
     "location": "Lagos, Nigeria",
     "origin": "Nigerian used",
     "availability": "Available",
-    "seller": "Marvellous Motors"
+    "seller": "Marvellous Motors",
+    "engine_layout": "I4",
+    "categories": [
+      "Everyday"
+    ]
   },
   {
     "id": "kia-sportage",
@@ -264,7 +300,7 @@
     "fuel": "Petrol",
     "transmission": "Automatic",
     "drive": "FWD",
-    "engine": "2.5L petrol",
+    "engine": "2.5L petrol · inline four-cylinder",
     "image": "/images/gallery/kia-sportage-front.jpg",
     "tagline": "Stand out. Set off.",
     "description": "Distinctive design meets a spacious interior in a versatile SUV made for everyday adventures.",
@@ -277,7 +313,11 @@
     "location": "Lagos, Nigeria",
     "origin": "Brand new",
     "availability": "Available",
-    "seller": "Marvellous Motors"
+    "seller": "Marvellous Motors",
+    "engine_layout": "I4",
+    "categories": [
+      "Everyday"
+    ]
   },
   {
     "id": "hyundai-tucson",
@@ -292,7 +332,7 @@
     "fuel": "Petrol",
     "transmission": "Automatic",
     "drive": "FWD",
-    "engine": "2.5L petrol",
+    "engine": "2.5L petrol · inline four-cylinder",
     "image": "/images/gallery/hyundai-tucson-matched-front.jpg",
     "tagline": "Your day, beautifully driven.",
     "description": "A comfortable crossover with bold styling, helpful safety technology, and room for everything your day brings.",
@@ -305,7 +345,11 @@
     "location": "Lagos, Nigeria",
     "origin": "Foreign used",
     "availability": "Available",
-    "seller": "Marvellous Motors"
+    "seller": "Marvellous Motors",
+    "engine_layout": "I4",
+    "categories": [
+      "Everyday"
+    ]
   },
   {
     "id": "toyota-corolla",
@@ -320,7 +364,7 @@
     "fuel": "Petrol",
     "transmission": "CVT",
     "drive": "FWD",
-    "engine": "2.0L petrol",
+    "engine": "2.0L petrol · inline four-cylinder",
     "image": "/images/gallery/toyota-corolla-matched-front.jpg",
     "tagline": "Great journeys start simply.",
     "description": "An accessible everyday sedan with an efficient engine, a practical cabin, and Toyota driver assistance technology.",
@@ -333,7 +377,11 @@
     "location": "Lagos, Nigeria",
     "origin": "Nigerian used",
     "availability": "Available",
-    "seller": "Marvellous Motors"
+    "seller": "Marvellous Motors",
+    "engine_layout": "I4",
+    "categories": [
+      "Everyday"
+    ]
   },
   {
     "id": "porsche-911",
@@ -348,7 +396,7 @@
     "fuel": "Petrol",
     "transmission": "PDK automatic",
     "drive": "RWD",
-    "engine": "3.0L twin-turbo",
+    "engine": "3.0L twin-turbo · flat-six boxer",
     "image": "/images/gallery/porsche-911-front.jpg",
     "tagline": "For the love of the drive.",
     "description": "An iconic sports coupe with a rear-engine layout, precise handling, and the unmistakable character of the 911.",
@@ -361,7 +409,12 @@
     "location": "Lagos, Nigeria",
     "origin": "Foreign used",
     "availability": "On request",
-    "seller": "Marvellous Motors"
+    "seller": "Marvellous Motors",
+    "engine_layout": "Flat6",
+    "categories": [
+      "Sports",
+      "Luxury"
+    ]
   },
   {
     "id": "mercedes-gclass",
@@ -389,7 +442,11 @@
     "location": "Abuja, Nigeria",
     "origin": "Brand new",
     "availability": "On request",
-    "seller": "Marvellous Motors"
+    "seller": "Marvellous Motors",
+    "engine_layout": "Unconfirmed",
+    "categories": [
+      "Luxury"
+    ]
   },
   {
     "id": "camry-preowned",
@@ -404,7 +461,7 @@
     "fuel": "Petrol",
     "transmission": "Automatic",
     "drive": "FWD",
-    "engine": "2.5L petrol",
+    "engine": "2.5L petrol · inline four-cylinder",
     "image": "/images/gallery/camry-preowned-front.jpg",
     "tagline": "A familiar favourite, a fresh start.",
     "description": "A pre-owned Camry that offers generous space and composed driving. Explore a practical route into a comfortable family sedan.",
@@ -417,7 +474,11 @@
     "location": "Lagos, Nigeria",
     "origin": "Nigerian used",
     "availability": "Available",
-    "seller": "Marvellous Motors"
+    "seller": "Marvellous Motors",
+    "engine_layout": "I4",
+    "categories": [
+      "Everyday"
+    ]
   },
   {
     "id": "lexus-preowned",
@@ -445,6 +506,10 @@
     "location": "Lagos, Nigeria",
     "origin": "Foreign used",
     "availability": "Available",
-    "seller": "Marvellous Motors"
+    "seller": "Marvellous Motors",
+    "engine_layout": "V6",
+    "categories": [
+      "Luxury"
+    ]
   }
 ]

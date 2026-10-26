@@ -41,7 +41,8 @@ A dedicated admin workspace now includes order and payment review, delivery sche
 - Saved favourites and saved searches in the current browser; comparisons of up to three vehicles.
 - Vehicle photo galleries with enlargement, available exterior/interior views, attribution, specifications, features, related vehicles, and sample prices in naira.
 - Customer registration and sign-in, stable customer IDs, professional dashboard/profile pages, private order history and shipment checkpoints.
-- Persistent customer-care chat and staff inbox with replies, unread counts, resolution and actual staff availability.
+- Persistent customer-care chat and staff inbox with replies, private picture/file attachments, unread counts, resolution and actual staff availability.
+- Sports and Luxury collections, engine-configuration filters (including V6 and inline-six), engine details on listing cards and vehicle comparisons. See [vehicle browsing and complaint attachments](docs/VEHICLES_AND_CHAT.md).
 - Correct selected-vehicle checkout with price determined on the server, including selection retention during sign-in.
 - Persisted vehicle sourcing, inspection, test-drive, finance, trade-in, dealer application, and support requests.
 - Signed-in customers' private request history; authenticated admin review queue and logged enquiry status updates.
