@@ -10,7 +10,7 @@
         "hidden": ""
       },
       "ObjectName": {
-        "value": "Hyundai Tucson 1.6 T-GDI PHEV Prime (IV) \u2013 f 05072025",
+        "value": "Hyundai Tucson 1.6 T-GDI PHEV Prime (IV) – f 05072025",
         "source": "mediawiki-metadata"
       },
       "CommonsMetadataExtension": {
@@ -41,7 +41,7 @@
         "source": "commons-desc-page"
       },
       "Artist": {
-        "value": "<b>\u00a9 <a href=\"//commons.wikimedia.org/wiki/User:M_93\" title=\"User:M 93\">M 93</a></b>",
+        "value": "<b>© <a href=\"//commons.wikimedia.org/wiki/User:M_93\" title=\"User:M 93\">M 93</a></b>",
         "source": "commons-desc-page"
       },
       "Permission": {
@@ -189,7 +189,7 @@
         "hidden": ""
       },
       "Categories": {
-        "value": "Self-published work|2019 BMW automobiles|Blue BMW SUVs|Photographs by Vauxford \u2014 2019|BMW G05 X5 M50d",
+        "value": "Self-published work|2019 BMW automobiles|Blue BMW SUVs|Photographs by Vauxford — 2019|BMW G05 X5 M50d",
         "source": "commons-categories",
         "hidden": ""
       },
@@ -260,7 +260,7 @@
         "hidden": ""
       },
       "ObjectName": {
-        "value": "Honda CR-V e-HEV Elegance AWD (VI) \u2013 f 14072024",
+        "value": "Honda CR-V e-HEV Elegance AWD (VI) – f 14072024",
         "source": "mediawiki-metadata"
       },
       "CommonsMetadataExtension": {
@@ -291,7 +291,7 @@
         "source": "commons-desc-page"
       },
       "Artist": {
-        "value": "<b>\u00a9 <a href=\"//commons.wikimedia.org/wiki/User:M_93\" title=\"User:M 93\">M 93</a></b>",
+        "value": "<b>© <a href=\"//commons.wikimedia.org/wiki/User:M_93\" title=\"User:M 93\">M 93</a></b>",
         "source": "commons-desc-page"
       },
       "Permission": {
@@ -523,7 +523,7 @@
         "hidden": ""
       },
       "ObjectName": {
-        "value": "Tesla Model Y Premium (Facelift) \u2013 f 05052026",
+        "value": "Tesla Model Y Premium (Facelift) – f 05052026",
         "source": "mediawiki-metadata"
       },
       "CommonsMetadataExtension": {
@@ -554,7 +554,7 @@
         "source": "commons-desc-page"
       },
       "Artist": {
-        "value": "<b>\u00a9 <a href=\"//commons.wikimedia.org/wiki/User:M_93\" title=\"User:M 93\">M 93</a></b>",
+        "value": "<b>© <a href=\"//commons.wikimedia.org/wiki/User:M_93\" title=\"User:M 93\">M 93</a></b>",
         "source": "commons-desc-page"
       },
       "Permission": {
@@ -636,7 +636,7 @@
         "source": "commons-desc-page"
       },
       "DateTimeOriginal": {
-        "value": "Taken on\u00a023 December 2013, 15:59:06",
+        "value": "Taken on 23 December 2013, 15:59:06",
         "source": "commons-desc-page"
       },
       "Credit": {
@@ -916,6 +916,631 @@
       },
       "Artist": {
         "value": "<a href=\"//commons.wikimedia.org/wiki/User:Mr.choppers\" title=\"User:Mr.choppers\">Mr.choppers</a>",
+        "source": "commons-desc-page"
+      },
+      "LicenseShortName": {
+        "value": "CC BY-SA 4.0",
+        "source": "commons-desc-page",
+        "hidden": ""
+      },
+      "UsageTerms": {
+        "value": "Creative Commons Attribution-Share Alike 4.0",
+        "source": "commons-desc-page"
+      },
+      "AttributionRequired": {
+        "value": "true",
+        "source": "commons-desc-page",
+        "hidden": ""
+      },
+      "LicenseUrl": {
+        "value": "https://creativecommons.org/licenses/by-sa/4.0",
+        "source": "commons-desc-page"
+      },
+      "Copyrighted": {
+        "value": "True",
+        "source": "commons-desc-page",
+        "hidden": ""
+      },
+      "Restrictions": {
+        "value": "",
+        "source": "commons-desc-page",
+        "hidden": ""
+      },
+      "License": {
+        "value": "cc-by-sa-4.0",
+        "source": "commons-templates",
+        "hidden": ""
+      }
+    }
+  },
+  {
+    "model": "1967 Ford Mustang 289 V8",
+    "file": "images/gallery/ford-mustang-classic-front.jpg",
+    "source": "https://commons.wikimedia.org/wiki/File:1967_Ford_Mustang_4.7L.jpg",
+    "metadata": {
+      "DateTime": {
+        "value": "2024-10-28 10:43:28",
+        "source": "mediawiki-metadata",
+        "hidden": ""
+      },
+      "ObjectName": {
+        "value": "1967 Ford Mustang 4.7L",
+        "source": "mediawiki-metadata"
+      },
+      "CommonsMetadataExtension": {
+        "value": 1.2,
+        "source": "extension",
+        "hidden": ""
+      },
+      "Categories": {
+        "value": "Self-published work|Uploaded with Mobile/Android|England photographs taken on 2024-05-05|Files with coordinates missing SDC location of creation (52° N, 1° E)|1965 Ford Mustang convertible",
+        "source": "commons-categories",
+        "hidden": ""
+      },
+      "Assessments": {
+        "value": "",
+        "source": "commons-categories",
+        "hidden": ""
+      },
+      "GPSLatitude": {
+        "value": "52.456897",
+        "source": "commons-desc-page"
+      },
+      "GPSLongitude": {
+        "value": "1.396678",
+        "source": "commons-desc-page"
+      },
+      "GPSMapDatum": {
+        "value": "WGS-84",
+        "source": "commons-desc-page",
+        "hidden": ""
+      },
+      "ImageDescription": {
+        "value": "Ford Mustang GT",
+        "source": "commons-desc-page"
+      },
+      "DateTimeOriginal": {
+        "value": "5 May 2024 (according to <span lang=\"en\" dir=\"ltr\"><a href=\"https://en.wikipedia.org/wiki/Exif\" class=\"extiw\" title=\"en:Exif\">Exif</a></span> data)",
+        "source": "commons-desc-page"
+      },
+      "Credit": {
+        "value": "<span class=\"int-own-work\" lang=\"en\">Own work</span>",
+        "source": "commons-desc-page"
+      },
+      "Artist": {
+        "value": "<a href=\"//commons.wikimedia.org/w/index.php?title=User:Calreyn88&amp;action=edit&amp;redlink=1\" class=\"new\" title=\"User:Calreyn88 (page does not exist)\">Calreyn88</a>",
+        "source": "commons-desc-page"
+      },
+      "LicenseShortName": {
+        "value": "CC BY-SA 4.0",
+        "source": "commons-desc-page",
+        "hidden": ""
+      },
+      "UsageTerms": {
+        "value": "Creative Commons Attribution-Share Alike 4.0",
+        "source": "commons-desc-page"
+      },
+      "AttributionRequired": {
+        "value": "true",
+        "source": "commons-desc-page",
+        "hidden": ""
+      },
+      "LicenseUrl": {
+        "value": "https://creativecommons.org/licenses/by-sa/4.0",
+        "source": "commons-desc-page"
+      },
+      "Copyrighted": {
+        "value": "True",
+        "source": "commons-desc-page",
+        "hidden": ""
+      },
+      "Restrictions": {
+        "value": "",
+        "source": "commons-desc-page",
+        "hidden": ""
+      },
+      "License": {
+        "value": "cc-by-sa-4.0",
+        "source": "commons-templates",
+        "hidden": ""
+      }
+    }
+  },
+  {
+    "model": "1989 Mercedes-Benz 300 SL R107 Roadster",
+    "file": "images/gallery/mercedes-300sl-classic-front.jpg",
+    "source": "https://commons.wikimedia.org/wiki/File:1989_Mercedes_300SL.jpg",
+    "metadata": {
+      "DateTime": {
+        "value": "2023-03-01 22:36:35",
+        "source": "mediawiki-metadata",
+        "hidden": ""
+      },
+      "ObjectName": {
+        "value": "1989 Mercedes 300SL",
+        "source": "mediawiki-metadata"
+      },
+      "CommonsMetadataExtension": {
+        "value": 1.2,
+        "source": "extension",
+        "hidden": ""
+      },
+      "Categories": {
+        "value": "Self-published work|Mercedes-Benz 300 SL (R 107)|Files with coordinates missing SDC location of creation (51° N, 0° E)",
+        "source": "commons-categories",
+        "hidden": ""
+      },
+      "Assessments": {
+        "value": "",
+        "source": "commons-categories",
+        "hidden": ""
+      },
+      "GPSLatitude": {
+        "value": "51.870789",
+        "source": "commons-desc-page"
+      },
+      "GPSLongitude": {
+        "value": "0.181703",
+        "source": "commons-desc-page"
+      },
+      "GPSMapDatum": {
+        "value": "WGS-84",
+        "source": "commons-desc-page",
+        "hidden": ""
+      },
+      "ImageDescription": {
+        "value": "Mercedes 300SL",
+        "source": "commons-desc-page"
+      },
+      "DateTimeOriginal": {
+        "value": "2023-02-27 11:29:47",
+        "source": "commons-desc-page"
+      },
+      "Credit": {
+        "value": "<span class=\"int-own-work\" lang=\"en\">Own work</span>",
+        "source": "commons-desc-page"
+      },
+      "Artist": {
+        "value": "<a href=\"//commons.wikimedia.org/w/index.php?title=User:Calreyn88&amp;action=edit&amp;redlink=1\" class=\"new\" title=\"User:Calreyn88 (page does not exist)\">Calreyn88</a>",
+        "source": "commons-desc-page"
+      },
+      "LicenseShortName": {
+        "value": "CC BY-SA 4.0",
+        "source": "commons-desc-page",
+        "hidden": ""
+      },
+      "UsageTerms": {
+        "value": "Creative Commons Attribution-Share Alike 4.0",
+        "source": "commons-desc-page"
+      },
+      "AttributionRequired": {
+        "value": "true",
+        "source": "commons-desc-page",
+        "hidden": ""
+      },
+      "LicenseUrl": {
+        "value": "https://creativecommons.org/licenses/by-sa/4.0",
+        "source": "commons-desc-page"
+      },
+      "Copyrighted": {
+        "value": "True",
+        "source": "commons-desc-page",
+        "hidden": ""
+      },
+      "Restrictions": {
+        "value": "",
+        "source": "commons-desc-page",
+        "hidden": ""
+      },
+      "License": {
+        "value": "cc-by-sa-4.0",
+        "source": "commons-templates",
+        "hidden": ""
+      }
+    }
+  },
+  {
+    "model": "1965 Volkswagen Beetle 1200",
+    "file": "images/gallery/volkswagen-beetle-classic-front.jpg",
+    "source": "https://commons.wikimedia.org/wiki/File:1965_Volkswagen_Beetle.jpg",
+    "metadata": {
+      "DateTime": {
+        "value": "2022-12-04 23:47:39",
+        "source": "mediawiki-metadata",
+        "hidden": ""
+      },
+      "ObjectName": {
+        "value": "1965 Volkswagen Beetle",
+        "source": "mediawiki-metadata"
+      },
+      "CommonsMetadataExtension": {
+        "value": 1.2,
+        "source": "extension",
+        "hidden": ""
+      },
+      "Categories": {
+        "value": "Volkswagen Type 1 in Australia|Images of cars by Matthew Paul Argall|1965 Volkswagen Type 1",
+        "source": "commons-categories",
+        "hidden": ""
+      },
+      "Assessments": {
+        "value": "",
+        "source": "commons-categories",
+        "hidden": ""
+      },
+      "ImageDescription": {
+        "value": "A classic car which I photographed at a car show held at Kalorama, Victoria, Australia.",
+        "source": "commons-desc-page"
+      },
+      "DateTimeOriginal": {
+        "value": "2022-03-20",
+        "source": "commons-desc-page"
+      },
+      "Credit": {
+        "value": "<a rel=\"nofollow\" class=\"external free\" href=\"https://archive.org/details/1965-volkswagen-beetle\">https://archive.org/details/1965-volkswagen-beetle</a>",
+        "source": "commons-desc-page"
+      },
+      "Artist": {
+        "value": "Matthew Paul Argall",
+        "source": "commons-desc-page"
+      },
+      "LicenseShortName": {
+        "value": "CC BY 4.0",
+        "source": "commons-desc-page",
+        "hidden": ""
+      },
+      "UsageTerms": {
+        "value": "Creative Commons Attribution 4.0",
+        "source": "commons-desc-page"
+      },
+      "AttributionRequired": {
+        "value": "true",
+        "source": "commons-desc-page",
+        "hidden": ""
+      },
+      "LicenseUrl": {
+        "value": "https://creativecommons.org/licenses/by/4.0",
+        "source": "commons-desc-page"
+      },
+      "Copyrighted": {
+        "value": "True",
+        "source": "commons-desc-page",
+        "hidden": ""
+      },
+      "Restrictions": {
+        "value": "",
+        "source": "commons-desc-page",
+        "hidden": ""
+      },
+      "License": {
+        "value": "cc-by-4.0",
+        "source": "commons-templates",
+        "hidden": ""
+      }
+    }
+  },
+  {
+    "model": "2024 Ford Mustang GT Fastback",
+    "file": "images/gallery/ford-mustang-gt-front.jpg",
+    "source": "https://commons.wikimedia.org/wiki/File:2024_Ford_Mustang_GT_5.0_v8.jpg",
+    "metadata": {
+      "DateTime": {
+        "value": "2023-11-04 19:02:15",
+        "source": "mediawiki-metadata",
+        "hidden": ""
+      },
+      "ObjectName": {
+        "value": "2024 Ford Mustang GT 5.0 v8",
+        "source": "mediawiki-metadata"
+      },
+      "CommonsMetadataExtension": {
+        "value": 1.2,
+        "source": "extension",
+        "hidden": ""
+      },
+      "Categories": {
+        "value": "CC-Zero|Self-published work|Ford Mustang VII GT",
+        "source": "commons-categories",
+        "hidden": ""
+      },
+      "Assessments": {
+        "value": "",
+        "source": "commons-categories",
+        "hidden": ""
+      },
+      "ImageDescription": {
+        "value": "2024 Ford Mustang GT 5.0 v8\n<p>S650 Generation\nNight Pony Package\n</p>\nActive Sport Exhaust",
+        "source": "commons-desc-page"
+      },
+      "DateTimeOriginal": {
+        "value": "2023-08-31 17:53:23",
+        "source": "commons-desc-page"
+      },
+      "Credit": {
+        "value": "<span class=\"int-own-work\" lang=\"en\">Own work</span>",
+        "source": "commons-desc-page"
+      },
+      "Artist": {
+        "value": "<a href=\"//commons.wikimedia.org/w/index.php?title=User:Fercavanha&amp;action=edit&amp;redlink=1\" class=\"new\" title=\"User:Fercavanha (page does not exist)\">Fercavanha</a>",
+        "source": "commons-desc-page"
+      },
+      "LicenseShortName": {
+        "value": "CC0",
+        "source": "commons-desc-page",
+        "hidden": ""
+      },
+      "UsageTerms": {
+        "value": "Creative Commons Zero, Public Domain Dedication",
+        "source": "commons-desc-page"
+      },
+      "AttributionRequired": {
+        "value": "false",
+        "source": "commons-desc-page",
+        "hidden": ""
+      },
+      "LicenseUrl": {
+        "value": "http://creativecommons.org/publicdomain/zero/1.0/deed.en",
+        "source": "commons-desc-page"
+      },
+      "Copyrighted": {
+        "value": "True",
+        "source": "commons-desc-page",
+        "hidden": ""
+      },
+      "Restrictions": {
+        "value": "",
+        "source": "commons-desc-page",
+        "hidden": ""
+      },
+      "License": {
+        "value": "cc0",
+        "source": "commons-templates",
+        "hidden": ""
+      }
+    }
+  },
+  {
+    "model": "2024 Toyota GR Supra 3.0 Premium",
+    "file": "images/gallery/toyota-gr-supra-front.jpg",
+    "source": "https://commons.wikimedia.org/wiki/File:Toyota_GR_Supra_(2024)_(53627057168).jpg",
+    "metadata": {
+      "DateTime": {
+        "value": "2024-04-05 21:14:58",
+        "source": "mediawiki-metadata",
+        "hidden": ""
+      },
+      "ObjectName": {
+        "value": "Toyota GR Supra (2024) (53627057168)",
+        "source": "mediawiki-metadata"
+      },
+      "CommonsMetadataExtension": {
+        "value": 1.2,
+        "source": "extension",
+        "hidden": ""
+      },
+      "Categories": {
+        "value": "Toyota Supra (J29)|Red automobiles in New York (state)|Automobiles facing right|Red Toyota coupes|Files with coordinates missing SDC location of creation|Flickr images reviewed by FlickreviewR 2|2010s red coupes|Toyota at the 2024 New York International Auto Show",
+        "source": "commons-categories",
+        "hidden": ""
+      },
+      "Assessments": {
+        "value": "",
+        "source": "commons-categories",
+        "hidden": ""
+      },
+      "GPSLatitude": {
+        "value": "40.757830",
+        "source": "commons-desc-page"
+      },
+      "GPSLongitude": {
+        "value": "-74.002676",
+        "source": "commons-desc-page"
+      },
+      "GPSMapDatum": {
+        "value": "WGS-84",
+        "source": "commons-desc-page",
+        "hidden": ""
+      },
+      "ImageDescription": {
+        "value": "<p>Launch: 1978\nGeneration: Fifth (2019 - )\nEngine: 3,0 litre turbo R6 (petrol)\nPower: 387 PS\nGearbox: 6 speed manual\n</p>\nLayout: front engine, rear drive",
+        "source": "commons-desc-page"
+      },
+      "DateTimeOriginal": {
+        "value": "2024-03-29 12:12",
+        "source": "commons-desc-page"
+      },
+      "Credit": {
+        "value": "<a rel=\"nofollow\" class=\"external text\" href=\"https://www.flickr.com/photos/charles79/53627057168/\">Toyota GR Supra (2024)</a>",
+        "source": "commons-desc-page"
+      },
+      "Artist": {
+        "value": "<a rel=\"nofollow\" class=\"external text\" href=\"https://www.flickr.com/people/43494963@N03\">Charles</a> from Port Chester, New York",
+        "source": "commons-desc-page"
+      },
+      "LicenseShortName": {
+        "value": "CC BY 2.0",
+        "source": "commons-desc-page",
+        "hidden": ""
+      },
+      "UsageTerms": {
+        "value": "Creative Commons Attribution 2.0",
+        "source": "commons-desc-page"
+      },
+      "AttributionRequired": {
+        "value": "true",
+        "source": "commons-desc-page",
+        "hidden": ""
+      },
+      "LicenseUrl": {
+        "value": "https://creativecommons.org/licenses/by/2.0",
+        "source": "commons-desc-page"
+      },
+      "Copyrighted": {
+        "value": "True",
+        "source": "commons-desc-page",
+        "hidden": ""
+      },
+      "Restrictions": {
+        "value": "",
+        "source": "commons-desc-page",
+        "hidden": ""
+      },
+      "License": {
+        "value": "cc-by-2.0",
+        "source": "commons-templates",
+        "hidden": ""
+      }
+    }
+  },
+  {
+    "model": "2019 Mazda MX-5 2.0 Roadster",
+    "file": "images/gallery/mazda-mx5-front.jpg",
+    "source": "https://commons.wikimedia.org/wiki/File:Mazda_MX-5_2.0_Skyactiv_G-160_(2019)_(53334142004).jpg",
+    "metadata": {
+      "DateTime": {
+        "value": "2025-08-28 03:35:42",
+        "source": "mediawiki-metadata",
+        "hidden": ""
+      },
+      "ObjectName": {
+        "value": "Mazda MX-5 2.0 Skyactiv G-160 (2019) (53334142004)",
+        "source": "mediawiki-metadata"
+      },
+      "CommonsMetadataExtension": {
+        "value": 1.2,
+        "source": "extension",
+        "hidden": ""
+      },
+      "Categories": {
+        "value": "London photographs taken on 2023-09-02|Mazda MX-5 (ND)|Flickr images reviewed by FlickreviewR 2|Files with coordinates missing SDC location of creation (51° N, 1° W)|Mazda automobiles in London|Views from Renaissance London Heathrow Hotel|Flickr images missing SDC published in",
+        "source": "commons-categories",
+        "hidden": ""
+      },
+      "Assessments": {
+        "value": "",
+        "source": "commons-categories",
+        "hidden": ""
+      },
+      "GPSLatitude": {
+        "value": "51.480006",
+        "source": "commons-desc-page"
+      },
+      "GPSLongitude": {
+        "value": "-0.446355",
+        "source": "commons-desc-page"
+      },
+      "GPSMapDatum": {
+        "value": "WGS-84",
+        "source": "commons-desc-page",
+        "hidden": ""
+      },
+      "ImageDescription": {
+        "value": "<p>Launch: 1989\nGeneration: Fourth (ND, 2015 - )\nEngine: 2,0 litre R4 (petrol)\nPower: 160 PS\nGearbox: 6 speed manual\n</p>\nLayout: front engine, rear drive",
+        "source": "commons-desc-page"
+      },
+      "DateTimeOriginal": {
+        "value": "2023-09-02 11:25",
+        "source": "commons-desc-page"
+      },
+      "Credit": {
+        "value": "<a rel=\"nofollow\" class=\"external text\" href=\"https://www.flickr.com/photos/charles79/53334142004/\">Mazda MX-5 2.0 Skyactiv G-160 (2019)</a>",
+        "source": "commons-desc-page"
+      },
+      "Artist": {
+        "value": "<a rel=\"nofollow\" class=\"external text\" href=\"https://www.flickr.com/people/43494963@N03\">Charles</a> from Port Chester, New York",
+        "source": "commons-desc-page"
+      },
+      "LicenseShortName": {
+        "value": "CC BY 2.0",
+        "source": "commons-desc-page",
+        "hidden": ""
+      },
+      "UsageTerms": {
+        "value": "Creative Commons Attribution 2.0",
+        "source": "commons-desc-page"
+      },
+      "AttributionRequired": {
+        "value": "true",
+        "source": "commons-desc-page",
+        "hidden": ""
+      },
+      "LicenseUrl": {
+        "value": "https://creativecommons.org/licenses/by/2.0",
+        "source": "commons-desc-page"
+      },
+      "Copyrighted": {
+        "value": "True",
+        "source": "commons-desc-page",
+        "hidden": ""
+      },
+      "Restrictions": {
+        "value": "",
+        "source": "commons-desc-page",
+        "hidden": ""
+      },
+      "License": {
+        "value": "cc-by-2.0",
+        "source": "commons-templates",
+        "hidden": ""
+      }
+    }
+  },
+  {
+    "model": "2023 Porsche 911 Sport Classic",
+    "file": "images/gallery/porsche-911-sport-classic-front.jpg",
+    "source": "https://commons.wikimedia.org/wiki/File:2023_Porsche_911_Sport_Classic.jpg",
+    "metadata": {
+      "DateTime": {
+        "value": "2023-04-23 05:49:04",
+        "source": "mediawiki-metadata",
+        "hidden": ""
+      },
+      "ObjectName": {
+        "value": "2023 Porsche 911 Sport Classic",
+        "source": "mediawiki-metadata"
+      },
+      "CommonsMetadataExtension": {
+        "value": 1.2,
+        "source": "extension",
+        "hidden": ""
+      },
+      "Categories": {
+        "value": "Self-published work|Files with coordinates missing SDC location of creation (51° N, 1° W)|Porsche 911 Sport Classic (2022)",
+        "source": "commons-categories",
+        "hidden": ""
+      },
+      "Assessments": {
+        "value": "",
+        "source": "commons-categories",
+        "hidden": ""
+      },
+      "GPSLatitude": {
+        "value": "51.673614",
+        "source": "commons-desc-page"
+      },
+      "GPSLongitude": {
+        "value": "-0.584561",
+        "source": "commons-desc-page"
+      },
+      "GPSMapDatum": {
+        "value": "WGS-84",
+        "source": "commons-desc-page",
+        "hidden": ""
+      },
+      "ImageDescription": {
+        "value": "Porsche 911 Sport Classic",
+        "source": "commons-desc-page"
+      },
+      "DateTimeOriginal": {
+        "value": "2023-04-22 13:34:23",
+        "source": "commons-desc-page"
+      },
+      "Credit": {
+        "value": "<span class=\"int-own-work\" lang=\"en\">Own work</span>",
+        "source": "commons-desc-page"
+      },
+      "Artist": {
+        "value": "<a href=\"//commons.wikimedia.org/w/index.php?title=User:Calreyn88&amp;action=edit&amp;redlink=1\" class=\"new\" title=\"User:Calreyn88 (page does not exist)\">Calreyn88</a>",
         "source": "commons-desc-page"
       },
       "LicenseShortName": {

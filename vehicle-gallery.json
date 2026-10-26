@@ -430,5 +430,89 @@
       "license_url": "https://creativecommons.org/licenses/by/2.0",
       "reference": true
     }
+  ],
+  "ford-mustang-classic": [
+    {
+      "image": "/images/gallery/ford-mustang-classic-front.jpg",
+      "label": "Exterior",
+      "caption": "1967 Ford Mustang 4.7L.jpg",
+      "source": "https://commons.wikimedia.org/wiki/File:1967_Ford_Mustang_4.7L.jpg",
+      "artist": "Calreyn88",
+      "license": "CC BY-SA 4.0",
+      "license_url": "https://creativecommons.org/licenses/by-sa/4.0",
+      "photo_set": "1967fordmustang47l"
+    }
+  ],
+  "mercedes-300sl-classic": [
+    {
+      "image": "/images/gallery/mercedes-300sl-classic-front.jpg",
+      "label": "Exterior",
+      "caption": "1989 Mercedes 300SL.jpg",
+      "source": "https://commons.wikimedia.org/wiki/File:1989_Mercedes_300SL.jpg",
+      "artist": "Calreyn88",
+      "license": "CC BY-SA 4.0",
+      "license_url": "https://creativecommons.org/licenses/by-sa/4.0",
+      "photo_set": "1989mercedes300sl"
+    }
+  ],
+  "volkswagen-beetle-classic": [
+    {
+      "image": "/images/gallery/volkswagen-beetle-classic-front.jpg",
+      "label": "Exterior",
+      "caption": "1965 Volkswagen Beetle.jpg",
+      "source": "https://commons.wikimedia.org/wiki/File:1965_Volkswagen_Beetle.jpg",
+      "artist": "Matthew Paul Argall",
+      "license": "CC BY 4.0",
+      "license_url": "https://creativecommons.org/licenses/by/4.0",
+      "photo_set": "1965volkswagenbeetle"
+    }
+  ],
+  "ford-mustang-gt": [
+    {
+      "image": "/images/gallery/ford-mustang-gt-front.jpg",
+      "label": "Exterior",
+      "caption": "2024 Ford Mustang GT 5.0 v8.jpg",
+      "source": "https://commons.wikimedia.org/wiki/File:2024_Ford_Mustang_GT_5.0_v8.jpg",
+      "artist": "Fercavanha",
+      "license": "CC0",
+      "license_url": "http://creativecommons.org/publicdomain/zero/1.0/deed.en",
+      "photo_set": "2024fordmustanggt50v8"
+    }
+  ],
+  "toyota-gr-supra": [
+    {
+      "image": "/images/gallery/toyota-gr-supra-front.jpg",
+      "label": "Exterior",
+      "caption": "Toyota GR Supra (2024) (53627057168).jpg",
+      "source": "https://commons.wikimedia.org/wiki/File:Toyota_GR_Supra_(2024)_(53627057168).jpg",
+      "artist": "Charles from Port Chester, New York",
+      "license": "CC BY 2.0",
+      "license_url": "https://creativecommons.org/licenses/by/2.0",
+      "photo_set": "toyotagrsupra"
+    }
+  ],
+  "mazda-mx5": [
+    {
+      "image": "/images/gallery/mazda-mx5-front.jpg",
+      "label": "Exterior",
+      "caption": "Mazda MX-5 2.0 Skyactiv G-160 (2019) (53334142004).jpg",
+      "source": "https://commons.wikimedia.org/wiki/File:Mazda_MX-5_2.0_Skyactiv_G-160_(2019)_(53334142004).jpg",
+      "artist": "Charles from Port Chester, New York",
+      "license": "CC BY 2.0",
+      "license_url": "https://creativecommons.org/licenses/by/2.0",
+      "photo_set": "mazdamx520skyactivg160"
+    }
+  ],
+  "porsche-911-sport-classic": [
+    {
+      "image": "/images/gallery/porsche-911-sport-classic-front.jpg",
+      "label": "Exterior",
+      "caption": "2023 Porsche 911 Sport Classic.jpg",
+      "source": "https://commons.wikimedia.org/wiki/File:2023_Porsche_911_Sport_Classic.jpg",
+      "artist": "Calreyn88",
+      "license": "CC BY-SA 4.0",
+      "license_url": "https://creativecommons.org/licenses/by-sa/4.0",
+      "photo_set": "2023porsche911sportclassic"
+    }
   ]
 }

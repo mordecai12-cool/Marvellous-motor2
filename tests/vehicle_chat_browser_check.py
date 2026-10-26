@@ -30,9 +30,9 @@ with sync_playwright() as pw:
     page=ctx.new_page();errors=[]
     page.on('pageerror',lambda error:errors.append(str(error)))
     page.goto(BASE+'/')
-    check(page.locator('#special-collections a').count()==2,'Homepage has Sports and Luxury collections')
+    check(page.locator('#special-collections a').count()==4,'Homepage has Sports, Luxury, Classic and Limited collections')
     page.goto(BASE+'/cars.html?category=Sports')
-    check(page.locator('#results-count').inner_text()=='1','Sports section filters to the Porsche sports car')
+    check(page.locator('#results-count').inner_text()=='6','Sports section displays all six matching cars')
     page.goto(BASE+'/cars.html?category=Luxury&engine=V6')
     check(page.locator('#results-count').inner_text()=='1','Luxury and V6 filters combine')
     check('lexus-preowned'==page.locator('.catalogue-grid .vehicle-card:visible').get_attribute('data-id'),'V6 filter selects matching model year')

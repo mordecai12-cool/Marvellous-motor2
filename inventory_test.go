@@ -108,13 +108,13 @@ func TestShowroomPagesAndAPI(t *testing.T) {
 	}
 	w := httptest.NewRecorder()
 	handleCatalogue(w, httptest.NewRequest("GET", "/cars.html", nil))
-	if strings.Count(w.Body.String(), "class=\"vehicle-card\"") != 16 {
+	if strings.Count(w.Body.String(), "class=\"vehicle-card\"") != len(vehicles) {
 		t.Fatal("Catalogue does not include all cars")
 	}
 	w = httptest.NewRecorder()
 	handleVehicleAPI(w, httptest.NewRequest("GET", "/api/vehicles", nil))
 	var got []Vehicle
-	if err := json.Unmarshal(w.Body.Bytes(), &got); err != nil || len(got) != 16 {
+	if err := json.Unmarshal(w.Body.Bytes(), &got); err != nil || len(got) != len(vehicles) {
 		t.Fatalf("Invalid vehicle API: %v", err)
 	}
 	w = httptest.NewRecorder()

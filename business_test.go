@@ -151,7 +151,7 @@ func TestFleetDraftPublishingAndPrivateDocuments(t *testing.T) {
 		}
 	}
 	list, err := fleetList(db, false)
-	if err != nil || len(list) != 17 {
+	if err != nil || len(list) != len(vehicles)+1 {
 		t.Fatal("Published stock not in catalogue", len(list), err)
 	}
 	db.Exec("UPDATE orders SET status='delivered' WHERE id=1")

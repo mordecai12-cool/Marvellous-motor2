@@ -27,14 +27,19 @@ with tempfile.TemporaryDirectory(prefix='mm-recovery-') as directory:
                     if ctx.request.get(base+'/health').ok:break
                 except Exception:time.sleep(.2)
             page.goto(base+'/cars.html?condition=&body=&budget=')
-            check(page.locator('#results-count').inner_text()=='16','Unfiltered catalogue shows all 16 vehicles')
+            check(page.locator('#results-count').inner_text()=='23','Unfiltered catalogue shows all 23 vehicles')
             check(page.locator('select[name=category]').count()==1 and page.locator('fieldset.collection-choices').count()==0,'Collection uses one compact dropdown')
             check(page.locator('.catalogue-grid .vehicle-card:visible').count()==9,'First page actually displays vehicle cards')
-            page.locator('[name=category]').select_option('Sports');check(page.locator('#results-count').inner_text()=='1','Sports selection shows the Porsche')
-            page.locator('[name=engine]').select_option('I4');check(page.locator('#results-count').inner_text()=='0' and page.locator('#category-only').is_visible(),'Conflicting engine filter offers a clear recovery action')
-            page.locator('#category-only').click();check(page.locator('#results-count').inner_text()=='1' and page.locator('[name=engine]').input_value()=='','Show all Sports clears conflicting filters')
-            for category in ['Classic','Limited Edition']:
-                page.locator('[name=category]').select_option(category);check('listed yet' in page.locator('#empty-explanation').inner_text(),category+' is available without inventing stock')
+            page.locator('[name=category]').select_option('Sports');check(page.locator('#results-count').inner_text()=='6','Sports selection shows all six sports cars')
+            page.locator('[name=engine]').select_option('V6');check(page.locator('#results-count').inner_text()=='0' and page.locator('#category-only').is_visible(),'Conflicting engine filter offers a clear recovery action')
+            page.locator('#category-only').click();check(page.locator('#results-count').inner_text()=='6' and page.locator('[name=engine]').input_value()=='','Show all Sports clears conflicting filters')
+            for category,count in [('Classic','3'),('Limited Edition','1')]:
+                page.locator('[name=category]').select_option(category);check(page.locator('#results-count').inner_text()==count,category+' displays correctly tagged sample models')
+            check(page.locator('[name=yearMin] option[value="1965"]').count()==1,'Year filters include classic model years')
+            page.locator('[name=category]').select_option('Sports');page.locator('[name=engine]').select_option('I4');check(page.locator('#results-count').inner_text()=='1' and page.locator('.catalogue-grid .vehicle-card:visible').get_attribute('data-id')=='mazda-mx5','I4 sports filter finds the Mazda roadster')
+            for car in ['ford-mustang-classic','mercedes-300sl-classic','volkswagen-beetle-classic','ford-mustang-gt','toyota-gr-supra','mazda-mx5','porsche-911-sport-classic']:
+                page.goto(base+'/car-details.html?id='+car);expect(page.locator('.gallery-main-image')).to_be_visible();page.wait_for_function("document.querySelector('.gallery-main-image')?.complete && document.querySelector('.gallery-main-image').naturalWidth>0");check('Sample listing' in page.inner_text('main'),car+' detail and representative image load with sample disclosure')
+            page.goto(base+'/cars.html?category=Classic');page.screenshot(path=str(ROOT/'.local/previews/classic-collection-desktop.png'),full_page=True)
             page.set_viewport_size({'width':390,'height':844});page.goto(base+'/cars.html');check(page.evaluate('document.documentElement.scrollWidth<=innerWidth'),'Compact collection filter fits mobile');page.screenshot(path=str(ROOT/'.local/previews/compact-collection-mobile.png'),full_page=True)
             page.goto(base+'/register.html');form=page.locator('form[action="/register"]');fill(form,{'name':'Recovery Buyer','email':'recovery@example.test','phone':'08012345678','password':'OriginalBuyer123','confirm-password':'OriginalBuyer123'});submit(page,form)
             def login(target,email,password):

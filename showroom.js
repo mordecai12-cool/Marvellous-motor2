@@ -62,6 +62,7 @@
   if (form) {
     document.querySelectorAll('[data-category-count]').forEach(el=>el.textContent='('+cards.filter(card=>card.dataset.categories.split(' · ').includes(el.dataset.categoryCount)).length+')');
     document.querySelector('#category-only')?.addEventListener('click',()=>{const selected=new FormData(form).getAll('category').filter(Boolean);form.reset();selected.forEach(value=>restoreField('category',value));currentPage=1;applyFilters();});
+    for(const name of ['yearMin','yearMax']){const select=form.elements.namedItem(name);if(select){select.replaceChildren(new Option('Any year',''));[...new Set(cards.map(card=>card.dataset.year))].sort((a,b)=>Number(a)-Number(b)).forEach(year=>select.add(new Option(year,year)));}}
     for(const name of ['brand','body','fuel','location']){const select=form.elements.namedItem(name);if(select){const title=select.options[0].textContent;select.replaceChildren(new Option(title,''));[...new Set(cards.map(card=>card.dataset[name]).filter(Boolean))].sort().forEach(value=>select.add(new Option(value,value)));}}
     const params = new URLSearchParams(location.search);
     for (const [key,value] of params) { restoreField(key,value); }

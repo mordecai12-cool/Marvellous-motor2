@@ -33,6 +33,9 @@ func (v Vehicle) Photos() []VehiclePhoto {
 		return v.PhotoItems
 	}
 	source := vehicleGalleries[v.ID]
+	if len(source) == 1 && source[0].Label == "Exterior" {
+		return source
+	}
 	primarySet := ""
 	for _, photo := range source {
 		if photo.Label == "Front view" && photo.PhotoSet != "" {
