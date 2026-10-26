@@ -26,7 +26,7 @@ The server binds to `127.0.0.1:8080`. Starting the site locally does not deploy 
 
 ## Operations and delivery
 
-A dedicated admin workspace now includes order and payment review, delivery scheduling/dispatch/handover, customers, enquiries, owner-controlled staff access, and audit logs. The two built-in owners are `marvellousmordecaiotiti@gmail.com` and `emmanlemichel2019@gmail.com`; both use `/admin-login.html`. Approved admins can create accounts or generate email-bound invitation links from **Staff & access**. Invited admins choose their own passwords. Owners control disabling and re-enabling staff. Invitations expire after 48 hours, work once and can be revoked. See [the operations guide](docs/ADMIN_DELIVERY.md).
+A dedicated admin workspace now includes order and payment review, delivery scheduling/dispatch/handover, customers, enquiries, owner-controlled staff access, and audit logs. The two built-in owners are `marvellousmordecaiotiti@gmail.com` and `emmanlemichel2019@gmail.com`; both use `/login.html`. Approved admins can create accounts or generate email-bound invitation links from **Staff & access**. Invited admins choose their own passwords. Owners control disabling and re-enabling staff. Invitations expire after 48 hours, work once and can be revoked. See [the operations guide](docs/ADMIN_DELIVERY.md).
 
 ```bash
 ./open-admin.sh
@@ -61,7 +61,7 @@ The local launch script enables a fictional customer account. Both requested own
 .local/demo-accounts.json
 ```
 
-Use the customer credentials at `/login.html`. Use either built-in owner account at `/admin-login.html`. The file is ignored by Git and blocked from HTTP. The browser tests create one fictional order and sourcing request in the preview database; these help demonstrate the account and admin flows.
+Use the customer credentials at `/login.html`. Use either built-in owner account at `/login.html`. The file is ignored by Git and blocked from HTTP. The browser tests create one fictional order and sourcing request in the preview database; these help demonstrate the account and admin flows.
 
 To disable demo accounts for a fresh database:
 

@@ -690,6 +690,11 @@ func handleLogin(db *sql.DB, w http.ResponseWriter, r *http.Request) {
 	email := strings.ToLower(strings.TrimSpace(r.FormValue("email")))
 	password := r.FormValue("password")
 
+	// The same form recognizes approved admin credentials before customer login.
+	if signInAdmin(db, w, r, email, password) {
+		return
+	}
+
 	var storedPassword string
 
 	err = db.QueryRow(`
@@ -1091,80 +1096,9 @@ func createSuperAdmin(db *sql.DB) {
 	log.Println("Super admin created successfully")
 }
 
+// Keep existing bookmarks and form actions working through the shared login.
 func handleAdminLogin(db *sql.DB, w http.ResponseWriter, r *http.Request) {
-
-	if r.Method != http.MethodPost {
-		http.Error(w, "Method not allowed", http.StatusMethodNotAllowed)
-		return
-	}
-
-	err := r.ParseForm()
-	if err != nil {
-		http.Error(w, "Could not read form", http.StatusBadRequest)
-		return
-	}
-
-	email := strings.ToLower(strings.TrimSpace(r.FormValue("email")))
-	password := r.FormValue("password")
-
-	var storedPassword string
-	var adminID int64
-	var adminName string
-	var role string
-	var status string
-
-	err = db.QueryRow(`
-		SELECT id, name, password, role, status
-		FROM admins
-		WHERE email = ?
-	`, email).Scan(
-		&adminID,
-		&adminName,
-		&storedPassword,
-		&role,
-		&status,
-	)
-
-	if err != nil {
-		log.Println("Could not find admin:", err)
-		http.Redirect(w, r, "/admin-login.html?error=invalid", http.StatusSeeOther)
-		return
-	}
-
-	if !authorizedStaff(Staff{Email: email, Role: role, Status: status}) {
-		http.Redirect(w, r, "/admin-login.html?error=invalid", http.StatusSeeOther)
-		return
-	}
-
-	err = bcrypt.CompareHashAndPassword(
-		[]byte(storedPassword),
-		[]byte(password),
-	)
-
-	if err != nil {
-		http.Redirect(w, r, "/admin-login.html?error=invalid", http.StatusSeeOther)
-		return
-	}
-
-	session, err := store.Get(r, "admin-session")
-	if err != nil {
-		log.Println("Could not get admin session:", err)
-		http.Error(w, "Could not create session", http.StatusInternalServerError)
-		return
-	}
-
-	session.Values["admin_id"] = adminID
-	session.Values["admin_name"] = adminName
-	session.Values["admin_role"] = role
-
-	err = session.Save(r, w)
-	if err != nil {
-		log.Println("Could not save admin session:", err)
-		http.Error(w, "Could not save session", http.StatusInternalServerError)
-		return
-	}
-
-	http.Redirect(w, r, "/admin.html", http.StatusSeeOther)
+	handleLogin(db, w, r)
 }
 
 func handleAdminDashboard(db *sql.DB, w http.ResponseWriter, r *http.Request) {

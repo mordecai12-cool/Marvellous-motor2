@@ -1,10 +1,10 @@
 # Operations and delivery upgrade
 
-The local site now has a dedicated, responsive administration workspace at `/admin.html`, with a private sign-in page at `/admin-login.html`.
+The local site now has a dedicated, responsive administration workspace at `/admin.html`, with the shared sign-in page at `/login.html`. Approved admin credentials open operations; customer credentials open the customer dashboard. The former `/admin-login.html` URL redirects to this shared page.
 
 ## Staff access
 
-The old administrator-request and status-lookup URLs are closed. The app initializes two approved owner accounts in both local and production modes: `marvellousmordecaiotiti@gmail.com` and `emmanlemichel2019@gmail.com`. Their requested initial passwords are stored as bcrypt hashes in `owner-bootstrap.go`. Initialization is recorded once per account in `built_in_admin_setup`; future startup preserves changed passwords. Both owners and all added admins use `/admin-login.html`.
+The old administrator-request and status-lookup URLs are closed. The app initializes two approved owner accounts in both local and production modes: `marvellousmordecaiotiti@gmail.com` and `emmanlemichel2019@gmail.com`. Their requested initial passwords are stored as bcrypt hashes in `owner-bootstrap.go`. Initialization is recorded once per account in `built_in_admin_setup`; future startup preserves changed passwords. Both owners and all added admins use `/login.html`.
 
 Approved administrators can invite colleagues and create accounts directly from **Staff & access**. New accounts receive the ordinary administrator role. Only owners can disable or reactivate staff; owner accounts cannot be disabled through the staff screen. Customers cannot create admins or enter the admin workspace.
 
@@ -13,7 +13,7 @@ Every protected admin request checks the current account status and role in the 
 
 ## Invitation-only admin signup
 
-1. Sign in as an approved administrator at `/admin-login.html`.
+1. Sign in as an approved administrator at `/login.html`.
 2. Open **Staff & access** and enter a colleague's work email under **Bring the right people in**.
 3. Generate an invitation and copy the private signup link. Share it yourself; the application does not send an email automatically.
 4. The invited person opens the link, enters their full name, chooses a password and confirms it. The email is fixed by the invitation.

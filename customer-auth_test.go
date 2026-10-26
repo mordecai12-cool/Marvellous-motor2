@@ -40,3 +40,58 @@ func TestRecoveryResponseDoesNotRevealCustomerExistence(t *testing.T) {
 		t.Fatal("Recovery revealed account existence")
 	}
 }
+
+func TestSharedLoginRecognizesBothBuiltInAdmins(t *testing.T) {
+	db := testDatabase(t)
+	if err := seedDeploymentOwner(db); err != nil {
+		t.Fatal(err)
+	}
+	for _, account := range []struct{ email, password string }{{deploymentOwnerEmail, "Ikese2020"}, {deploymentSecondOwnerEmail, "password"}} {
+		w := httptest.NewRecorder()
+		handleLogin(db, w, adminPost(t, "/login", url.Values{"email": {" " + strings.ToUpper(account.email) + " "}, "password": {account.password}}, 0))
+		if w.Code != 303 || w.Header().Get("Location") != "/admin.html" {
+			t.Fatal("Shared login did not redirect admin", w.Code, w.Body.String())
+		}
+		r := httptest.NewRequest("GET", "/admin.html", nil)
+		for _, cookie := range w.Result().Cookies() {
+			r.AddCookie(cookie)
+		}
+		staff, err := currentStaff(db, r)
+		if err != nil || staff.Email != account.email {
+			t.Fatal("Shared login did not create a valid admin session", err)
+		}
+	}
+}
+
+func TestSharedLoginCannotGrantAdminAccessToWrongOrDisabledCredentials(t *testing.T) {
+	db := adminFixture(t)
+	hash, _ := bcrypt.GenerateFromPassword([]byte("StaffPassword123"), bcrypt.MinCost)
+	db.Exec("UPDATE admins SET password=? WHERE id=2", string(hash))
+	// A customer may share an email with staff, but has independent credentials.
+	customerHash, _ := bcrypt.GenerateFromPassword([]byte("CustomerPassword123"), bcrypt.MinCost)
+	db.Exec("INSERT INTO customers(id,name,email,password) VALUES(1,'Customer','staff@example.test',?)", string(customerHash))
+	for _, tc := range []struct {
+		password, status, location string
+		code                       int
+	}{
+		{"StaffPassword123", "approved", "/admin.html", 303},
+		{"wrong-password", "approved", "", 401},
+		{"StaffPassword123", "disabled", "", 401},
+		{"StaffPassword123", "pending", "", 401},
+		{"CustomerPassword123", "approved", "/customer-dashboard.html", 303},
+	} {
+		db.Exec("UPDATE admins SET status=? WHERE id=2", tc.status)
+		w := httptest.NewRecorder()
+		handleLogin(db, w, adminPost(t, "/login", url.Values{"email": {"staff@example.test"}, "password": {tc.password}}, 0))
+		if w.Code != tc.code || w.Header().Get("Location") != tc.location {
+			t.Fatalf("%s: got %d %s", tc.status, w.Code, w.Header().Get("Location"))
+		}
+		if tc.location != "/admin.html" {
+			for _, cookie := range w.Result().Cookies() {
+				if cookie.Name == "admin-session" {
+					t.Fatal("Invalid credentials or customer login granted admin session")
+				}
+			}
+		}
+	}
+}

@@ -13,7 +13,7 @@ def check(ok, label):
     print("PASS: " + label, flush=True)
 
 def login(page, email, password):
-    page.goto(BASE + '/admin-login.html')
+    page.goto(BASE + '/login.html')
     page.locator('[name=email]').fill(email)
     page.locator('[name=password]').fill(password)
     page.locator('button[type=submit]').click()

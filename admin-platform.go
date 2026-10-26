@@ -265,7 +265,7 @@ func registerAdminPlatform(db *sql.DB) {
 			http.Error(w, "Method not allowed", 405)
 			return
 		}
-		renderAdminLogin(w, r, r.URL.Query().Get("error"))
+		http.Redirect(w, r, "/login.html", http.StatusSeeOther)
 	})
 	for _, page := range []string{"deliveries", "order", "customers", "team", "activity"} {
 		page := page

@@ -2,6 +2,8 @@ package main
 
 import (
 	"bytes"
+	"database/sql"
+	"golang.org/x/crypto/bcrypt"
 	"html/template"
 	"net/http"
 )
@@ -29,4 +31,29 @@ func serveCustomerSignIn(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 	renderCustomerAuth(w, 200, "login.html", CustomerAuthPage{})
+}
+
+// Return true once an admin sign-in has been handled, including session errors.
+// Customer credentials never grant staff access, even when the email is shared.
+func signInAdmin(db *sql.DB, w http.ResponseWriter, r *http.Request, email, password string) bool {
+	var staff Staff
+	var hash string
+	err := db.QueryRow("SELECT id,name,email,password,role,status FROM admins WHERE lower(email)=?", email).Scan(&staff.ID, &staff.Name, &staff.Email, &hash, &staff.Role, &staff.Status)
+	if err != nil || !authorizedStaff(staff) || bcrypt.CompareHashAndPassword([]byte(hash), []byte(password)) != nil {
+		return false
+	}
+	session, err := store.Get(r, "admin-session")
+	if err != nil {
+		http.Error(w, "Could not create session", 500)
+		return true
+	}
+	session.Values["admin_id"] = staff.ID
+	session.Values["admin_name"] = staff.Name
+	session.Values["admin_role"] = staff.Role
+	if err = session.Save(r, w); err != nil {
+		http.Error(w, "Could not save session", 500)
+		return true
+	}
+	http.Redirect(w, r, "/admin.html", http.StatusSeeOther)
+	return true
 }
