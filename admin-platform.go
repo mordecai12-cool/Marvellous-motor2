@@ -218,6 +218,7 @@ type AdminMetrics struct {
 func (m AdminMetrics) TotalLabel() string { return formatAmount(m.ReviewedTotal) }
 
 type AdminPage struct {
+	Bank                                                BankAccount
 	Staff                                               Staff
 	Page, Title, Subtitle, Notice, Error, Query, Filter string
 	Metrics                                             AdminMetrics
@@ -248,6 +249,9 @@ func initAdminPlatform(db *sql.DB) error {
 	if err = initOwnerSignup(db); err != nil {
 		return err
 	}
+	if err = initSettings(db); err != nil {
+		return err
+	}
 	return initCustomerServices(db)
 }
 func registerAdminPlatform(db *sql.DB) {
@@ -255,6 +259,7 @@ func registerAdminPlatform(db *sql.DB) {
 		log.Fatal(err)
 	}
 	registerCustomerServices(db)
+	registerSettings(db)
 	http.HandleFunc("/admin-login.html", func(w http.ResponseWriter, r *http.Request) {
 		if r.Method != http.MethodGet {
 			http.Error(w, "Method not allowed", 405)
@@ -297,6 +302,9 @@ func renderAdminLogin(w http.ResponseWriter, r *http.Request, code string) {
 	}{message, code == "registration-closed", r.URL.Query().Get("notice") == "account-created", ownerOnlyAccess()})
 }
 func renderAdmin(w http.ResponseWriter, file string, data AdminPage) {
+	renderAdminStatus(w, http.StatusOK, file, data)
+}
+func renderAdminStatus(w http.ResponseWriter, status int, file string, data AdminPage) {
 	funcs := template.FuncMap{"statusLabel": statusLabel, "statusReached": statusReached, "amount": formatAmount}
 	t, err := template.New(file).Funcs(funcs).ParseFiles(file, "admin-partials.html")
 	if err != nil {
@@ -311,6 +319,7 @@ func renderAdmin(w http.ResponseWriter, file string, data AdminPage) {
 		return
 	}
 	w.Header().Set("Content-Type", "text/html; charset=utf-8")
+	w.WriteHeader(status)
 	w.Write(output.Bytes())
 }
 func loadMetrics(db *sql.DB) (m AdminMetrics, err error) {
@@ -415,10 +424,6 @@ func serveAdminPage(db *sql.DB, w http.ResponseWriter, r *http.Request, page str
 	if !ok {
 		return
 	}
-	if page == "team" && staff.Role != "super_admin" {
-		http.Error(w, "Only the platform owner can manage staff", 403)
-		return
-	}
 	data := AdminPage{Staff: staff, Page: page, Query: r.URL.Query().Get("q"), Filter: r.URL.Query().Get("status")}
 	data.OwnerOnly = ownerOnlyAccess()
 	data.SecondOwnerEmail = deploymentSecondOwnerEmail
@@ -512,7 +517,7 @@ func serveAdminPage(db *sql.DB, w http.ResponseWriter, r *http.Request, page str
 		}
 	case "team":
 		data.Title = "The right people. The right access."
-		data.Subtitle = "Only the platform owner can create and manage administrator accounts."
+		data.Subtitle = "Approved administrators can create accounts and invite colleagues. Owners manage access changes."
 		var rows *sql.Rows
 		rows, err = db.Query("SELECT id,name,email,role,status FROM admins WHERE status != 'setup_pending' ORDER BY id")
 		if err == nil {
@@ -786,7 +791,7 @@ func manageTeam(db *sql.DB, w http.ResponseWriter, r *http.Request, action strin
 	if !ok {
 		return
 	}
-	if staff.Role != "super_admin" {
+	if action != "create" && staff.Role != "super_admin" {
 		http.Error(w, "Only the platform owner can manage staff", 403)
 		return
 	}

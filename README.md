@@ -6,10 +6,10 @@ This milestone uses the requested sky-blue backgrounds with dark-navy accents (`
 
 ## Open the project
 
-Project folder: `/home/student/marvellous-motors`
+Project folder: `/home/student/Marvellous-motor2`
 
 ```bash
-cd /home/student/marvellous-motors
+cd /home/student/Marvellous-motor2
 ./open-local.sh
 ```
 
@@ -26,7 +26,7 @@ The server binds to `127.0.0.1:8080`. Starting the site locally does not deploy 
 
 ## Operations and delivery
 
-A dedicated admin workspace now includes order and payment review, delivery scheduling/dispatch/handover, customers, enquiries, owner-controlled staff access, and audit logs. One final owner signup is reserved for `marvellousmordecaiotiti@gmail.com` at `/admin-signup.html`, and activates without approval. Afterwards signup is invitation-only: an owner generates an email-bound link from **Staff & access**, and the invited person chooses their password. Invitations expire after 48 hours, work once and can be revoked. See [the operations guide](docs/ADMIN_DELIVERY.md).
+A dedicated admin workspace now includes order and payment review, delivery scheduling/dispatch/handover, customers, enquiries, owner-controlled staff access, and audit logs. The two built-in owners are `marvellousmordecaiotiti@gmail.com` and `emmanlemichel2019@gmail.com`; both use `/admin-login.html`. Approved admins can create accounts or generate email-bound invitation links from **Staff & access**. Invited admins choose their own passwords. Owners control disabling and re-enabling staff. Invitations expire after 48 hours, work once and can be revoked. See [the operations guide](docs/ADMIN_DELIVERY.md).
 
 ```bash
 ./open-admin.sh
@@ -55,13 +55,13 @@ Dealer applications are manual enquiries; they do not create verified dealers or
 
 `./start-local.sh` uses `.local/preview.db` and creates tables automatically. **The repository's original `marvellous.db` and original uploaded receipts are preserved.** No production/customer data is imported into the local preview.
 
-The local launch script enables a fictional customer account. The configured platform owner is initialized on a fresh database in every mode from the code-stored email and bcrypt password hash; startup never resets an existing account. The private preview credentials file includes separate customer and administrator passwords. Their generated credentials are saved privately on this machine in:
+The local launch script enables a fictional customer account. Both requested owners are initialized in every mode from code-stored emails and bcrypt password hashes. A one-time migration also activates existing accounts for those emails with the requested initial credentials. Subsequent restarts preserve password changes. The fictional customer credentials are saved privately on this machine in:
 
 ```
 .local/demo-accounts.json
 ```
 
-Use the customer credentials at `/login.html` and the administrator credentials at `/admin-login.html`. The file is ignored by Git and blocked from HTTP. The browser tests create one fictional order and sourcing request in the preview database; these help demonstrate the account and admin flows.
+Use the customer credentials at `/login.html`. Use either built-in owner account at `/admin-login.html`. The file is ignored by Git and blocked from HTTP. The browser tests create one fictional order and sourcing request in the preview database; these help demonstrate the account and admin flows.
 
 To disable demo accounts for a fresh database:
 
@@ -115,7 +115,7 @@ Stop the local server, copy `.local/preview.db` to a backup folder, then restart
 
 ## Production status
 
-See [the audit](docs/PROJECT_AUDIT.md) and [the development roadmap](docs/ROADMAP.md). This milestone is ready for local review, not live commerce. Payment instructions in the inherited workflow still need real business configuration. Payment provider verification/webhooks, dealer publishing, production email/password reset delivery, reservation concurrency, verified inspections, multi-currency rates, and carrier integrations remain separate milestones requiring configuration and implementation.
+See [the audit](docs/PROJECT_AUDIT.md) and [the development roadmap](docs/ROADMAP.md). This milestone is ready for local review, not live commerce. Administrators configure the business bank name, account holder and 10-digit account number at **Settings** (`/admin/settings`). The latest saved details appear on both new and resumed payment pages. No fictitious bank account is configured by default. Customers can change their own password at `/account/settings`; admins change theirs at `/admin/settings`, confirming their current password. Payment provider verification/webhooks, dealer publishing, production email/password reset delivery, reservation concurrency, verified inspections, multi-currency rates, and carrier integrations remain separate milestones requiring configuration and implementation.
 
 Current verification results and local demonstration steps are in [docs/LOCAL_VERIFICATION.md](docs/LOCAL_VERIFICATION.md).
 
@@ -126,3 +126,7 @@ The completed upgrades are published on [`my-isolated-project` in Marvellous-mot
 The hosting budget is **free only**. The full Go application is prepared for Railway from `my-isolated-project`, using its Free plan subject to account eligibility and available credits. `railpack.json` packages the application and public assets without bundling local databases, receipts or credentials. The provider account must be connected and its Free plan verified before creating services. No paid Render configuration is included, and no public deployment has been verified yet.
 
 See [the deployment guide](docs/DEPLOYMENT.md) for account setup, production settings, persistent storage and verification.
+
+## Admin and payment settings verification
+
+Run `go test ./...` and `go vet ./...`. With the local server running and Python Playwright installed, run `.venv/bin/python tests/settings_browser_check.py`. This checks both built-in logins, admin creation and invitation, password updates, bank details in checkout and mobile layouts. It restores the original payment account after testing. Database-backed settings require persistent storage in deployment as described in [the deployment guide](docs/DEPLOYMENT.md).

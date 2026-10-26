@@ -65,7 +65,7 @@ func invitationHash(token string) (string, bool) {
 	sum := sha256.Sum256([]byte(token))
 	return hex.EncodeToString(sum[:]), true
 }
-func ownerForInvitation(db *sql.DB, w http.ResponseWriter, r *http.Request) (Staff, bool) {
+func adminForInvitation(db *sql.DB, w http.ResponseWriter, r *http.Request) (Staff, bool) {
 	if r.Method != http.MethodPost {
 		http.Error(w, "Method not allowed", http.StatusMethodNotAllowed)
 		return Staff{}, false
@@ -74,14 +74,10 @@ func ownerForInvitation(db *sql.DB, w http.ResponseWriter, r *http.Request) (Sta
 	if !ok {
 		return Staff{}, false
 	}
-	if staff.Role != "super_admin" {
-		http.Error(w, "Only the platform owner can invite staff", http.StatusForbidden)
-		return Staff{}, false
-	}
 	return staff, true
 }
 func createStaffInvitation(db *sql.DB, w http.ResponseWriter, r *http.Request) {
-	staff, ok := ownerForInvitation(db, w, r)
+	staff, ok := adminForInvitation(db, w, r)
 	if !ok {
 		return
 	}
@@ -142,7 +138,7 @@ func createStaffInvitation(db *sql.DB, w http.ResponseWriter, r *http.Request) {
 	renderAdmin(w, "admin-invitation.html", data)
 }
 func revokeStaffInvitation(db *sql.DB, w http.ResponseWriter, r *http.Request) {
-	staff, ok := ownerForInvitation(db, w, r)
+	staff, ok := adminForInvitation(db, w, r)
 	if !ok {
 		return
 	}
@@ -229,11 +225,11 @@ func serveStaffSignup(db *sql.DB, w http.ResponseWriter, r *http.Request) {
 	var creator Staff
 	var err error
 	if valid {
-		err = db.QueryRow(`SELECT i.id,i.email,a.id,a.name,a.email,a.role,a.status FROM staff_invitations i JOIN admins a ON a.id=i.created_by WHERE i.token_hash=? AND i.used_at IS NULL AND i.revoked_at IS NULL AND i.expires_at>? AND a.role='super_admin' AND a.status='approved'`, hash, time.Now().Unix()).Scan(&invitationID, &data.Email, &creator.ID, &creator.Name, &creator.Email, &creator.Role, &creator.Status)
+		err = db.QueryRow(`SELECT i.id,i.email,a.id,a.name,a.email,a.role,a.status FROM staff_invitations i JOIN admins a ON a.id=i.created_by WHERE i.token_hash=? AND i.used_at IS NULL AND i.revoked_at IS NULL AND i.expires_at>? AND a.role IN ('super_admin','admin') AND a.status='approved'`, hash, time.Now().Unix()).Scan(&invitationID, &data.Email, &creator.ID, &creator.Name, &creator.Email, &creator.Role, &creator.Status)
 	}
 	if !valid || err != nil {
 		data.Token = ""
-		data.Error = "This invitation is invalid, expired or already used. Ask the platform owner for a new link."
+		data.Error = "This invitation is invalid, expired or already used. Ask an administrator for a new link."
 		renderStaffSignup(w, 400, data)
 		return
 	}
@@ -279,8 +275,8 @@ func serveStaffSignup(db *sql.DB, w http.ResponseWriter, r *http.Request) {
 	}
 	defer tx.Rollback()
 	// Claim the invitation within the same transaction that creates the account.
-	// Re-check expiry, revocation, single use and the owner's current authority here.
-	result, err := tx.Exec(`UPDATE staff_invitations SET used_at=? WHERE id=? AND used_at IS NULL AND revoked_at IS NULL AND expires_at>? AND EXISTS(SELECT 1 FROM admins a WHERE a.id=staff_invitations.created_by AND a.role='super_admin' AND a.status='approved')`, time.Now().Unix(), invitationID, time.Now().Unix())
+	// Re-check expiry, revocation, single use and the inviting admin's current authority here.
+	result, err := tx.Exec(`UPDATE staff_invitations SET used_at=? WHERE id=? AND used_at IS NULL AND revoked_at IS NULL AND expires_at>? AND EXISTS(SELECT 1 FROM admins a WHERE a.id=staff_invitations.created_by AND a.role IN ('super_admin','admin') AND a.status='approved')`, time.Now().Unix(), invitationID, time.Now().Unix())
 	if err != nil {
 		http.Error(w, "Could not accept invitation", 500)
 		return

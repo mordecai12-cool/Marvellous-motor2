@@ -15,3 +15,16 @@
 .delivery-ui,.delivery-banner{background:#87ceeb}
 
 .delivery-ui,.delivery-banner{background:#87ceeb}
+
+/* Admin-configured transfer details shared by new and resumed checkout. */
+.checkout-bank-account { margin: 0 0 24px; border-top: 4px solid #2478ba; }
+.checkout-bank-account h2 { margin: 10px 0; }
+.checkout-bank-account p { max-width: 760px; line-height: 1.7; }
+.checkout-bank-account dl { display: grid; grid-template-columns: 150px minmax(0, 1fr); gap: 12px 20px; margin-top: 24px; }
+.checkout-bank-account dt { color: #5c6b7b; font-size: 13px; }
+.checkout-bank-account dd { margin: 0; overflow-wrap: anywhere; font-weight: 600; }
+.checkout-bank-account .bank-account-number { font-size: 28px; letter-spacing: 2px; color: #0b1739; }
+@media (max-width: 540px) {
+  .checkout-bank-account dl { grid-template-columns: 1fr; gap: 6px; }
+  .checkout-bank-account dd { margin-bottom: 12px; }
+}

@@ -29,13 +29,13 @@ func inviteForTest(t *testing.T, db *sql.DB, email string) string {
 func signupFields(token string) url.Values {
 	return url.Values{"token": {token}, "name": {"Invited Staff"}, "email": {"invited@example.test"}, "password": {"UniqueTestPassword!26"}, "confirm-password": {"UniqueTestPassword!26"}, "role": {"super_admin"}}
 }
-func TestStaffInvitationIsOwnerOnlyAndDoesNotStoreRawToken(t *testing.T) {
+func TestStaffInvitationIsAdminOnlyAndDoesNotStoreRawToken(t *testing.T) {
 	db := adminFixture(t)
-	for _, id := range []int64{0, 2, 3} {
+	for _, id := range []int64{0, 3} {
 		w := httptest.NewRecorder()
 		createStaffInvitation(db, w, adminPost(t, "/admin/team/invite", url.Values{"email": {"invited@example.test"}}, id))
 		if w.Code != 403 {
-			t.Fatalf("Non-owner %d can invite: %d", id, w.Code)
+			t.Fatalf("Unauthorized account %d can invite: %d", id, w.Code)
 		}
 	}
 	token := inviteForTest(t, db, "Invited@Example.Test")
@@ -109,7 +109,7 @@ func TestInvitedSignupCannotEscalateRoleAndCannotReplay(t *testing.T) {
 	}
 }
 func TestSignupRejectsExpiredRevokedReplacedAndUnauthorizedInvitations(t *testing.T) {
-	for _, condition := range []string{"expired", "revoked", "replaced", "owner-disabled", "owner-demoted"} {
+	for _, condition := range []string{"expired", "revoked", "replaced", "owner-disabled", "creator-role-removed"} {
 		t.Run(condition, func(t *testing.T) {
 			db := adminFixture(t)
 			token := inviteForTest(t, db, "invited@example.test")
@@ -123,8 +123,8 @@ func TestSignupRejectsExpiredRevokedReplacedAndUnauthorizedInvitations(t *testin
 				inviteForTest(t, db, "invited@example.test")
 			case "owner-disabled":
 				_, err = db.Exec("UPDATE admins SET status='disabled' WHERE id=1")
-			case "owner-demoted":
-				_, err = db.Exec("UPDATE admins SET role='admin' WHERE id=1")
+			case "creator-role-removed":
+				_, err = db.Exec("UPDATE admins SET role='customer' WHERE id=1")
 			}
 			if err != nil {
 				t.Fatal(err)
@@ -145,14 +145,14 @@ func TestSignupRejectsExpiredRevokedReplacedAndUnauthorizedInvitations(t *testin
 		})
 	}
 }
-func TestInvitationRevocationIsOwnerOnlyAndImmediate(t *testing.T) {
+func TestInvitationRevocationIsAdminOnlyAndImmediate(t *testing.T) {
 	db := adminFixture(t)
 	token := inviteForTest(t, db, "invited@example.test")
-	for _, id := range []int64{2, 1} {
+	for _, id := range []int64{0, 2} {
 		w := httptest.NewRecorder()
 		revokeStaffInvitation(db, w, adminPost(t, "/admin/team/revoke-invite", url.Values{"invitation-id": {"1"}}, id))
 		want := 403
-		if id == 1 {
+		if id == 2 {
 			want = 303
 		}
 		if w.Code != want {

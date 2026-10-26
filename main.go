@@ -23,6 +23,7 @@ import (
 )
 
 type OrderData struct {
+	Bank BankAccount
 	ShowroomData
 	Vehicle Vehicle
 	OrderID int64
@@ -437,6 +438,11 @@ func handleOrder(db *sql.DB, w http.ResponseWriter, r *http.Request) {
 		State:        state,
 	}
 
+	orderData.Bank, err = loadBankAccount(db)
+	if err != nil {
+		http.Error(w, "Could not load payment details", 500)
+		return
+	}
 	log.Println("Order saved to database")
 
 	tmpl, err := template.ParseFiles("payment.html", "partials.html")

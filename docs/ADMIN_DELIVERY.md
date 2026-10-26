@@ -4,26 +4,30 @@ The local site now has a dedicated, responsive administration workspace at `/adm
 
 ## Staff access
 
-The old administrator-request and status-lookup URLs are closed. One additional signup at `/admin-signup.html` is reserved for `marvellousmordecaiotiti@gmail.com` and activates immediately, without approval. A durable, transactional signup slot closes after that account registers; deleting or disabling an account never reopens it. Later administrators require an owner-created invitation or direct account creation. Customer registration is separate and remains available for shopping accounts; a customer account never grants administrator access.
+The old administrator-request and status-lookup URLs are closed. The app initializes two approved owner accounts in both local and production modes: `marvellousmordecaiotiti@gmail.com` and `emmanlemichel2019@gmail.com`. Their requested initial passwords are stored as bcrypt hashes in `owner-bootstrap.go`. Initialization is recorded once per account in `built_in_admin_setup`; future startup preserves changed passwords. Both owners and all added admins use `/admin-login.html`.
 
-The local platform-owner credentials remain in `.local/demo-accounts.json`. This private, Git-ignored file is blocked from HTTP. Sign in with its administrator email and password. No credentials appear on the public website.
-
-The owner can invite administrators from **Staff & access**, create accounts directly for assisted setup, and disable or reactivate staff. New accounts receive the ordinary administrator role. Administrators cannot create other staff, access staff management, or disable an owner. Existing owner accounts cannot be disabled through the staff screen.
+Approved administrators can invite colleagues and create accounts directly from **Staff & access**. New accounts receive the ordinary administrator role. Only owners can disable or reactivate staff; owner accounts cannot be disabled through the staff screen. Customers cannot create admins or enter the admin workspace.
 
 Every protected admin request checks the current account status and role in the database. A disabled account is blocked immediately, including when it has an existing session cookie. Private receipt access performs the same live check. Session cookie role claims do not override the database role.
 
 
 ## Invitation-only admin signup
 
-1. Sign in as the platform owner at `/admin-login.html`.
+1. Sign in as an approved administrator at `/admin-login.html`.
 2. Open **Staff & access** and enter a colleague's work email under **Bring the right people in**.
 3. Generate an invitation and copy the private signup link. Share it yourself; the application does not send an email automatically.
 4. The invited person opens the link, enters their full name, chooses a password and confirms it. The email is fixed by the invitation.
 5. A successful signup creates an approved ordinary administrator and returns to staff sign in. The form cannot request owner privileges.
 
-Invitations expire after 48 hours, can be used once and may be revoked by the owner. Generating a replacement invalidates earlier unused links for the same email. Only token hashes are stored; the raw link is displayed once on the protected owner screen and never put into the audit log. Signup checks the inviter's current authority, expiry and revocation again inside the account-creation transaction. Invalid input and account conflicts do not consume an invitation or overwrite an existing account. Customer accounts never grant staff access.
+Invitations expire after 48 hours, can be used once and may be revoked by an approved administrator. Generating a replacement invalidates earlier unused links for the same email. Only token hashes are stored; the raw link is displayed once on the protected admin screen and never put into the audit log. Signup checks the inviter's current authority, expiry and revocation again inside the account-creation transaction. Invalid input and account conflicts do not consume an invitation or overwrite an existing account. Customer accounts never grant staff access.
 
-Before the reserved slot is consumed, `/admin-signup.html` shows the last owner signup with a fixed email. Afterwards, account creation requires a valid invitation token. The two configured owner emails may hold owner privileges; other invited or directly created staff receive ordinary administrator access. Signup retains CSRF, form-origin checks, password hashing and authentication rate limiting. Its `strict-origin` referrer policy omits the invitation path/query from referrers while allowing normal same-origin form submissions; see [MDN's Referrer-Policy documentation](https://developer.mozilla.org/en-US/docs/Web/HTTP/Reference/Headers/Referrer-Policy).
+The built-in accounts consume the former reserved signup slot during startup. New signup requires an admin-created invitation. Signup retains CSRF, form-origin checks, password hashing and authentication rate limiting.
+
+## Settings and bank transfers
+
+Admins open **Settings** (`/admin/settings`) to change their own password or set the payment bank name, account holder name and 10-digit account number. The account number is text, preserving leading zeros. Updates are stored in SQLite and logged with the admin identity. Both new checkout and resumed payment pages load the latest saved account. No bank account is invented when settings are empty; checkout asks the customer to contact the team.
+
+Customers open **Settings** (`/account/settings`) to change their own password. Both flows require the current password, a matching confirmation, and a new password of 8–72 bytes. Customer recovery tokens are invalidated when the password changes. Persistent database storage is required to retain settings and changed passwords when deployed.
 
 ## Updated payment confirmation
 
@@ -39,7 +43,8 @@ The customer sees the vehicle total, latest submitted amount/reference/date, the
 - Deliveries: preparation, dispatch, and handover views, linked to delivery arrangements.
 - Enquiries: sourcing, dealer applications, inspections, finance, trade-ins, and customer support.
 - Customers: a customer directory and related orders.
-- Staff & access: owner-only account administration.
+- Staff & access: admin creation and invitations, with owner controls for disabling access.
+- Settings: password changes and editable payment bank details.
 - Activity log: the latest staff reviews, access changes, and delivery updates.
 
 ## Delivery workflow
@@ -112,3 +117,7 @@ Additional browser checks:
 ```
 
 The reserved owner signup itself is exercised in isolated Go test databases so the real local slot remains available. Browser tests inspect it without registering on behalf of Marvellous Otit.
+
+## Settings validation — 26 October 2026
+
+`go test ./...`, `go vet ./...` and `git diff --check` passed. The focused settings browser check passed 18 checks, including both built-in logins, admin creation/invitation, admin and customer password changes, current bank details in new and resumed checkout, mobile layout and customer access restrictions. A separate production-mode run with demo mode disabled confirmed both built-in logins and that bank details and a changed password survive restart with persistent storage. No public hosting deployment was performed.

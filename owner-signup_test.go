@@ -81,8 +81,8 @@ func TestProductionOwnersCanInviteAndDisableOrdinaryStaff(t *testing.T) {
 	}
 	w = httptest.NewRecorder()
 	createStaffInvitation(db, w, adminPost(t, "/admin/team/invite", url.Values{"email": {"intruder@example.test"}}, 2))
-	if w.Code != 403 {
-		t.Fatal("Staff could invite")
+	if w.Code != 200 {
+		t.Fatal("Approved admin could not invite")
 	}
 	w = httptest.NewRecorder()
 	manageTeam(db, w, adminPost(t, "/admin/team/update", url.Values{"admin-id": {"2"}, "status": {"disabled"}}, 1), "update")

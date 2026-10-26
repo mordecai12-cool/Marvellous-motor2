@@ -18,3 +18,9 @@
 .ops-body,.staff-login,.staff-login-panel{background:#87ceeb}.ops-sidebar,.staff-login-story,.staff-signup .staff-login-story{background:#0b1739}
 
 .ops-sidebar,.ops-sidebar a,.ops-sidebar small,.ops-sidebar .brand,.ops-sidebar .brand-sub,.ops-sidebar .ops-overline{color:#fff}.ops-navigation a.active,.ops-navigation a:hover{background:#87ceeb;color:#0b1739}.staff-login-story,.staff-login-story .brand,.staff-login-story .brand-sub,.staff-login-story p,.staff-login-story h1,.staff-login-story h1 em,.staff-login-story .ops-overline,.staff-login-story small{color:#fff}
+
+/* Keep all navigation and sign-out controls reachable on shorter screens. */
+.ops-sidebar{overflow-y:auto;overscroll-behavior:contain}
+.ops-sidebar>*{flex-shrink:0}
+.ops-sidebar .ops-nav-label,.ops-sidebar .ops-navigation svg,.ops-sidebar .sidebar-user strong,.ops-sidebar .sidebar-user small,.ops-sidebar .logout-button,.ops-sidebar .access-note strong,.ops-sidebar .access-note span,.ops-sidebar .access-note svg{color:#fff}
+.ops-sidebar .ops-navigation a.active svg,.ops-sidebar .ops-navigation a:hover svg{color:#0b1739}

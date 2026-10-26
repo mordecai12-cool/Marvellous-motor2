@@ -79,16 +79,16 @@ func TestAdminAccessRechecksAccountStatusAndRole(t *testing.T) {
 		}
 	}
 }
-func TestStaffCreationIsOwnerOnly(t *testing.T) {
+func TestStaffCreationIsAdminOnly(t *testing.T) {
 	db := adminFixture(t)
 	fields := url.Values{"name": {"New Staff"}, "email": {"new@example.test"}, "password": {"TestOnlyStrongPassword!26"}}
 	w := httptest.NewRecorder()
-	manageTeam(db, w, adminPost(t, "/admin/team/create", fields, 2), "create")
+	manageTeam(db, w, adminPost(t, "/admin/team/create", fields, 0), "create")
 	if w.Code != 403 {
-		t.Fatal("Ordinary staff can create administrators")
+		t.Fatal("Unauthenticated visitor can create administrators")
 	}
 	w = httptest.NewRecorder()
-	manageTeam(db, w, adminPost(t, "/admin/team/create", fields, 1), "create")
+	manageTeam(db, w, adminPost(t, "/admin/team/create", fields, 2), "create")
 	if w.Code != 303 {
 		t.Fatalf("Owner cannot create staff: %d %s", w.Code, w.Body.String())
 	}
@@ -229,8 +229,8 @@ func TestAdminScreensRenderAndTeamIsRestricted(t *testing.T) {
 	r.AddCookie(staffCookie(t, 2))
 	w := httptest.NewRecorder()
 	serveAdminPage(db, w, r, "team")
-	if w.Code != 403 {
-		t.Fatal("Staff can access owner staff management")
+	if w.Code != 200 {
+		t.Fatal("Approved admin cannot access staff management")
 	}
 }
 
