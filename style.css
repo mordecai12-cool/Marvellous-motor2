@@ -3007,3 +3007,22 @@ body,.hero,.page-banner,.login-page,.register-page,.forgot-password-page,.reset-
 .vehicle-stock{display:inline-block;border:1px solid #a5cfdf;border-radius:16px;padding:4px 9px;margin-top:9px;font-size:10px;font-weight:700;color:#0b1739;background:#eff9ff}
 .vehicle-stock.Reserved{background:#fff2d9;border-color:#e5c68f}.vehicle-stock.Sold{background:#eef0f3;border-color:#ccd3df}.vehicle-offer{font-size:12px;font-weight:700;color:#276348;margin-top:9px}
 .sample-stock-label{font-size:10px;font-weight:700;letter-spacing:.5px;color:#586b7e;margin-top:9px}
+
+/* Consistent vehicle presentation, keeping the established sky-blue/navy palette. */
+.vehicle-card{display:flex;flex-direction:column;border-radius:18px;box-shadow:0 5px 20px #0b173908}
+.vehicle-card[hidden]{display:none}
+.vehicle-photo{aspect-ratio:1.6;background:#f0f5f7;border-bottom:1px solid #dce6ec}
+.vehicle-photo img{object-fit:contain;padding:6px}
+.vehicle-card:hover .vehicle-photo img{transform:scale(1.015)}
+.vehicle-info{display:flex;flex-direction:column;flex:1;padding:20px 22px 16px;align-items:flex-start}
+.vehicle-info h3{font-size:21px;line-height:1.3;margin-bottom:14px;min-height:1.3em}
+.vehicle-eyebrow{font-size:10px;line-height:1.6;color:#546477;min-height:32px}
+.vehicle-specs{width:100%;flex-wrap:wrap;justify-content:flex-start;gap:8px 16px;font-size:11px;padding-bottom:13px;border-color:#dce6ec}
+.vehicle-engine{font-size:12px;line-height:1.6;min-height:38px;margin:12px 0 4px}
+.vehicle-categories{display:flex;flex-wrap:wrap;gap:6px;min-height:26px;margin:12px 0}
+.vehicle-categories span{padding:4px 8px;border-radius:6px;font-size:10px;line-height:1.5;background:#edf6fb;color:#294a64}
+.vehicle-bottom{width:100%;margin-top:auto;padding-top:20px;padding-bottom:10px}
+.vehicle-bottom strong{font-variant-numeric:tabular-nums;font-size:23px;line-height:1.3}
+.vehicle-details-link{width:100%;margin:12px 0 14px;border-radius:9px;padding:13px 14px}
+.compare-option{width:100%;border-color:#dce6ec;font-size:11px;padding-top:12px}
+@media(max-width:600px){.vehicle-info{padding:18px 20px 15px}.vehicle-photo{aspect-ratio:1.5}.vehicle-info h3{font-size:21px}.vehicle-specs{font-size:11px}.vehicle-bottom strong{font-size:23px}}

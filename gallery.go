@@ -9,6 +9,7 @@ import (
 var galleryJSON []byte
 
 type VehiclePhoto struct {
+ Retouched bool `json:"retouched,omitempty"`
 	Image      string `json:"image"`
 	Label      string `json:"label"`
 	Caption    string `json:"caption"`
