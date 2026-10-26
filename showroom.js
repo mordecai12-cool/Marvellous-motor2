@@ -46,12 +46,33 @@
     document.querySelector('#next-page').disabled = currentPage >= pages;
     document.querySelector('.pagination').hidden = count <= pageSize;
     document.querySelector('#results-count').textContent = count;
-    document.querySelector('#results-context').textContent = values.has('saved') ? 'in your saved collection' : 'matching your next chapter';
+    document.querySelector('#results-context').textContent = values.has('saved') ? 'in your saved collection' : [...values].some(([key,value]) => value && key !== 'sort') ? 'matching your next chapter' : 'in the collection';
     document.querySelector('.empty-state').hidden = count !== 0;
     const selectedTypes=values.getAll('category').filter(Boolean), typeCount=cards.filter(card=>selectedTypes.some(type=>card.dataset.categories.split(' · ').includes(type))).length;
     const onlyTypes=document.querySelector('#category-only');if(onlyTypes)onlyTypes.hidden=count!==0 || !typeCount;
     const explanation=document.querySelector('#empty-explanation');if(explanation)explanation.textContent=selectedTypes.length ? (typeCount ? `There are ${typeCount} cars in ${selectedTypes.join(' / ')}, but other active filters hide them. Remove a filter below or show all cars in these types.` : `No ${selectedTypes.join(' / ')} cars are listed yet. Ask us to source one, or explore another type.`) : 'No vehicles match these filters. Remove a filter below or explore all vehicles.';
-    const active=document.querySelector('#active-filters');if(active){active.replaceChildren();for(const [key,value] of values){if(!value || key==='sort')continue;const button=document.createElement('button');button.type='button';button.className='text-button';const field=form.elements.namedItem(key);const label=key==='category'?value:field?.selectedOptions?.[0]?.textContent || value;button.textContent=`${key}: ${label} ×`;button.addEventListener('click',()=>{if(field){if(field.type==='checkbox')field.checked=false;else field.value='';}currentPage=1;applyFilters();});active.append(button);}}
+    const active = document.querySelector('#active-filters');
+    if (active) {
+      active.replaceChildren();
+      const names = {q:'Search', yearMin:'From year', yearMax:'To year', saved:'Saved vehicles'};
+      for (const [key,value] of values) {
+        if (!value || key === 'sort') continue;
+        const field = form.elements.namedItem(key);
+        const selectedLabel = field?.selectedOptions?.[0]?.textContent || value;
+        const label = key === 'saved' ? names.saved : names[key] ? `${names[key]}: ${selectedLabel}` : selectedLabel;
+        const button = document.createElement('button');
+        button.type = 'button';
+        button.className = 'filter-chip';
+        button.textContent = `${label} ×`;
+        button.setAttribute('aria-label', `Remove filter: ${label}`);
+        button.addEventListener('click', () => {
+          if (field) { if (field.type === 'checkbox') field.checked = false; else field.value = ''; }
+          currentPage = 1;
+          applyFilters();
+        });
+        active.append(button);
+      }
+    }
 
     const url = new URL(location.href); url.search = '';
     for (const [key,value] of values) if (value && !(key === 'sort' && value === 'featured')) url.searchParams.append(key, key === 'saved' ? '1' : value);

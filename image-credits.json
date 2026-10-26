@@ -337,7 +337,8 @@
         "source": "commons-templates",
         "hidden": ""
       }
-    }
+    },
+    "modifications": "AI-assisted removal of people and human reflections; web encoding/downscaling. Representative model photo, not verified dealership stock."
   },
   {
     "model": "Porsche 911",
@@ -1044,7 +1045,8 @@
         "source": "commons-templates",
         "hidden": ""
       }
-    }
+    },
+    "modifications": "AI-assisted removal of people and human reflections; web encoding/downscaling. Representative model photo, not verified dealership stock."
   },
   {
     "model": "1989 Mercedes-Benz 300 SL R107 Roadster",
@@ -1390,7 +1392,8 @@
         "source": "commons-templates",
         "hidden": ""
       }
-    }
+    },
+    "modifications": "AI-assisted removal of people and human reflections; web encoding/downscaling. Representative model photo, not verified dealership stock."
   },
   {
     "model": "2019 Mazda MX-5 2.0 Roadster",
@@ -1483,7 +1486,8 @@
         "source": "commons-templates",
         "hidden": ""
       }
-    }
+    },
+    "modifications": "AI-assisted removal of people and human reflections; web encoding/downscaling. Representative model photo, not verified dealership stock."
   },
   {
     "model": "2023 Porsche 911 Sport Classic",
@@ -1656,7 +1660,8 @@
         "source": "commons-templates",
         "hidden": ""
       }
-    }
+    },
+    "modifications": "AI-assisted removal of people and human reflections; web encoding/downscaling. Representative model photo, not verified dealership stock."
   },
   {
     "model": "2023 BMW M2 G87",
@@ -1736,7 +1741,8 @@
         "source": "commons-templates",
         "hidden": ""
       }
-    }
+    },
+    "modifications": "AI-assisted removal of people and human reflections; web encoding/downscaling. Representative model photo, not verified dealership stock."
   },
   {
     "model": "2017 Audi R8 V10 quattro",
@@ -1909,20 +1915,21 @@
         "source": "commons-templates",
         "hidden": ""
       }
-    }
+    },
+    "modifications": "AI-assisted removal of people and human reflections; web encoding/downscaling. Representative model photo, not verified dealership stock."
   },
   {
     "model": "2015 Nissan 370Z NISMO 3.7 Coupe",
     "file": "images/gallery/nissan-370z-exterior.jpg",
-    "source": "https://commons.wikimedia.org/wiki/File:Nissan_370Z_Nismo_2015_(24060669894).jpg",
+    "source": "https://commons.wikimedia.org/wiki/File:Nissan_370Z_NISMO_(44618342425).jpg",
     "metadata": {
       "DateTime": {
-        "value": "2017-08-02 23:44:43",
+        "value": "2018-11-03 16:12:13",
         "source": "mediawiki-metadata",
         "hidden": ""
       },
       "ObjectName": {
-        "value": "Nissan 370Z Nismo 2015 (24060669894)",
+        "value": "Nissan 370Z NISMO (44618342425)",
         "source": "mediawiki-metadata"
       },
       "CommonsMetadataExtension": {
@@ -1931,7 +1938,7 @@
         "hidden": ""
       },
       "Categories": {
-        "value": "Flickr images reviewed by FlickreviewR|White Nissan coupes|Front views of Nissan automobiles|Files with coordinates missing SDC location of creation|Photographs by Falcon Photography|Nismo 370Z",
+        "value": "CC-Zero|Flickr images reviewed by FlickreviewR 2|Images by Guillaume Vachey|Nismo 370Z",
         "source": "commons-categories",
         "hidden": ""
       },
@@ -1940,51 +1947,38 @@
         "source": "commons-categories",
         "hidden": ""
       },
-      "GPSLatitude": {
-        "value": "46.234596",
-        "source": "commons-desc-page"
-      },
-      "GPSLongitude": {
-        "value": "6.119202",
-        "source": "commons-desc-page"
-      },
-      "GPSMapDatum": {
-        "value": "WGS-84",
-        "source": "commons-desc-page",
-        "hidden": ""
-      },
       "ImageDescription": {
-        "value": "<p>3.7 344cv\n0-100 en 5.2sec\n1607kg\n45 900€\n</p>\n<a rel=\"nofollow\" class=\"external text\" href=\"http://www.nissan.fr/FR/fr/vehicles/sports-cars/370z/pricing-and-specifications/nismo.html\">www.nissan.fr/FR/fr/vehicles/sports-cars/370z/pricing-and...</a>",
+        "value": "Nissan 370Z NISMO",
         "source": "commons-desc-page"
       },
       "DateTimeOriginal": {
-        "value": "2015-03-08 16:22",
+        "value": "2018-09-05 11:10",
         "source": "commons-desc-page"
       },
       "Credit": {
-        "value": "<a rel=\"nofollow\" class=\"external text\" href=\"https://www.flickr.com/photos/falcon_33/24060669894/\">Nissan 370Z Nismo 2015</a>",
+        "value": "<a rel=\"nofollow\" class=\"external text\" href=\"https://www.flickr.com/photos/152930510@N02/44618342425/\">Nissan 370Z NISMO</a>",
         "source": "commons-desc-page"
       },
       "Artist": {
-        "value": "<a rel=\"nofollow\" class=\"external text\" href=\"https://www.flickr.com/people/93592003@N04\">Falcon® Photography</a> from France",
+        "value": "<a rel=\"nofollow\" class=\"external text\" href=\"https://www.flickr.com/people/152930510@N02\">Guillaume Vachey</a> from Chalon sur Saone, France",
         "source": "commons-desc-page"
       },
       "LicenseShortName": {
-        "value": "CC BY-SA 2.0",
+        "value": "CC0",
         "source": "commons-desc-page",
         "hidden": ""
       },
       "UsageTerms": {
-        "value": "Creative Commons Attribution-Share Alike 2.0",
+        "value": "Creative Commons Zero, Public Domain Dedication",
         "source": "commons-desc-page"
       },
       "AttributionRequired": {
-        "value": "true",
+        "value": "false",
         "source": "commons-desc-page",
         "hidden": ""
       },
       "LicenseUrl": {
-        "value": "https://creativecommons.org/licenses/by-sa/2.0",
+        "value": "http://creativecommons.org/publicdomain/zero/1.0/deed.en",
         "source": "commons-desc-page"
       },
       "Copyrighted": {
@@ -1998,11 +1992,12 @@
         "hidden": ""
       },
       "License": {
-        "value": "cc-by-sa-2.0",
+        "value": "cc0",
         "source": "commons-templates",
         "hidden": ""
       }
-    }
+    },
+    "modifications": "Resized for display; replacement representative photograph."
   },
   {
     "model": "2017 Nissan GT-R Premium R35",
@@ -2255,7 +2250,8 @@
         "source": "commons-templates",
         "hidden": ""
       }
-    }
+    },
+    "modifications": "AI-assisted removal of people and human reflections; web encoding/downscaling. Representative model photo, not verified dealership stock."
   },
   {
     "model": "2015 Dodge Challenger R/T",
@@ -2428,7 +2424,8 @@
         "source": "commons-templates",
         "hidden": ""
       }
-    }
+    },
+    "modifications": "AI-assisted removal of people and human reflections; web encoding/downscaling. Representative model photo, not verified dealership stock."
   },
   {
     "model": "2016 Mercedes-Benz AMG GT C190 Coupe",
@@ -2521,7 +2518,8 @@
         "source": "commons-templates",
         "hidden": ""
       }
-    }
+    },
+    "modifications": "AI-assisted removal of people and human reflections; web encoding/downscaling. Representative model photo, not verified dealership stock."
   },
   {
     "model": "2017 Toyota GT86 2.0 Coupe",
@@ -2699,15 +2697,15 @@
   {
     "model": "2004 Mazda RX-8 Renesis",
     "file": "images/gallery/mazda-rx8-exterior.jpg",
-    "source": "https://commons.wikimedia.org/wiki/File:2004_Mazda_RX-8.jpg",
+    "source": "https://commons.wikimedia.org/wiki/File:Mazda-RX8.jpg",
     "metadata": {
       "DateTime": {
-        "value": "2025-09-29 01:08:49",
+        "value": "2007-07-28 17:00:41",
         "source": "mediawiki-metadata",
         "hidden": ""
       },
       "ObjectName": {
-        "value": "2004 Mazda RX-8",
+        "value": "Mazda-RX8",
         "source": "mediawiki-metadata"
       },
       "CommonsMetadataExtension": {
@@ -2716,7 +2714,7 @@
         "hidden": ""
       },
       "Categories": {
-        "value": "Mazda RX-8|Self-published work|Files with coordinates missing SDC location of creation|2025 New York International Auto Show",
+        "value": "Taken with Canon PowerShot A540|Self-published work|PD-self|Three-quarter views of Mazda automobiles|Mazda RX-8 (2003)",
         "source": "commons-categories",
         "hidden": ""
       },
@@ -2725,25 +2723,12 @@
         "source": "commons-categories",
         "hidden": ""
       },
-      "GPSLatitude": {
-        "value": "40.757500",
-        "source": "commons-desc-page"
-      },
-      "GPSLongitude": {
-        "value": "-74.001214",
-        "source": "commons-desc-page"
-      },
-      "GPSMapDatum": {
-        "value": "WGS-84",
-        "source": "commons-desc-page",
-        "hidden": ""
-      },
       "ImageDescription": {
-        "value": "2004 Mazda RX-8",
+        "value": "2004-2007 Mazda RX-8 photographed in USA.",
         "source": "commons-desc-page"
       },
       "DateTimeOriginal": {
-        "value": "2025-04-20 14:11:21",
+        "value": "7/27/07",
         "source": "commons-desc-page"
       },
       "Credit": {
@@ -2751,29 +2736,30 @@
         "source": "commons-desc-page"
       },
       "Artist": {
-        "value": "<a href=\"//commons.wikimedia.org/w/index.php?title=User:Oleg_Yunakov&amp;action=edit&amp;redlink=1\" class=\"new\" title=\"User:Oleg Yunakov (page does not exist)\">Oleg Yunakov</a>",
+        "value": "IFCAR",
         "source": "commons-desc-page"
       },
+      "Permission": {
+        "value": "All Rights Released",
+        "source": "commons-desc-page",
+        "hidden": ""
+      },
       "LicenseShortName": {
-        "value": "CC BY-SA 4.0",
+        "value": "Public domain",
         "source": "commons-desc-page",
         "hidden": ""
       },
       "UsageTerms": {
-        "value": "Creative Commons Attribution-Share Alike 4.0",
+        "value": "Public domain",
         "source": "commons-desc-page"
       },
       "AttributionRequired": {
-        "value": "true",
+        "value": "false",
         "source": "commons-desc-page",
         "hidden": ""
       },
-      "LicenseUrl": {
-        "value": "https://creativecommons.org/licenses/by-sa/4.0",
-        "source": "commons-desc-page"
-      },
       "Copyrighted": {
-        "value": "True",
+        "value": "False",
         "source": "commons-desc-page",
         "hidden": ""
       },
@@ -2783,11 +2769,12 @@
         "hidden": ""
       },
       "License": {
-        "value": "cc-by-sa-4.0",
+        "value": "pd",
         "source": "commons-templates",
         "hidden": ""
       }
-    }
+    },
+    "modifications": "Resized for display; replacement representative photograph."
   },
   {
     "model": "1986 Porsche 944 2.5 Coupe",
@@ -2880,7 +2867,8 @@
         "source": "commons-templates",
         "hidden": ""
       }
-    }
+    },
+    "modifications": "AI-assisted removal of people and human reflections; web encoding/downscaling. Representative model photo, not verified dealership stock."
   },
   {
     "model": "1987 Porsche 928 S4",
@@ -3143,7 +3131,8 @@
         "source": "commons-templates",
         "hidden": ""
       }
-    }
+    },
+    "modifications": "AI-assisted removal of people and human reflections; web encoding/downscaling. Representative model photo, not verified dealership stock."
   },
   {
     "model": "1972 Mercedes-Benz 280 SE W108",
@@ -3228,15 +3217,15 @@
   {
     "model": "1985 Mercedes-Benz 230 E W123",
     "file": "images/gallery/mercedes-230e-classic-exterior.jpg",
-    "source": "https://commons.wikimedia.org/wiki/File:1985_Mercedes_230E_Auto_(14761746058).jpg",
+    "source": "https://commons.wikimedia.org/wiki/File:Mercedes-Benz_230E_W123.jpg",
     "metadata": {
       "DateTime": {
-        "value": "2015-02-26 02:04:55",
+        "value": "2013-08-19 15:36:32",
         "source": "mediawiki-metadata",
         "hidden": ""
       },
       "ObjectName": {
-        "value": "1985 Mercedes 230E Auto (14761746058)",
+        "value": "Mercedes-Benz 230E W123",
         "source": "mediawiki-metadata"
       },
       "CommonsMetadataExtension": {
@@ -3245,7 +3234,7 @@
         "hidden": ""
       },
       "Categories": {
-        "value": "Taken with Sony DSC-W110|Flickr images reviewed by FlickreviewR|1985 Mercedes-Benz automobiles|Mercedes-Benz 230E (W123)|Photographs by Kieran White",
+        "value": "Flickr images reviewed by File Upload Bot (Magnus Manske)|Photographs by FotoSleuth|Mercedes-Benz 230E (W123)",
         "source": "commons-categories",
         "hidden": ""
       },
@@ -3255,19 +3244,19 @@
         "hidden": ""
       },
       "ImageDescription": {
-        "value": "1985 Mercedes 230E Auto",
+        "value": "Mercedes-Benz 230E W123",
         "source": "commons-desc-page"
       },
       "DateTimeOriginal": {
-        "value": "2014-08-17 10:19",
+        "value": "2012-03-29 14:10",
         "source": "commons-desc-page"
       },
       "Credit": {
-        "value": "<a rel=\"nofollow\" class=\"external text\" href=\"https://www.flickr.com/photos/117096107@N03/14761746058/\">1985 Mercedes 230E Auto</a>",
+        "value": "<p><a rel=\"nofollow\" class=\"external text\" href=\"https://www.flickr.com/photos/51811543@N08/7037482399/\">Mercedes-Benz 230E W123</a>\n</p>\n<ul><li>Uploaded by <a href=\"//commons.wikimedia.org/wiki/User:OSX\" title=\"User:OSX\">OSX</a></li></ul>",
         "source": "commons-desc-page"
       },
       "Artist": {
-        "value": "<a rel=\"nofollow\" class=\"external text\" href=\"https://www.flickr.com/people/117096107@N03\">Kieran White</a> from Manchester, England",
+        "value": "<a rel=\"nofollow\" class=\"external text\" href=\"https://www.flickr.com/people/51811543@N08\">FotoSleuth</a>",
         "source": "commons-desc-page"
       },
       "LicenseShortName": {
@@ -3303,7 +3292,8 @@
         "source": "commons-templates",
         "hidden": ""
       }
-    }
+    },
+    "modifications": "Resized for display; replacement representative photograph."
   },
   {
     "model": "1967 Jaguar E-Type Series 1 4.2 Coupe",
@@ -3476,7 +3466,8 @@
         "source": "commons-templates",
         "hidden": ""
       }
-    }
+    },
+    "modifications": "AI-assisted removal of people and human reflections; web encoding/downscaling. Representative model photo, not verified dealership stock."
   },
   {
     "model": "1974 Triumph TR6 2.5 Roadster",
@@ -3569,7 +3560,8 @@
         "source": "commons-templates",
         "hidden": ""
       }
-    }
+    },
+    "modifications": "AI-assisted removal of people and human reflections; web encoding/downscaling. Representative model photo, not verified dealership stock."
   },
   {
     "model": "1967 Volvo 1800 S P1800 Coupe",
@@ -3915,6 +3907,7 @@
         "source": "commons-templates",
         "hidden": ""
       }
-    }
+    },
+    "modifications": "AI-assisted removal of people and human reflections; web encoding/downscaling. Representative model photo, not verified dealership stock."
   }
 ]

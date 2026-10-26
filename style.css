@@ -3026,3 +3026,12 @@ body,.hero,.page-banner,.login-page,.register-page,.forgot-password-page,.reset-
 .vehicle-details-link{width:100%;margin:12px 0 14px;border-radius:9px;padding:13px 14px}
 .compare-option{width:100%;border-color:#dce6ec;font-size:11px;padding-top:12px}
 @media(max-width:600px){.vehicle-info{padding:18px 20px 15px}.vehicle-photo{aspect-ratio:1.5}.vehicle-info h3{font-size:21px}.vehicle-specs{font-size:11px}.vehicle-bottom strong{font-size:23px}}
+
+/* Clear, removable filter summaries and calm form surfaces. */
+.active-filters{display:flex;flex-wrap:wrap;gap:8px;margin:16px 0}
+.active-filters:empty{display:none}
+.filter-chip{display:inline-flex;align-items:center;border:1px solid #bad0dd;background:#fff;color:#0b1739;border-radius:999px;padding:9px 13px;font:inherit;font-size:12px;line-height:1.5;cursor:pointer;text-align:left;overflow-wrap:anywhere;max-width:100%}
+.filter-chip:hover{background:#eff8fc;border-color:#0b1739}
+.filter-chip:focus-visible{outline:3px solid #0b1739;outline-offset:3px}
+.catalogue-filters input[type=search],.catalogue-filters select{background-color:#f6f9fb;border:1px solid #c6d6df;color:#0b1739}
+.catalogue-filters input[type=search]:focus,.catalogue-filters select:focus{outline:2px solid #0b1739;outline-offset:2px;background-color:#fff}

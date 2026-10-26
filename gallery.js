@@ -13,10 +13,14 @@
     index = (next + buttons.length) % buttons.length;
     const button = buttons[index];
     image.src = button.dataset.photo;
-    image.alt = `${gallery.dataset.vehicle} · ${button.dataset.label} · representative model photograph`;
-    caption.textContent = button.dataset.reference === "true"
-      ? `${button.dataset.label} · Separate model/trim reference; not this exact vehicle`
-      : `${button.dataset.label} · Matching sample vehicle photo set`;
+    const actual = gallery.dataset.actual === "true";
+    image.alt = `${gallery.dataset.vehicle} · ${button.dataset.label} · ${actual ? "actual stock vehicle" : "representative model photograph"}`;
+    caption.textContent = actual
+      ? `${button.dataset.label} · Stock photograph supplied by the dealership`
+      : button.dataset.reference === "true"
+        ? `${button.dataset.label} · Separate model/trim reference; not this exact vehicle`
+        : `${button.dataset.label} · Representative model photograph`;
+    if(button.dataset.retouched === 'true') caption.textContent += ' · Retouched to remove people';
     credit.href = button.dataset.source;
     credit.textContent = button.dataset.credit || 'Photo credits';
     buttons.forEach((item, i) => item.setAttribute('aria-pressed', String(i === index)));
