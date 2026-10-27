@@ -121,3 +121,7 @@ The reserved owner signup itself is exercised in isolated Go test databases so t
 ## Settings validation — 26 October 2026
 
 `go test ./...`, `go vet ./...` and `git diff --check` passed. The focused settings browser check passed 18 checks, including both built-in logins, admin creation/invitation, admin and customer password changes, current bank details in new and resumed checkout, mobile layout and customer access restrictions. A separate production-mode run with demo mode disabled confirmed both built-in logins and that bank details and a changed password survive restart with persistent storage. No public hosting deployment was performed.
+
+## Private owner profile
+
+The investor owner account identified by `deploymentOwnerEmail` is hidden from other administrators’ Staff & access list and from new assignment choices. Existing sales/case assignments, chat sender names, order history and activity views use “Marvellous Motors team” instead of personal details, including historical records. Internal actor IDs and audit records are retained. The account still uses normal sign-in, retains owner permissions and can see/manage other administrators; its own settings and signed-in profile remain accessible to itself. This changes website visibility, not source repository history or access to the underlying database.

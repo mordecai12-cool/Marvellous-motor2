@@ -40,7 +40,7 @@ func (i StaffInvitation) ExpiryLabel() string {
 	return time.Unix(i.ExpiresAt, 0).UTC().Format("02 Jan 2006 · 15:04 UTC")
 }
 func loadStaffInvitations(db *sql.DB) ([]StaffInvitation, error) {
-	rows, err := db.Query("SELECT id,email,expires_at,used_at,revoked_at FROM staff_invitations ORDER BY id DESC LIMIT 25")
+	rows, err := db.Query("SELECT id,email,expires_at,used_at,revoked_at FROM staff_invitations WHERE lower(email)!=? ORDER BY id DESC LIMIT 25", deploymentOwnerEmail)
 	if err != nil {
 		return nil, err
 	}

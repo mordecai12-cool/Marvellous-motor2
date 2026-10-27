@@ -399,7 +399,7 @@ func loadOrders(db *sql.DB, where string, args ...any) ([]ManagedOrder, error) {
 	return list, err
 }
 func loadOrderEvents(db *sql.DB, id int64) ([]OrderEvent, error) {
-	rows, err := db.Query("SELECT id,from_status,to_status,note,actor_name,CAST(created_at AS TEXT) FROM order_events WHERE order_id=? ORDER BY id DESC", id)
+	rows, err := db.Query("SELECT e.id,e.from_status,e.to_status,e.note,"+staffDisplayNameSQL("a", "e.actor_name")+",CAST(e.created_at AS TEXT) FROM order_events e LEFT JOIN admins a ON a.id=e.actor_id WHERE e.order_id=? ORDER BY e.id DESC", id)
 	if err != nil {
 		return nil, err
 	}
@@ -431,7 +431,7 @@ func loadPayments(db *sql.DB) ([]PaymentReview, error) {
 	return list, rows.Err()
 }
 func loadActivity(db *sql.DB) ([]Activity, error) {
-	rows, err := db.Query("SELECT id,actor_name,action,entity,CAST(created_at AS TEXT) FROM admin_activity ORDER BY id DESC LIMIT 50")
+	rows, err := db.Query("SELECT e.id,"+staffDisplayNameSQL("a", "e.actor_name")+",e.action,CASE WHEN lower(e.entity)=? THEN 'Administrator account' ELSE e.entity END,CAST(e.created_at AS TEXT) FROM admin_activity e LEFT JOIN admins a ON a.id=e.actor_id ORDER BY e.id DESC LIMIT 50", deploymentOwnerEmail)
 	if err != nil {
 		return nil, err
 	}
@@ -553,7 +553,7 @@ func serveAdminPage(db *sql.DB, w http.ResponseWriter, r *http.Request, page str
 		data.Title = "The right people. The right access."
 		data.Subtitle = "Approved administrators can create accounts and invite colleagues. Owners manage access changes."
 		var rows *sql.Rows
-		rows, err = db.Query("SELECT id,name,email,role,status FROM admins WHERE status != 'setup_pending' ORDER BY id")
+		rows, err = db.Query("SELECT id,name,email,role,status FROM admins WHERE status != 'setup_pending' AND (lower(email)!=? OR id=?) ORDER BY id", deploymentOwnerEmail, staff.ID)
 		if err == nil {
 			defer rows.Close()
 			for rows.Next() {

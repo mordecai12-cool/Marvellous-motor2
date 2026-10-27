@@ -23,7 +23,7 @@ func availableCaseStaff(db *sql.DB) ([]CaseStaff, error) {
 		if err = rows.Scan(&s.ID, &s.Name, &s.Email, &s.Role, &s.Status); err != nil {
 			return nil, err
 		}
-		if authorizedStaff(s) {
+		if authorizedStaff(s) && !privateStaff(s) {
 			list = append(list, CaseStaff{ID: s.ID, Name: s.Name})
 		}
 	}

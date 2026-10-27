@@ -13,11 +13,15 @@ type SalesLead struct {
 	Name, Email, Phone, Kind, Vehicle, Stage, Assignee, Followup, Note string
 }
 
+func (s SalesLead) PrivateAssignment() bool {
+	return s.AssignedID > 0 && s.Assignee == privateStaffLabel
+}
+
 func (s SalesLead) Due() bool {
 	return s.Stage != "Sold" && s.Followup != "" && s.Followup <= time.Now().In(dealershipTime()).Format("2006-01-02")
 }
 func loadSales(db *sql.DB) ([]SalesLead, error) {
-	rows, err := db.Query(`SELECT e.id,e.name,e.email,e.phone,e.kind,e.vehicle,COALESCE(f.stage,'New'),COALESCE(f.assigned_to,0),COALESCE(a.name,''),COALESCE(f.followup,''),COALESCE(f.note,'') FROM enquiries e LEFT JOIN sales_followups f ON f.enquiry_id=e.id LEFT JOIN admins a ON a.id=f.assigned_to ORDER BY CASE WHEN f.followup!='' THEN 0 ELSE 1 END,f.followup,e.id DESC LIMIT 200`)
+	rows, err := db.Query(`SELECT e.id,e.name,e.email,e.phone,e.kind,e.vehicle,COALESCE(f.stage,'New'),COALESCE(f.assigned_to,0),` + staffDisplayNameSQL("a", "COALESCE(a.name,'')") + `,COALESCE(f.followup,''),COALESCE(f.note,'') FROM enquiries e LEFT JOIN sales_followups f ON f.enquiry_id=e.id LEFT JOIN admins a ON a.id=f.assigned_to ORDER BY CASE WHEN f.followup!='' THEN 0 ELSE 1 END,f.followup,e.id DESC LIMIT 200`)
 	if err != nil {
 		return nil, err
 	}

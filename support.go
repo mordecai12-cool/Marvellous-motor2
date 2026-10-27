@@ -49,10 +49,10 @@ type SupportSnapshot struct {
 	HasOlder      bool                  `json:"has_older"`
 }
 
-const supportConversationSelect = `SELECT c.id,c.customer_id,u.name,u.email,c.status,c.customer_read_id,c.staff_read_id,
+var supportConversationSelect = `SELECT c.id,c.customer_id,u.name,u.email,c.status,c.customer_read_id,c.staff_read_id,
  (SELECT COUNT(*) FROM support_messages m WHERE m.conversation_id=c.id AND m.sender_kind='staff' AND m.id>c.customer_read_id),
  (SELECT COUNT(*) FROM support_messages m WHERE m.conversation_id=c.id AND m.sender_kind='customer' AND m.id>c.staff_read_id),
- COALESCE((SELECT m.body FROM support_messages m WHERE m.conversation_id=c.id ORDER BY m.id DESC LIMIT 1),''),c.updated_at,COALESCE(k.status,c.status),COALESCE(k.assigned_to,0),COALESCE(a.name,'')
+ COALESCE((SELECT m.body FROM support_messages m WHERE m.conversation_id=c.id ORDER BY m.id DESC LIMIT 1),''),c.updated_at,COALESCE(k.status,c.status),COALESCE(k.assigned_to,0),` + staffDisplayNameSQL("a", "COALESCE(a.name,'')") + `
  FROM support_conversations c JOIN customers u ON u.id=c.customer_id LEFT JOIN support_cases k ON k.conversation_id=c.id LEFT JOIN admins a ON a.id=k.assigned_to `
 
 func loadSupportConversations(db *sql.DB, where string, args ...any) ([]SupportConversation, error) {
@@ -87,7 +87,7 @@ func supportMessages(db *sql.DB, id, before int64) ([]SupportMessage, bool, erro
 	if before == 0 {
 		before = 1 << 62
 	}
-	rows, err := db.Query("SELECT m.id,m.sender_kind,m.sender_name,m.body,COALESCE(m.order_id,0),m.client_id,m.created_at,COALESCE(a.name,''),COALESCE(a.media_type,''),COALESCE(a.size,0) FROM support_messages m LEFT JOIN support_attachments a ON a.message_id=m.id WHERE m.conversation_id=? AND m.id<? ORDER BY m.id DESC LIMIT 100", id, before)
+	rows, err := db.Query("SELECT m.id,m.sender_kind,"+staffDisplayNameSQL("sender", "m.sender_name")+",m.body,COALESCE(m.order_id,0),m.client_id,m.created_at,COALESCE(a.name,''),COALESCE(a.media_type,''),COALESCE(a.size,0) FROM support_messages m LEFT JOIN admins sender ON m.sender_kind='staff' AND sender.id=m.sender_id LEFT JOIN support_attachments a ON a.message_id=m.id WHERE m.conversation_id=? AND m.id<? ORDER BY m.id DESC LIMIT 100", id, before)
 	if err != nil {
 		return nil, false, err
 	}
@@ -403,7 +403,7 @@ func sendSupportMessage(db *sql.DB, w http.ResponseWriter, r *http.Request, cust
 	if staff.ID > 0 {
 		kind = "staff"
 		senderID = staff.ID
-		senderName = staff.Name
+		senderName = staffDisplayName(staff)
 		conversationID, err = requestID(r, "conversation-id")
 		if err != nil {
 			serviceError(w, 400, "Choose a conversation.")
