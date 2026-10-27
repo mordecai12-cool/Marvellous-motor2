@@ -753,11 +753,20 @@ func transitionDelivery(db *sql.DB, w http.ResponseWriter, r *http.Request, next
 		return
 	}
 	if next == "delivered" {
-		if _, err = tx.Exec("UPDATE fleet_vehicles SET status='Sold',updated_at=CURRENT_TIMESTAMP WHERE id=(SELECT vehicle_id FROM order_pricing WHERE order_id=?)", id); err != nil {
-			http.Error(w, "Could not update stock", 500)
+		var vehicle string
+		err = tx.QueryRow("SELECT vehicle_id FROM order_pricing WHERE order_id=?", id).Scan(&vehicle)
+		if err != nil && err != sql.ErrNoRows {
+			http.Error(w, "Could not load stock", 500)
 			return
 		}
+		if err == nil {
+			if err = refreshStockStatus(tx, vehicle); err != nil {
+				http.Error(w, "Could not update stock", 500)
+				return
+			}
+		}
 	}
+
 	if err = tx.Commit(); err != nil {
 		http.Error(w, "Could not save delivery", 500)
 		return

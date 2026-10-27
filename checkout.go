@@ -28,7 +28,11 @@ func placeVehicleOrder(db *sql.DB, w http.ResponseWriter, r *http.Request) {
 	if country == "" {
 		country = "Nigeria"
 	}
+	var orderTx *sql.Tx
 	fail := func(code int, message string) {
+		if orderTx != nil {
+			_ = orderTx.Rollback()
+		}
 		profile, _ := loadBusinessProfile(db)
 		renderBusinessPage(w, code, "order.html", ShowroomData{SignedIn: true, Page: "cars", Vehicle: v, Business: profile, Error: message, Address: address, City: city, State: state, Country: country})
 	}
@@ -55,6 +59,18 @@ func placeVehicleOrder(db *sql.DB, w http.ResponseWriter, r *http.Request) {
 		return
 	}
 	defer tx.Rollback()
+	orderTx = tx
+	result, err := tx.Exec("UPDATE vehicle_stock SET available=available-1 WHERE vehicle_id=? AND available>0 AND EXISTS(SELECT 1 FROM fleet_vehicles WHERE id=? AND status='Available')", v.ID, v.ID)
+	if err != nil {
+		fail(409, "Stock is being updated. Please try again.")
+		return
+	}
+	n, err := result.RowsAffected()
+	if err != nil || n != 1 {
+		fail(409, "The last available vehicle has been reserved. Choose another vehicle.")
+		return
+	}
+
 	var raw, currentState string
 	if err = tx.QueryRow("SELECT payload,status FROM fleet_vehicles WHERE id=?", v.ID).Scan(&raw, &currentState); err != nil || currentState != "Available" {
 		fail(409, "This vehicle is no longer available. Choose another vehicle.")
@@ -65,6 +81,7 @@ func placeVehicleOrder(db *sql.DB, w http.ResponseWriter, r *http.Request) {
 	oldJSON, _ := json.Marshal(v)
 	current.StockStatus = v.StockStatus
 	current.Availability = v.Availability
+	current.StockQuantity = v.StockQuantity
 	newJSON, _ := json.Marshal(current)
 	if string(oldJSON) != string(newJSON) {
 		fail(409, "The vehicle details changed. Refresh this page to see the current price.")
@@ -75,16 +92,7 @@ func placeVehicleOrder(db *sql.DB, w http.ResponseWriter, r *http.Request) {
 		fail(409, "Delivery pricing changed. Refresh the total before continuing.")
 		return
 	}
-	result, err := tx.Exec("UPDATE fleet_vehicles SET status='Reserved',updated_at=CURRENT_TIMESTAMP WHERE id=? AND status='Available' AND payload=?", v.ID, raw)
-	if err != nil {
-		fail(409, "This vehicle is being updated. Please try again.")
-		return
-	}
-	n, _ := result.RowsAffected()
-	if n != 1 {
-		fail(409, "This vehicle has just been reserved. Please choose another.")
-		return
-	}
+
 	var phone string
 	if err = tx.QueryRow("SELECT phone FROM customers WHERE id=?", c.ID).Scan(&phone); err != nil {
 		fail(500, "Could not load your contact details.")
@@ -104,6 +112,10 @@ func placeVehicleOrder(db *sql.DB, w http.ResponseWriter, r *http.Request) {
 	quoteJSON, _ := json.Marshal(q)
 	if _, err = tx.Exec("INSERT INTO order_pricing(order_id,vehicle_id,quote) VALUES(?,?,?)", id, v.ID, string(quoteJSON)); err != nil {
 		fail(500, "Your price breakdown could not be saved. Please try again.")
+		return
+	}
+	if err = refreshStockStatus(tx, v.ID); err != nil {
+		fail(500, "Could not reserve this vehicle. Please try again.")
 		return
 	}
 	if err = tx.Commit(); err != nil {

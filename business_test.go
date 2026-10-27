@@ -201,6 +201,7 @@ func TestAutomaticQuoteIncludesFeesOffersAndValueBasedCharges(t *testing.T) {
 }
 func TestQuoteSnapshotReservationAndCancellation(t *testing.T) {
 	db := serviceFixture(t)
+	db.Exec("UPDATE vehicle_stock SET available=1 WHERE vehicle_id='toyota-camry'")
 	db.Exec("UPDATE delivery_rates SET delivery=200000,fees=25000 WHERE origin='Lagos' AND state='Lagos'")
 	v, _ := fleetVehicle(db, "toyota-camry", false)
 	quote, err := quoteVehicle(db, v, "Nigeria", "Lagos", "Ikeja")

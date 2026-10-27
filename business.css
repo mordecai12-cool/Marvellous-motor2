@@ -42,3 +42,5 @@
 .business-asset{display:inline-block;vertical-align:top;margin:8px;border:1px solid #bedbe8;border-radius:8px;padding:8px}.business-asset form{display:flex;flex-wrap:wrap;gap:10px}
 
 .active-filters{display:flex;flex-wrap:wrap;gap:.5rem;margin:1rem 0}.active-filters button{padding:.5rem .7rem;border:1px solid #b6cbd8;border-radius:20px}.recovery-link{overflow-wrap:anywhere}
+
+.inventory-stock-controls{border:1px solid #c7dce9;border-radius:12px;padding:22px;margin:22px;background:#f4faff}.inventory-stock-controls h3{font-size:18px;margin-bottom:12px}.inventory-stock-controls p{font-size:12px;line-height:1.8;color:#58677c}.inventory-stock-controls .ops-form{padding:15px 0 0}.inventory-stock-controls .ops-button{margin-top:15px}.vehicle-stock-count{font-size:11px;font-weight:600;color:#274e69;margin:10px 0}

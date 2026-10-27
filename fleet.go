@@ -46,11 +46,11 @@ func publicVehicles() []Vehicle {
 }
 func logBusinessError(err error) { fmt.Println("Showroom data:", err) }
 func fleetList(db *sql.DB, all bool) ([]Vehicle, error) {
-	query := "SELECT payload,status FROM fleet_vehicles"
+	query := "SELECT v.payload,v.status,COALESCE(s.available,0) FROM fleet_vehicles v LEFT JOIN vehicle_stock s ON s.vehicle_id=v.id"
 	if !all {
-		query += " WHERE status!='Draft'"
+		query += " WHERE v.status!='Draft'"
 	}
-	query += " ORDER BY rowid"
+	query += " ORDER BY v.rowid"
 	rows, err := db.Query(query)
 	if err != nil {
 		return nil, err
@@ -59,7 +59,8 @@ func fleetList(db *sql.DB, all bool) ([]Vehicle, error) {
 	list := []Vehicle{}
 	for rows.Next() {
 		var raw, state string
-		if err = rows.Scan(&raw, &state); err != nil {
+		var quantity int
+		if err = rows.Scan(&raw, &state, &quantity); err != nil {
 			return nil, err
 		}
 		var v Vehicle
@@ -67,28 +68,42 @@ func fleetList(db *sql.DB, all bool) ([]Vehicle, error) {
 			return nil, err
 		}
 		v.StockStatus = state
+		v.StockQuantity, v.StockManaged = quantity, true
 		v.Availability = state
 		list = append(list, v)
 	}
 	return list, rows.Err()
 }
 func fleetVehicle(db *sql.DB, id string, all bool) (Vehicle, error) {
-	query := "SELECT payload,status FROM fleet_vehicles WHERE id=?"
+	query := "SELECT v.payload,v.status,COALESCE(s.available,0) FROM fleet_vehicles v LEFT JOIN vehicle_stock s ON s.vehicle_id=v.id WHERE v.id=?"
 	if !all {
-		query += " AND status!='Draft'"
+		query += " AND v.status!='Draft'"
 	}
 	var raw, state string
 	var v Vehicle
-	err := db.QueryRow(query, id).Scan(&raw, &state)
+	var quantity int
+	err := db.QueryRow(query, id).Scan(&raw, &state, &quantity)
 	if err != nil {
 		return v, err
 	}
 	err = json.Unmarshal([]byte(raw), &v)
 	v.StockStatus = state
+	v.StockQuantity, v.StockManaged = quantity, true
 	v.Availability = state
 	return v, err
 }
-func (v Vehicle) Orderable() bool { return v.StockStatus == "" || v.StockStatus == "Available" }
+func (v Vehicle) Orderable() bool {
+	return (v.StockStatus == "" || v.StockStatus == "Available") && (!v.StockManaged || v.StockQuantity > 0)
+}
+func (v Vehicle) StockLabel() string {
+	if !v.StockManaged {
+		return "Availability to be confirmed"
+	}
+	if v.StockQuantity == 1 {
+		return "1 vehicle in stock"
+	}
+	return fmt.Sprintf("%d vehicles in stock", v.StockQuantity)
+}
 func (v Vehicle) OwnerHistory() string {
 	if v.PreviousOwners < 0 {
 		return "Not supplied"
@@ -121,7 +136,7 @@ func manageInventory(db *sql.DB, w http.ResponseWriter, r *http.Request) {
 	if !ok {
 		return
 	}
-	d.Editing = Vehicle{StockStatus: "Draft", PreviousOwners: -1, Year: time.Now().Year(), Condition: "Used", Categories: []string{"Everyday"}}
+	d.Editing = Vehicle{StockQuantity: 6, StockManaged: true, StockStatus: "Draft", PreviousOwners: -1, Year: time.Now().Year(), Condition: "Used", Categories: []string{"Everyday"}}
 	if id := r.URL.Query().Get("id"); id != "" {
 		v, err := fleetVehicle(db, id, true)
 		if err != nil {
@@ -131,6 +146,18 @@ func manageInventory(db *sql.DB, w http.ResponseWriter, r *http.Request) {
 		d.Editing = v
 	}
 	if r.Method == http.MethodPost {
+		if r.FormValue("action") == "stock" {
+			if err := updateVehicleStock(db, r, d.Staff); err != nil {
+				d.Error = err.Error()
+				d.Editing, _ = fleetVehicle(db, r.FormValue("id"), true)
+			} else {
+				http.Redirect(w, r, "/admin/inventory?id="+r.FormValue("id")+"&saved=1", 303)
+				return
+			}
+			d.Fleet, _ = fleetList(db, true)
+			renderAdmin(w, "admin-inventory.html", d)
+			return
+		}
 		if r.FormValue("action") == "remove_asset" || r.FormValue("action") == "cover" {
 			if err := changeVehicleAsset(db, r, d.Staff); err != nil {
 				d.Error = err.Error()
@@ -170,7 +197,7 @@ func manageInventory(db *sql.DB, w http.ResponseWriter, r *http.Request) {
 }
 func saveFleetVehicle(db *sql.DB, r *http.Request, staff Staff) (Vehicle, error) {
 	id := strings.TrimSpace(r.FormValue("id"))
-	v := Vehicle{ID: id, PreviousOwners: -1}
+	v := Vehicle{ID: id, PreviousOwners: -1, StockQuantity: 6, StockManaged: true}
 	creating := id == ""
 	if !creating {
 		var err error
@@ -180,6 +207,13 @@ func saveFleetVehicle(db *sql.DB, r *http.Request, staff Staff) (Vehicle, error)
 		}
 	} else {
 		v.ID = randomBusinessID()
+		if r.FormValue("stock_quantity") != "" {
+			quantity, e := integerField(r, "stock_quantity", 0, 1000000)
+			if e != nil {
+				return v, e
+			}
+			v.StockQuantity = int(quantity)
+		}
 	}
 	v.VIN = strings.TrimSpace(r.FormValue("vin"))
 	if len(v.VIN) > 40 {
@@ -268,13 +302,25 @@ func saveFleetVehicle(db *sql.DB, r *http.Request, staff Staff) (Vehicle, error)
 		if err != nil {
 			return v, err
 		}
-		if active > 0 && v.StockStatus != "Reserved" {
-			return v, errors.New("This car has an active order. Cancel that order or complete handover before changing its stock status.")
+		if active > 0 && (v.StockStatus == "Draft" || v.StockStatus == "Sold") {
+			return v, errors.New("This vehicle has active orders. Keep it Available or Reserved until those orders are completed or cancelled.")
 		}
 	}
 	raw, _ := json.Marshal(v)
 	if _, err = tx.Exec("INSERT INTO fleet_vehicles(id,payload,status) VALUES(?,?,?) ON CONFLICT(id) DO UPDATE SET payload=excluded.payload,status=excluded.status,updated_at=CURRENT_TIMESTAMP", v.ID, string(raw), v.StockStatus); err != nil {
 		return v, err
+	}
+	if creating {
+		if _, err = tx.Exec("INSERT INTO vehicle_stock(vehicle_id,available) VALUES(?,?)", v.ID, v.StockQuantity); err != nil {
+			return v, err
+		}
+	}
+	var available int
+	if err = tx.QueryRow("SELECT available FROM vehicle_stock WHERE vehicle_id=?", v.ID).Scan(&available); err != nil {
+		return v, err
+	}
+	if v.StockStatus == "Available" && available < 1 {
+		return v, errors.New("Add available stock before publishing this vehicle as Available.")
 	}
 	paths := []string{}
 	committed := false

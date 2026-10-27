@@ -174,3 +174,12 @@ go build -o .local/marvellous-motors-next .
 ### Admin-set delivery arrival estimates
 
 After payment approval, open **Admin → Orders → Order details → Delivery arrangements**. Set the **Estimated arrival date** and optional **Estimated arrival time (Nigeria · WAT)**, then save. Customers see the estimated arrival and remaining time on their shipment tracker and order-details page. Tracker estimates refresh automatically with the existing shipment polling. Date-only estimates show today/tomorrow/days remaining; timed estimates show days/hours/minutes. Overdue estimates ask for an updated estimate, and completed deliveries show that the vehicle has arrived. Admins can revise or clear the estimate before handover. These are staff estimates, not GPS predictions. Existing date-only schedules remain supported.
+
+
+### Available quantities and multiple orders
+
+Each existing vehicle listing starts with **6 unreserved units**, initialized once. New vehicles also default to 6; change that when adding the listing. In **Admin → Inventory → select a vehicle → Available stock**, enter the current unreserved quantity and select **Update stock quantity**. Admins can increase or reduce stock without changing already-reserved orders. Stock changes survive restarts. Customer cards and vehicle details show the quantity.
+
+Each successful order reserves one unit in the same database transaction. Other units remain orderable. A cancelled unpaid order returns its unit once; handover never subtracts that unit again. When no free units remain, the listing becomes Reserved while orders are active and Sold after the last handover. Restocking publishes additional available units, while Draft listings remain drafts. Stale stock forms are rejected so they cannot silently overwrite a new reservation. SQLite uses WAL mode so readers do not block an order committing its reservation; conditional stock updates prevent overselling.
+
+This checkout has `push.autoSetupRemote=true` and `push.default=current` in its local Git configuration. A plain `git push` creates/tracks the current branch on its first successful authenticated push. These settings do not supply GitHub credentials or change which branch a hosting service deploys.

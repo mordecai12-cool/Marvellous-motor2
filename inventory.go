@@ -14,6 +14,8 @@ import (
 var inventoryJSON []byte
 
 type Vehicle struct {
+	StockQuantity   int               `json:"stock_quantity"`
+	StockManaged    bool              `json:"-"`
 	VIN             string            `json:"vin"`
 	StockStatus     string            `json:"stock_status"`
 	Sample          bool              `json:"sample"`

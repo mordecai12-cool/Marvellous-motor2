@@ -15,11 +15,17 @@ import (
 var showroomDB *sql.DB
 
 func initBusiness(db *sql.DB) error {
+	// Readers can inspect stock while the order transaction commits. SQLite
+	// still serializes writers; the conditional stock update prevents overselling.
+	if _, err := db.Exec("PRAGMA journal_mode=WAL"); err != nil {
+		return err
+	}
 	_, err := db.Exec(`
  CREATE TABLE IF NOT EXISTS account_recovery_requests(customer_id INTEGER PRIMARY KEY REFERENCES customers(id),requested_at TEXT NOT NULL DEFAULT CURRENT_TIMESTAMP);
  CREATE TABLE IF NOT EXISTS account_recovery_links(token_hash TEXT PRIMARY KEY,customer_id INTEGER NOT NULL REFERENCES customers(id),expires_at TEXT NOT NULL);
  CREATE TABLE IF NOT EXISTS customer_auth_epochs(customer_id INTEGER PRIMARY KEY REFERENCES customers(id),epoch INTEGER NOT NULL DEFAULT 0);
  CREATE TABLE IF NOT EXISTS fleet_vehicles(id TEXT PRIMARY KEY,payload TEXT NOT NULL,status TEXT NOT NULL CHECK(status IN ('Draft','Available','Reserved','Sold')),updated_at TEXT NOT NULL DEFAULT CURRENT_TIMESTAMP);
+ CREATE TABLE IF NOT EXISTS vehicle_stock(vehicle_id TEXT PRIMARY KEY REFERENCES fleet_vehicles(id),available INTEGER NOT NULL CHECK(available>=0));
  CREATE TABLE IF NOT EXISTS vehicle_assets(id TEXT PRIMARY KEY,vehicle_id TEXT NOT NULL REFERENCES fleet_vehicles(id),name TEXT NOT NULL,media_type TEXT NOT NULL,kind TEXT NOT NULL,public INTEGER NOT NULL DEFAULT 0,storage_key TEXT NOT NULL,size INTEGER NOT NULL);
  CREATE TABLE IF NOT EXISTS delivery_rates(id INTEGER PRIMARY KEY,body TEXT NOT NULL DEFAULT 'All',origin TEXT NOT NULL DEFAULT 'Lagos',country TEXT NOT NULL DEFAULT 'Nigeria',state TEXT NOT NULL,city TEXT NOT NULL DEFAULT '',delivery INTEGER NOT NULL CHECK(delivery>=0),fees INTEGER NOT NULL CHECK(fees>=0),insurance_bps INTEGER NOT NULL DEFAULT 0,duty_bps INTEGER NOT NULL DEFAULT 0,vat_bps INTEGER NOT NULL DEFAULT 0,insurance INTEGER NOT NULL DEFAULT 0,taxes INTEGER NOT NULL DEFAULT 0,port_fees INTEGER NOT NULL DEFAULT 0,label TEXT NOT NULL,source TEXT NOT NULL DEFAULT '',notes TEXT NOT NULL DEFAULT '',active INTEGER NOT NULL DEFAULT 1,demo INTEGER NOT NULL DEFAULT 0,complete INTEGER NOT NULL DEFAULT 0,estimated INTEGER NOT NULL DEFAULT 1,expires TEXT NOT NULL DEFAULT '',UNIQUE(body,origin,country,state,city));
  CREATE UNIQUE INDEX IF NOT EXISTS delivery_route_casefold ON delivery_rates(lower(body),lower(origin),lower(country),lower(state),lower(city));
@@ -53,6 +59,11 @@ func initBusiness(db *sql.DB) error {
 		if _, e = tx.Exec("INSERT OR IGNORE INTO fleet_vehicles(id,payload,status) VALUES(?,?,'Available')", v.ID, string(raw)); e != nil {
 			return e
 		}
+	}
+	// Initialize each existing listing once; never replenish it on restart.
+	if _, err = tx.Exec(`UPDATE fleet_vehicles SET status='Available' WHERE status IN ('Reserved','Sold') AND id NOT IN (SELECT vehicle_id FROM vehicle_stock);
+        INSERT OR IGNORE INTO vehicle_stock(vehicle_id,available) SELECT id,6 FROM fleet_vehicles;`); err != nil {
+		return err
 	}
 	if err = tx.Commit(); err != nil {
 		return err

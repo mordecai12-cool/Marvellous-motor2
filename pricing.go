@@ -377,7 +377,10 @@ func cancelVehicleOrder(db *sql.DB, w http.ResponseWriter, r *http.Request) {
 		return
 	}
 	if _, err = tx.Exec("UPDATE orders SET status='cancelled' WHERE id=?", id); err == nil {
-		_, err = tx.Exec("UPDATE fleet_vehicles SET status='Available' WHERE id=? AND status='Reserved'", vehicle)
+		_, err = tx.Exec("UPDATE vehicle_stock SET available=available+1 WHERE vehicle_id=?", vehicle)
+		if err == nil {
+			err = refreshStockStatus(tx, vehicle)
+		}
 	}
 	if err == nil {
 		err = addOrderEvent(tx, staff, id, status, "cancelled", "Order cancelled; stock released.")
