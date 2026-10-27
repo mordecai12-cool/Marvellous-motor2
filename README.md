@@ -153,3 +153,8 @@ Additional end-to-end verification uses an isolated production database and does
 go build -o .local/marvellous-motors-next .
 .venv/bin/python tests/customer_checkout_browser_check.py
 ```
+
+
+### Admin-set delivery arrival estimates
+
+After payment approval, open **Admin → Orders → Order details → Delivery arrangements**. Set the **Estimated arrival date** and optional **Estimated arrival time (Nigeria · WAT)**, then save. Customers see the estimated arrival and remaining time on their shipment tracker and order-details page. Tracker estimates refresh automatically with the existing shipment polling. Date-only estimates show today/tomorrow/days remaining; timed estimates show days/hours/minutes. Overdue estimates ask for an updated estimate, and completed deliveries show that the vehicle has arrived. Admins can revise or clear the estimate before handover. These are staff estimates, not GPS predictions. Existing date-only schedules remain supported.

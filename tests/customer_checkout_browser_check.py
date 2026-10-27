@@ -2,6 +2,8 @@
 Run after: go build -o .local/marvellous-motors-next .
 """
 import os
+from datetime import datetime, timedelta
+from zoneinfo import ZoneInfo
 import sqlite3
 import subprocess
 import tempfile
@@ -117,6 +119,39 @@ with tempfile.TemporaryDirectory(prefix='mm-checkout-') as directory:
             check(page.evaluate('document.documentElement.scrollWidth <= innerWidth'), 'Payment page fits mobile screen')
             check(not page.locator('.payment-breakdown').evaluate('(el) => el.open'), 'Mobile summary keeps the full breakdown collapsible')
             page.screenshot(path=str(ROOT / '.local/previews/payment-mobile.png'), full_page=True)
+            # Isolated fixture: mark payment approved and create a test-only admin.
+            with sqlite3.connect(database) as db:
+                order_id = db.execute('SELECT id FROM orders').fetchone()[0]
+                db.execute("UPDATE orders SET status='processing' WHERE id=?", (order_id,))
+                db.execute("INSERT INTO admins(name,email,password,role,status) SELECT 'ETA Test Admin','eta-admin@example.test',password,'admin','approved' FROM customers WHERE email='checkout@example.test'")
+            admin_context = browser.new_context(viewport={'width': 1365, 'height': 900})
+            admin = admin_context.new_page()
+            admin.on('pageerror', lambda error: errors.append(str(error)))
+            admin.goto(BASE + '/login.html')
+            admin.locator('[name=email]').fill('eta-admin@example.test')
+            admin.locator('[name=password]').fill('BrowserFictional!26')
+            admin.locator('button[type=submit]').click()
+            admin.wait_for_url('**/admin.html')
+            admin.goto(BASE + '/admin/order?id=' + str(order_id))
+            arrival = datetime.now(ZoneInfo('Africa/Lagos')) + timedelta(days=2, hours=3)
+            admin.locator('[name=scheduled-date]').fill(arrival.strftime('%Y-%m-%d'))
+            admin.locator('[name=arrival-time]').fill(arrival.strftime('%H:%M'))
+            admin.get_by_role('button', name='Save delivery details').click()
+            admin.wait_for_url('**/admin/order?id=*&notice=saved')
+            check(admin.locator('[name=arrival-time]').input_value() == arrival.strftime('%H:%M'), 'Admin saves estimated arrival time')
+            page.goto(BASE + '/shipment-tracking?order-id=' + str(order_id))
+            check('WAT' in page.locator('[data-shipment-arrival]').inner_text() and 'remaining' in page.locator('[data-shipment-remaining]').inner_text(), 'Customer tracker shows arrival and time remaining')
+            check(page.evaluate('document.documentElement.scrollWidth <= innerWidth'), 'Arrival estimate fits mobile screen')
+            page.screenshot(path=str(ROOT / '.local/previews/shipment-arrival-mobile.png'), full_page=True)
+            updated = arrival + timedelta(days=1)
+            admin.locator('[name=scheduled-date]').fill(updated.strftime('%Y-%m-%d'))
+            admin.get_by_role('button', name='Save delivery details').click()
+            admin.wait_for_url('**/admin/order?id=*&notice=saved')
+            expect(page.locator('[data-shipment-arrival]')).to_contain_text(updated.strftime('%d %b %Y'), timeout=15000)
+            check(True, 'Admin arrival changes appear automatically without customer refresh')
+            admin_context.close()
+            page.goto(BASE + '/order-status?order-id=' + str(order_id))
+            check('Time remaining' in page.inner_text('main') and 'WAT' in page.inner_text('main'), 'Order details also show arrival estimate')
             page.goto(BASE + '/account/settings')
             check(page.evaluate('document.documentElement.scrollWidth <= innerWidth'), 'Settings page fits mobile screen')
             (ROOT / '.local/previews').mkdir(parents=True, exist_ok=True)

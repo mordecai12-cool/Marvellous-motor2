@@ -13,7 +13,7 @@
       const response = await fetch('/api/shipment?order-id='+encodeURIComponent(id), {credentials:'same-origin',signal:AbortSignal.timeout(10000)});
       if (!response.ok) throw Error(response.status === 401 ? 'Sign in again to continue tracking.' : 'Connection interrupted. Your latest update is shown below.');
       const data = await response.json();
-      const fields = {label:data.label,location:data.location||'No location reported yet',reported:data.last_reported||'Our team will post a checkpoint after dispatch.',carrier:data.carrier||'To be confirmed',reference:data.reference||'Not assigned yet',date:data.planned_date,driver:data.driver||'To be confirmed'};
+      const fields = {arrival:data.estimated_arrival,remaining:data.time_remaining,label:data.label,location:data.location||'No location reported yet',reported:data.last_reported||'Our team will post a checkpoint after dispatch.',carrier:data.carrier||'To be confirmed',reference:data.reference||'Not assigned yet',date:data.planned_date,driver:data.driver||'To be confirmed'};
       Object.entries(fields).forEach(([key,value]) => { root.querySelector('[data-shipment-'+key+']').textContent=value; });
       root.querySelectorAll('[data-milestone]').forEach(node => { const step=Number(node.dataset.milestone);node.classList.toggle('complete',step<=data.progress);node.classList.toggle('current',step===data.progress&&data.progress<5);if(step===data.progress)node.setAttribute('aria-current','step');else node.removeAttribute('aria-current'); });
       const signature=data.events.map(event=>event.id).join(',');

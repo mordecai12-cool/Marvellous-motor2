@@ -99,7 +99,7 @@ func adminAccessMiddleware(db *sql.DB, next http.Handler) http.Handler {
 	})
 }
 
-type DeliveryDetails struct{ ScheduledDate, Partner, Driver, DriverPhone, Reference, Note string }
+type DeliveryDetails struct{ ScheduledDate, Partner, Driver, DriverPhone, Reference, Note, ArrivalAt string }
 type OrderEvent struct {
 	ID                                               int64
 	FromStatus, ToStatus, Note, ActorName, CreatedAt string
@@ -256,6 +256,7 @@ type AdminPage struct {
 func initAdminPlatform(db *sql.DB) error {
 	_, err := db.Exec(`CREATE TABLE IF NOT EXISTS delivery_details (
  order_id INTEGER PRIMARY KEY REFERENCES orders(id),scheduled_date TEXT NOT NULL DEFAULT '',partner TEXT NOT NULL DEFAULT '',driver TEXT NOT NULL DEFAULT '',driver_phone TEXT NOT NULL DEFAULT '',reference TEXT NOT NULL DEFAULT '',note TEXT NOT NULL DEFAULT '',updated_at TEXT NOT NULL DEFAULT CURRENT_TIMESTAMP);
+ CREATE TABLE IF NOT EXISTS delivery_arrivals(order_id INTEGER PRIMARY KEY REFERENCES orders(id),arrival_at TEXT NOT NULL);
  CREATE TABLE IF NOT EXISTS order_events(id INTEGER PRIMARY KEY AUTOINCREMENT,order_id INTEGER NOT NULL REFERENCES orders(id),from_status TEXT NOT NULL,to_status TEXT NOT NULL,note TEXT NOT NULL,actor_id INTEGER NOT NULL,actor_name TEXT NOT NULL,created_at TEXT NOT NULL DEFAULT CURRENT_TIMESTAMP);
  CREATE INDEX IF NOT EXISTS order_events_order_idx ON order_events(order_id,id);
  CREATE TABLE IF NOT EXISTS admin_activity(id INTEGER PRIMARY KEY AUTOINCREMENT,actor_id INTEGER NOT NULL,actor_name TEXT NOT NULL,action TEXT NOT NULL,entity TEXT NOT NULL,created_at TEXT NOT NULL DEFAULT CURRENT_TIMESTAMP);
@@ -364,7 +365,7 @@ func loadMetrics(db *sql.DB) (m AdminMetrics, err error) {
 	return
 }
 
-const managedOrderSelect = `SELECT o.id,COALESCE(o.customer_id,0),o.name,o.email,o.phone,o.address,o.city,o.state,COALESCE(o.car_name,'Vehicle order'),COALESCE(o.car_price,0),o.status,CAST(o.created_at AS TEXT),COALESCE(d.scheduled_date,''),COALESCE(d.partner,''),COALESCE(d.driver,''),COALESCE(d.driver_phone,''),COALESCE(d.reference,''),COALESCE(d.note,''),(SELECT COUNT(*) FROM payments p WHERE p.order_id=o.id) FROM orders o LEFT JOIN delivery_details d ON d.order_id=o.id `
+const managedOrderSelect = `SELECT o.id,COALESCE(o.customer_id,0),o.name,o.email,o.phone,o.address,o.city,o.state,COALESCE(o.car_name,'Vehicle order'),COALESCE(o.car_price,0),o.status,CAST(o.created_at AS TEXT),COALESCE(d.scheduled_date,''),COALESCE(d.partner,''),COALESCE(d.driver,''),COALESCE(d.driver_phone,''),COALESCE(d.reference,''),COALESCE(d.note,''),COALESCE((SELECT arrival_at FROM delivery_arrivals a WHERE a.order_id=o.id),''),(SELECT COUNT(*) FROM payments p WHERE p.order_id=o.id) FROM orders o LEFT JOIN delivery_details d ON d.order_id=o.id `
 
 func loadOrders(db *sql.DB, where string, args ...any) ([]ManagedOrder, error) {
 	rows, err := db.Query(managedOrderSelect+where+" ORDER BY o.id DESC", args...)
@@ -375,7 +376,7 @@ func loadOrders(db *sql.DB, where string, args ...any) ([]ManagedOrder, error) {
 	list := []ManagedOrder{}
 	for rows.Next() {
 		var o ManagedOrder
-		if err = rows.Scan(&o.ID, &o.CustomerID, &o.Name, &o.Email, &o.Phone, &o.Address, &o.City, &o.State, &o.CarName, &o.CarPrice, &o.Status, &o.CreatedAt, &o.Delivery.ScheduledDate, &o.Delivery.Partner, &o.Delivery.Driver, &o.Delivery.DriverPhone, &o.Delivery.Reference, &o.Delivery.Note, &o.PaymentCount); err != nil {
+		if err = rows.Scan(&o.ID, &o.CustomerID, &o.Name, &o.Email, &o.Phone, &o.Address, &o.City, &o.State, &o.CarName, &o.CarPrice, &o.Status, &o.CreatedAt, &o.Delivery.ScheduledDate, &o.Delivery.Partner, &o.Delivery.Driver, &o.Delivery.DriverPhone, &o.Delivery.Reference, &o.Delivery.Note, &o.Delivery.ArrivalAt, &o.PaymentCount); err != nil {
 			return nil, err
 		}
 		for _, v := range publicVehicles() {
@@ -777,12 +778,20 @@ func saveDelivery(db *sql.DB, w http.ResponseWriter, r *http.Request) {
 		http.Error(w, "Invalid order", 400)
 		return
 	}
-	d := DeliveryDetails{strings.TrimSpace(r.FormValue("scheduled-date")), strings.TrimSpace(r.FormValue("partner")), strings.TrimSpace(r.FormValue("driver")), strings.TrimSpace(r.FormValue("driver-phone")), strings.TrimSpace(r.FormValue("reference")), strings.TrimSpace(r.FormValue("note"))}
+	d := DeliveryDetails{ScheduledDate: strings.TrimSpace(r.FormValue("scheduled-date")), Partner: strings.TrimSpace(r.FormValue("partner")), Driver: strings.TrimSpace(r.FormValue("driver")), DriverPhone: strings.TrimSpace(r.FormValue("driver-phone")), Reference: strings.TrimSpace(r.FormValue("reference")), Note: strings.TrimSpace(r.FormValue("note"))}
 	if d.ScheduledDate != "" {
 		if _, err = time.Parse("2006-01-02", d.ScheduledDate); err != nil {
 			http.Error(w, "Enter a valid delivery date", 400)
 			return
 		}
+	}
+	if clock := strings.TrimSpace(r.FormValue("arrival-time")); clock != "" {
+		arrival, e := time.ParseInLocation("2006-01-02 15:04", d.ScheduledDate+" "+clock, dealershipTime())
+		if e != nil {
+			http.Error(w, "Choose an arrival date and a valid arrival time (Nigeria time)", 400)
+			return
+		}
+		d.ArrivalAt = arrival.UTC().Format(time.RFC3339)
 	}
 	if len(d.Partner) > 120 || len(d.Driver) > 100 || len(d.DriverPhone) > 30 || len(d.Reference) > 120 || len(d.Note) > 1000 {
 		http.Error(w, "Please shorten the delivery details", 400)
@@ -808,6 +817,11 @@ func saveDelivery(db *sql.DB, w http.ResponseWriter, r *http.Request) {
 		http.Error(w, "Could not save delivery", 500)
 		return
 	}
+	if _, err = tx.Exec(`INSERT INTO delivery_arrivals(order_id,arrival_at) VALUES(?,?) ON CONFLICT(order_id) DO UPDATE SET arrival_at=excluded.arrival_at`, id, d.ArrivalAt); err != nil {
+		http.Error(w, "Could not save the arrival estimate", 500)
+		return
+	}
+
 	note := "Delivery arrangements updated by our operations team."
 	if d.Note != "" {
 		note = d.Note

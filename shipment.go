@@ -29,22 +29,24 @@ func (e ShipmentEvent) Label() string     { return shipmentLabel(e.Stage) }
 func (e ShipmentEvent) TimeLabel() string { return displayTime(e.CreatedAt) }
 
 type ShipmentSnapshot struct {
-	OrderID      int64           `json:"order_id"`
-	Stage        string          `json:"stage"`
-	Label        string          `json:"label"`
-	Carrier      string          `json:"carrier"`
-	Reference    string          `json:"reference"`
-	PlannedDate  string          `json:"planned_date"`
-	Location     string          `json:"location"`
-	LastReported string          `json:"last_reported"`
-	Driver       string          `json:"driver"`
-	Events       []ShipmentEvent `json:"events"`
-	Progress     int             `json:"progress"`
-	CheckedAt    string          `json:"checked_at"`
+	EstimatedArrival string          `json:"estimated_arrival"`
+	TimeRemaining    string          `json:"time_remaining"`
+	OrderID          int64           `json:"order_id"`
+	Stage            string          `json:"stage"`
+	Label            string          `json:"label"`
+	Carrier          string          `json:"carrier"`
+	Reference        string          `json:"reference"`
+	PlannedDate      string          `json:"planned_date"`
+	Location         string          `json:"location"`
+	LastReported     string          `json:"last_reported"`
+	Driver           string          `json:"driver"`
+	Events           []ShipmentEvent `json:"events"`
+	Progress         int             `json:"progress"`
+	CheckedAt        string          `json:"checked_at"`
 }
 
 func loadShipment(db *sql.DB, order ManagedOrder) (ShipmentSnapshot, error) {
-	s := ShipmentSnapshot{OrderID: order.ID, Stage: order.Status, Carrier: order.Delivery.Partner, Reference: order.Delivery.Reference, PlannedDate: order.ScheduledLabel(), Driver: order.Delivery.Driver, Events: []ShipmentEvent{}, CheckedAt: time.Now().UTC().Format(time.RFC3339)}
+	s := ShipmentSnapshot{EstimatedArrival: order.ArrivalLabel(), TimeRemaining: order.TimeRemaining(), OrderID: order.ID, Stage: order.Status, Carrier: order.Delivery.Partner, Reference: order.Delivery.Reference, PlannedDate: order.ScheduledLabel(), Driver: order.Delivery.Driver, Events: []ShipmentEvent{}, CheckedAt: time.Now().UTC().Format(time.RFC3339)}
 	rows, err := db.Query("SELECT id,stage,location,note,CAST(created_at AS TEXT) FROM shipment_events WHERE order_id=? ORDER BY id DESC LIMIT 100", order.ID)
 	if err != nil {
 		return s, err
