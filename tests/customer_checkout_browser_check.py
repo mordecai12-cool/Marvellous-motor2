@@ -8,7 +8,7 @@ import tempfile
 import time
 import urllib.request
 from pathlib import Path
-from playwright.sync_api import sync_playwright
+from playwright.sync_api import sync_playwright, expect
 
 ROOT = Path(__file__).resolve().parents[1]
 BASE = 'http://127.0.0.1:8082'
@@ -97,6 +97,15 @@ with tempfile.TemporaryDirectory(prefix='mm-checkout-') as directory:
             text = page.inner_text('main')
             check('8106333322' in text and 'Opay' in text and 'Otiti Mordecai Mavellouse' in text,
                   'Continue to payment opens saved order with supplied Opay details')
+            page.get_by_role('button', name='Copy account number').click()
+            expect(page.locator('[data-copy-feedback]')).not_to_be_empty()
+            check('copied to clipboard' in page.locator('[data-copy-feedback]').inner_text(), 'Account number copy button works')
+            page.locator('[name=receipt]').set_input_files({'name': 'invalid.txt', 'mimeType': 'text/plain', 'buffer': b'not a receipt'})
+            check('PNG, JPEG or PDF' in page.locator('#receipt-selection').inner_text(), 'Unsupported receipt files show helpful feedback')
+            page.locator('[name=receipt]').set_input_files({'name': 'fictional-receipt.png', 'mimeType': 'image/png', 'buffer': b'fictional test file'})
+            check('Ready to submit' in page.locator('#receipt-selection').inner_text(), 'Selected receipt shows its filename and ready status')
+            (ROOT / '.local/previews').mkdir(parents=True, exist_ok=True)
+            page.screenshot(path=str(ROOT / '.local/previews/payment-desktop.png'), full_page=True)
             page.reload()
             with sqlite3.connect(database) as db:
                 check(db.execute('SELECT COUNT(*) FROM orders').fetchone()[0] == 1,
@@ -104,7 +113,10 @@ with tempfile.TemporaryDirectory(prefix='mm-checkout-') as directory:
                 check(db.execute('SELECT name,phone FROM customers WHERE email=?', ('checkout@example.test',)).fetchone()
                       == ('Updated Browser Driver', '+234 801 234 5678'), 'Registration and profile details persist in SQLite')
             page.set_viewport_size({'width': 390, 'height': 844})
+            page.reload()
             check(page.evaluate('document.documentElement.scrollWidth <= innerWidth'), 'Payment page fits mobile screen')
+            check(not page.locator('.payment-breakdown').evaluate('(el) => el.open'), 'Mobile summary keeps the full breakdown collapsible')
+            page.screenshot(path=str(ROOT / '.local/previews/payment-mobile.png'), full_page=True)
             page.goto(BASE + '/account/settings')
             check(page.evaluate('document.documentElement.scrollWidth <= innerWidth'), 'Settings page fits mobile screen')
             (ROOT / '.local/previews').mkdir(parents=True, exist_ok=True)

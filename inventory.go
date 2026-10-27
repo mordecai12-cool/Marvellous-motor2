@@ -214,7 +214,7 @@ func registerShowroomRoutes() {
 }
 
 func inventoryAsset(path string) bool {
-	if path == "/commerce.js" || path == "/business.css" || path == "/business.js" {
+	if path == "/payment.css" || path == "/payment.js" || path == "/commerce.js" || path == "/business.css" || path == "/business.js" {
 		return true
 	}
 	if path == "/account.css" || path == "/gallery.js" || path == "/gallery.css" || path == "/customer-care.js" || path == "/customer-care.css" || path == "/shipment.js" {

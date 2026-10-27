@@ -1,1 +1,72 @@
-<!DOCTYPE html><html lang="en"><head><title>Payment review · Marvellous Motors</title>{{template "head"}}<link rel="stylesheet" href="/delivery.css"></head><body class="delivery-ui">{{template "header" .}}<main id="main" class="container section"><div class="checkout-header"><span class="eyebrow">ORDER #{{printf "%04d" .OrderID}} · THE NEXT STEP</span><h1>Your order is in good hands.</h1><p>Submit payment evidence for review. Our operations team will confirm the next step.</p><div class="checkout-steps"><span><b>✓</b> Delivery details</span><span class="current"><b>02</b> Payment review</span><span><b>03</b> Preparation & handover</span></div></div><section class="delivery-panel checkout-bank-account" aria-labelledby="bank-heading"><span class="eyebrow">BANK TRANSFER DETAILS</span><h2 id="bank-heading">Make payment</h2>{{if .Bank.Configured}}<p>Confirm your vehicle and final price with our team before transferring. Include order #{{printf "%04d" .OrderID}} in your reference.</p><dl><dt>Bank</dt><dd>{{.Bank.BankName}}</dd><dt>Account name</dt><dd>{{.Bank.AccountName}}</dd><dt>Account number</dt><dd><strong class="bank-account-number">{{.Bank.AccountNumber}}</strong></dd><dt>Currency</dt><dd>NGN (₦)</dd></dl>{{else}}<p role="status">Payment account details are awaiting administrator setup. Contact our team before sending payment.</p><a class="text-link" href="/support.html">Contact customer care →</a>{{end}}</section>{{if .Quote.VehicleID}}<section class="delivery-panel checkout-bank-account"><h2>Your saved price breakdown</h2><dl>{{range .Quote.Lines}}<dt>{{.Label}}</dt><dd>{{.AmountLabel}}</dd>{{end}}<dt>Total to pay</dt><dd><strong>{{.Quote.TotalLabel}}</strong></dd></dl>{{if .Quote.Demo}}<p>Sample inventory or provisional rates. Do not send real money for a demonstration order.</p>{{end}}<p>These charges were saved with this order and are unaffected by later pricing changes.</p></section>{{end}}<div class="checkout-payment-layout"><section class="delivery-panel checkout-payment-form"><span class="eyebrow">EVIDENCE FOR THE OPERATIONS TEAM</span><h2>Ready for review.</h2><p>Add the amount, payment reference, and receipt. Uploading evidence does not mark your order as paid. An approved administrator must review it first.</p><form action="/payment" method="POST" enctype="multipart/form-data"><input type="hidden" name="order-id" value="{{.OrderID}}"><label for="amount-paid">Amount shown on the receipt (₦)</label><input id="amount-paid" value="{{if .Quote.VehicleID}}{{printf "%.2f" .Quote.TotalAmount}}{{end}}" type="number" name="amount-paid" min="0.01" step="0.01" required placeholder="Enter the payment amount"><label for="reference">Payment reference</label><input id="reference" name="reference" required minlength="3" maxlength="120" placeholder="Your transfer or transaction reference"><label for="receipt">Receipt evidence</label><input id="receipt" name="receipt" type="file" accept="image/png,image/jpeg,application/pdf" required><p class="muted" style="font-size:10px;margin-top:12px">PNG, JPEG or PDF · Maximum 5 MB · Visible only to you and approved staff</p><button class="button button-full" type="submit">Submit for review →</button></form></section><aside class="delivery-panel checkout-order-summary">{{if .Vehicle.Image}}<img src="{{.Vehicle.Image}}" alt="{{.Vehicle.Name}}">{{end}}<span class="eyebrow">{{.Vehicle.Year}} · {{.Vehicle.Trim}}</span><div class="order-summary"><h2>{{.Vehicle.Name}}</h2><strong style="color:#0b1739;font-size:24px">{{.Vehicle.PriceLabel}}</strong><p style="font-size:10px;margin-top:12px">{{.Vehicle.Condition}} · {{.Vehicle.Transmission}} · {{.Vehicle.Fuel}}</p></div><hr><span class="eyebrow">DELIVER TO</span><h3>{{.Name}}</h3><p>{{.Address}}<br>{{.City}}, {{.State}}</p><dl><div><dt>Contact</dt><dd>{{.Phone}}</dd></div><div><dt>Order</dt><dd>#{{printf "%04d" .OrderID}}</dd></div></dl><a class="text-link" href="/order-status?order-id={{.OrderID}}" style="margin-top:23px;font-size:11px">View your delivery timeline →</a></aside></div></main>{{template "footer" .}}</body></html>
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <title>Payment · Order #{{printf "%04d" .OrderID}} · Marvellous Motors</title>
+  {{template "head"}}
+  <link rel="stylesheet" href="/delivery.css">
+  <link rel="stylesheet" href="/payment.css">
+  <script src="/payment.js" defer></script>
+</head>
+<body class="delivery-ui payment-checkout">
+{{template "header" .}}
+<main id="main" class="container section payment-container">
+  <a class="payment-back" href="/customer-orders">← Back to my orders</a>
+  <header class="payment-heading">
+    <div><span class="eyebrow">YOUR NEXT CHAPTER · ORDER #{{printf "%04d" .OrderID}}</span><h1>One step closer.<br><em>Your next drive awaits.</em></h1><p>Review your order, use the transfer details below, then send your receipt to our team.</p></div>
+    <span class="payment-status"><span></span> Awaiting payment evidence</span>
+  </header>
+  <ol class="payment-progress" aria-label="Order progress">
+    <li class="complete"><span>✓</span><div><strong>Delivery details</strong><small>Saved to your order</small></div></li>
+    <li class="current" aria-current="step"><span>02</span><div><strong>Payment review</strong><small>Transfer &amp; upload receipt</small></div></li>
+    <li><span>03</span><div><strong>Preparation &amp; handover</strong><small>After payment approval</small></div></li>
+  </ol>
+  {{if .Quote.Demo}}<div class="payment-demo" role="note"><strong>Local preview · Demonstration order</strong><p>This order contains sample inventory or provisional pricing. Do not transfer real money for this demonstration.</p></div>{{end}}
+  <div class="payment-grid">
+    <div class="payment-main">
+      <section class="payment-card payment-bank" aria-labelledby="bank-heading">
+        <div class="payment-card-heading"><span class="payment-section-number">01</span><div><span class="eyebrow">BANK TRANSFER</span><h2 id="bank-heading">Your payment details</h2></div><span class="payment-currency">NGN · ₦</span></div>
+        {{if .Bank.Configured}}
+        <p class="payment-description">Confirm your vehicle and final price with our team before transferring. Pay to the account below and keep your receipt.</p>
+        <div class="payment-bank-details">
+          <dl><div><dt>Bank</dt><dd>{{.Bank.BankName}}</dd></div><div><dt>Account holder</dt><dd>{{.Bank.AccountName}}</dd></div></dl>
+          <div class="payment-account"><div><span>Account number</span><strong id="payment-account-number">{{.Bank.AccountNumber}}</strong></div><button type="button" class="payment-copy" data-copy-value="{{.Bank.AccountNumber}}" aria-label="Copy account number">Copy number <span aria-hidden="true">⧉</span></button></div>
+        </div>
+        <div class="payment-reference"><div><span>Include this in your transfer description</span><strong>MM-{{printf "%04d" .OrderID}}</strong></div><button type="button" class="payment-copy" data-copy-value="MM-{{printf "%04d" .OrderID}}" aria-label="Copy order reference">Copy reference <span aria-hidden="true">⧉</span></button></div>
+        <p class="payment-copy-feedback" data-copy-feedback role="status" aria-live="polite"></p>
+        {{else}}
+        <div class="payment-message" role="status"><strong>Bank details are being set up.</strong><p>Contact our team before sending payment. You can return to this saved order when the details are ready.</p></div>
+        {{end}}
+      </section>
+      <section class="payment-card" aria-labelledby="receipt-heading">
+        <div class="payment-card-heading"><span class="payment-section-number">02</span><div><span class="eyebrow">AFTER YOUR TRANSFER</span><h2 id="receipt-heading">Send your receipt</h2></div></div>
+        <p class="payment-description">Enter the details exactly as shown on your receipt. An approved administrator will review your payment before your order moves forward.</p>
+        <form action="/payment" method="POST" enctype="multipart/form-data" class="payment-evidence-form">
+          <input type="hidden" name="order-id" value="{{.OrderID}}">
+          <div class="payment-fields"><div><label for="amount-paid">Amount on receipt <span>(₦)</span></label><input id="amount-paid" value="{{if .Quote.VehicleID}}{{printf "%.2f" .Quote.TotalAmount}}{{end}}" type="number" name="amount-paid" min="0.01" step="0.01" required placeholder="0.00" aria-describedby="amount-help"><small id="amount-help">Enter the amount actually transferred.</small></div><div><label for="reference">Transaction reference</label><input id="reference" name="reference" required minlength="3" maxlength="120" placeholder="Reference from your bank" aria-describedby="reference-help"><small id="reference-help">Use your bank’s transaction reference.</small></div></div>
+          <label for="receipt">Upload payment receipt</label>
+          <div class="payment-upload"><span class="payment-upload-icon" aria-hidden="true">↥</span><div><strong>Choose your receipt</strong><p>PNG, JPEG or PDF · Maximum 5 MB</p></div><input id="receipt" name="receipt" type="file" accept="image/png,image/jpeg,application/pdf" required aria-describedby="receipt-help receipt-selection"></div>
+          <p id="receipt-selection" class="payment-file-status" role="status" aria-live="polite">No file selected yet.</p><p id="receipt-help" class="payment-privacy">Your receipt is visible only to you and approved staff.</p>
+          <button class="button button-full" type="submit">Submit receipt for review <span aria-hidden="true">→</span></button>
+          <p class="payment-submit-note">Submitting a receipt does not automatically mark your order as paid.</p>
+        </form>
+      </section>
+      <div class="payment-help"><div><strong>A little help along the way.</strong><p>Questions about the total, transfer details or your receipt?</p></div><a href="/support.html" class="payment-help-link">Talk to customer care ↗</a></div>
+    </div>
+    <aside class="payment-sidebar" aria-label="Your order summary">
+      <section class="payment-card payment-summary">
+        {{if .Vehicle.Image}}<img class="payment-vehicle-image" src="{{.Vehicle.Image}}" alt="{{.Vehicle.Name}}">{{end}}
+        <div class="payment-summary-body"><div class="payment-summary-kicker"><span class="eyebrow">YOUR NEXT DRIVE</span><span>Order #{{printf "%04d" .OrderID}}</span></div><h2>{{.Vehicle.Name}}</h2><p class="payment-vehicle-trim">{{.Vehicle.Year}} · {{.Vehicle.Trim}}</p><div class="payment-specs"><span>{{.Vehicle.Condition}}</span><span>{{.Vehicle.Transmission}}</span><span>{{.Vehicle.Fuel}}</span></div>
+          {{if .Quote.VehicleID}}
+          <div class="payment-total"><span>Total to pay</span><strong>{{.Quote.TotalLabel}}</strong><small>Vehicle + configured delivery &amp; fees</small></div>
+          <details class="payment-breakdown" open><summary>Price breakdown <span aria-hidden="true">⌄</span></summary><dl>{{range .Quote.Lines}}<div><dt>{{.Label}}</dt><dd>{{.AmountLabel}}</dd></div>{{end}}</dl><p>Saved with your order. Later pricing changes won’t alter this total.</p></details>
+          {{else}}<div class="payment-total"><span>Vehicle price</span><strong>{{.Vehicle.PriceLabel}}</strong><small>Confirm the final order total with our team.</small></div>{{end}}
+          <div class="payment-destination"><span class="eyebrow">DELIVERY DETAILS</span><h3>{{.Name}}</h3><p>{{.Address}}<br>{{.City}}, {{.State}}</p>{{if .Phone}}<p class="payment-contact">{{.Phone}}</p>{{end}}<p class="payment-contact">{{.Email}}</p></div>
+          <a href="/order-status?order-id={{.OrderID}}" class="payment-timeline">View order &amp; delivery timeline <span aria-hidden="true">↗</span></a>
+        </div>
+      </section>
+    </aside>
+  </div>
+</main>
+{{template "footer" .}}
+</body>
+</html>
