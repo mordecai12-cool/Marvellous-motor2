@@ -133,3 +133,23 @@ See [the deployment guide](docs/DEPLOYMENT.md) for account setup, production set
 Run `go test ./...` and `go vet ./...`. With the local server running and Python Playwright installed, run `.venv/bin/python tests/settings_browser_check.py`. This checks both built-in logins, admin creation and invitation, password updates, bank details in checkout and mobile layouts. It restores the original payment account after testing. Database-backed settings require persistent storage in deployment as described in [the deployment guide](docs/DEPLOYMENT.md).
 
 The showroom contains 50 sample vehicles, including 30 Sports and 16 Classic entries (some cars belong to both). See [showroom operations](docs/SHOWROOM_OPERATIONS.md) for model details, photo attribution, admin inventory controls and verification.
+
+
+### Customer accounts and Benue checkout
+
+Customers register at `/register.html`; their name, email, phone and bcrypt password hash are committed to SQLite before registration succeeds. Duplicate email addresses show a clear sign-in prompt. Customers can edit their own name and phone through **My account → My profile → Edit profile**, also linked from **Settings**. Profile changes do not rewrite historical order details.
+
+**Settings → Delete your account** requires the current password and explicit confirmation. It removes the account, chats and private support attachments, reviews, appointments, enquiries and recovery records. Existing order/payment records retain their original delivery/contact snapshots for dealership operations and are unlinked from customer access. Deletion signs the customer out; other sessions are rejected on their next request.
+
+A fresh or previously empty payment configuration starts with **Opay · 8106333322 · Otiti Mordecai Mavellouse**, as supplied by the owner. Admins can replace it in **Admin → Settings**; future restarts preserve their changes. These are bank-transfer instructions; payment evidence still needs admin review.
+
+Benue delivery starts at **₦2,000**, across all collection cities and vehicle types. The one-time migration preserves other existing fee amounts. Edit the route in **Admin → Pricing & routes**; `All` in Collection city matches any origin, and a blank destination city covers every city in the state. Route edits and disabling survive restarts. Other destinations still require their own confirmed rates. Order placement redirects to `/order-payment?order-id=…`; reloading this saved payment page does not create another order.
+
+All account data needs the persistent database and upload storage described in [deployment setup](docs/DEPLOYMENT.md). Publishing source alone does not preserve data on an ephemeral hosting disk.
+
+Additional end-to-end verification uses an isolated production database and does not modify preview customers or orders:
+
+```bash
+go build -o .local/marvellous-motors-next .
+.venv/bin/python tests/customer_checkout_browser_check.py
+```

@@ -16,7 +16,21 @@ func (b BankAccount) Configured() bool {
 	return b.BankName != "" && b.AccountName != "" && b.AccountNumber != ""
 }
 func initSettings(db *sql.DB) error {
-	_, err := db.Exec(`CREATE TABLE IF NOT EXISTS payment_account(id INTEGER PRIMARY KEY CHECK(id=1),bank_name TEXT NOT NULL DEFAULT '',account_name TEXT NOT NULL DEFAULT '',account_number TEXT NOT NULL DEFAULT ''); INSERT OR IGNORE INTO payment_account(id) VALUES(1);`)
+	_, err := db.Exec(`
+        CREATE TABLE IF NOT EXISTS payment_account (
+            id INTEGER PRIMARY KEY CHECK(id=1),
+            bank_name TEXT NOT NULL DEFAULT '',
+            account_name TEXT NOT NULL DEFAULT '',
+            account_number TEXT NOT NULL DEFAULT ''
+        );
+        INSERT OR IGNORE INTO payment_account(id,bank_name,account_name,account_number)
+        VALUES(1,'Opay','Otiti Mordecai Mavellouse','8106333322');
+        UPDATE payment_account SET bank_name='Opay',account_name='Otiti Mordecai Mavellouse',account_number='8106333322'
+        WHERE id=1 AND bank_name='' AND account_name='' AND account_number='';
+        CREATE TABLE IF NOT EXISTS account_deletion_audit (
+            audit_id TEXT PRIMARY KEY,
+            deleted_at DATETIME NOT NULL
+        );`)
 	return err
 }
 func loadBankAccount(db *sql.DB) (b BankAccount, err error) {
@@ -118,6 +132,17 @@ func serveSettings(db *sql.DB, w http.ResponseWriter, r *http.Request, admin boo
 	status := 200
 	if r.Method == http.MethodPost {
 		switch r.FormValue("action") {
+		case "delete-account":
+			if admin {
+				http.Error(w, "Use customer settings to delete a customer account", 403)
+				return
+			}
+			var deleted bool
+			message, status, deleted = deleteCustomerAccount(db, r, id)
+			if deleted {
+				handleLogout(w, r)
+				return
+			}
 		case "password":
 			message, status = changeAccountPassword(db, r, table, id)
 		case "bank":

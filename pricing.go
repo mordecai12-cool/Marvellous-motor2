@@ -45,6 +45,8 @@ type DeliveredQuote struct {
 	Token       string      `json:"token"`
 }
 
+func (r DeliveryRate) DeliveryLabel() string { return formatAmount(float64(r.Delivery)) }
+
 func (q DeliveredQuote) TotalLabel() string { return formatAmount(float64(q.Total) / 100) }
 func (p PriceLine) AmountLabel() string     { return formatAmount(float64(p.Amount) / 100) }
 
@@ -135,18 +137,21 @@ func quoteVehicle(db *sql.DB, v Vehicle, country, state, city string) (Delivered
 	today := time.Now().In(dealershipTime()).Format("2006-01-02")
 	for i := range rates {
 		rate := &rates[i]
-		if !rate.Active || !strings.EqualFold(rate.Origin, origin) || !strings.EqualFold(rate.Country, q.Country) || (rate.State != "" && !strings.EqualFold(rate.State, q.State)) || (rate.City != "" && !strings.EqualFold(rate.City, q.City)) || (rate.Body != "All" && rate.Body != v.Body) || (rate.Expires != "" && rate.Expires < today) {
+		if !rate.Active || (!strings.EqualFold(rate.Origin, "All") && !strings.EqualFold(rate.Origin, origin)) || !strings.EqualFold(rate.Country, q.Country) || (rate.State != "" && !strings.EqualFold(rate.State, q.State)) || (rate.City != "" && !strings.EqualFold(rate.City, q.City)) || (rate.Body != "All" && rate.Body != v.Body) || (rate.Expires != "" && rate.Expires < today) {
 			continue
 		}
 		score := 0
-		if rate.State != "" {
+		if !strings.EqualFold(rate.Origin, "All") {
 			score++
 		}
-		if rate.City != "" {
+		if rate.State != "" {
 			score += 2
 		}
-		if rate.Body != "All" {
+		if rate.City != "" {
 			score += 4
+		}
+		if rate.Body != "All" {
+			score += 8
 		}
 		if score > best {
 			chosen = rate
@@ -391,3 +396,33 @@ func cancelVehicleOrder(db *sql.DB, w http.ResponseWriter, r *http.Request) {
 }
 
 func (q DeliveredQuote) TotalAmount() float64 { return float64(q.Total) / 100 }
+
+// Apply the owner's starting tariff once. Later admin edits (including disabling
+// a route) survive restarts and deployments.
+func seedBenueDelivery(db *sql.DB) error {
+	tx, err := db.Begin()
+	if err != nil {
+		return err
+	}
+	defer tx.Rollback()
+	if _, err = tx.Exec(`CREATE TABLE IF NOT EXISTS business_migrations(name TEXT PRIMARY KEY)`); err != nil {
+		return err
+	}
+	result, err := tx.Exec(`INSERT OR IGNORE INTO business_migrations(name) VALUES('benue-delivery-2000-v1')`)
+	if err != nil {
+		return err
+	}
+	n, err := result.RowsAffected()
+	if err != nil {
+		return err
+	}
+	if n == 1 {
+		_, err = tx.Exec(`UPDATE delivery_rates SET delivery=2000,complete=1,estimated=0,demo=0,active=1,expires='',source='',notes='Owner-set delivery charge for all Benue destinations. Admins can update this rate.' WHERE lower(country)='nigeria' AND lower(state)='benue';
+        INSERT OR IGNORE INTO delivery_rates(body,origin,country,state,city,delivery,fees,label,notes,complete,estimated)
+        VALUES('All','All','Nigeria','Benue','',2000,0,'Benue statewide delivery','Owner-set delivery charge for all Benue destinations. Admins can update this rate.',1,0);`)
+		if err != nil {
+			return err
+		}
+	}
+	return tx.Commit()
+}

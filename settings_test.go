@@ -52,11 +52,12 @@ func TestPaymentAccountOnlyAdminsCanSaveAndCheckoutUsesLatest(t *testing.T) {
 	if w.Code != 403 {
 		t.Fatal("Anonymous user can save payment account")
 	}
+	original, _ := loadBankAccount(db)
 	fields.Set("account-number", "bad")
 	w = httptest.NewRecorder()
 	serveSettings(db, w, adminPost(t, "/admin/settings", fields, 2), true)
 	b, err := loadBankAccount(db)
-	if err != nil || b.Configured() {
+	if err != nil || b != original {
 		t.Fatal("Invalid account persisted", err)
 	}
 	fields.Set("account-number", "0123456789")

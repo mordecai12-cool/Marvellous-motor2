@@ -54,7 +54,10 @@ func initBusiness(db *sql.DB) error {
 			return e
 		}
 	}
-	return tx.Commit()
+	if err = tx.Commit(); err != nil {
+		return err
+	}
+	return seedBenueDelivery(db)
 }
 func registerBusiness(db *sql.DB) {
 	routes := map[string]http.HandlerFunc{

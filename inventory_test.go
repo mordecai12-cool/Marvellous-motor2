@@ -136,7 +136,7 @@ func TestOrderUsesSelectedVehicleAndServerPrice(t *testing.T) {
 	r.AddCookie(customerCookie(t, 1, ""))
 	w := httptest.NewRecorder()
 	handleOrder(db, w, r)
-	if w.Code != 200 {
+	if w.Code != 303 {
 		t.Fatalf("%d: %s", w.Code, w.Body.String())
 	}
 	var name string
@@ -146,6 +146,13 @@ func TestOrderUsesSelectedVehicleAndServerPrice(t *testing.T) {
 	}
 	if !strings.Contains(name, "BMW X5") || price != 112000000 {
 		t.Fatalf("Wrong order: %s %d", name, price)
+	}
+	paymentRequest := httptest.NewRequest("GET", w.Header().Get("Location"), nil)
+	paymentRequest.AddCookie(customerCookie(t, 1, ""))
+	w = httptest.NewRecorder()
+	serveCustomerPayment(db, w, paymentRequest)
+	if w.Code != 200 {
+		t.Fatal(w.Code, w.Body.String())
 	}
 	if !strings.Contains(w.Body.String(), "BMW X5") || !strings.Contains(w.Body.String(), "₦112,000,000") {
 		t.Fatal("Payment summary has wrong vehicle")

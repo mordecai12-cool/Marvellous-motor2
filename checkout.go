@@ -4,8 +4,8 @@ import (
 	"database/sql"
 	"encoding/json"
 	"fmt"
-	"html/template"
 	"net/http"
+	"strconv"
 	"strings"
 )
 
@@ -110,19 +110,5 @@ func placeVehicleOrder(db *sql.DB, w http.ResponseWriter, r *http.Request) {
 		fail(500, "Your order could not be confirmed. Please try again.")
 		return
 	}
-	bank, err := loadBankAccount(db)
-	if err != nil {
-		http.Error(w, "Order saved; open My orders to continue payment.", 500)
-		return
-	}
-	data := OrderData{Quote: q, Bank: bank, ShowroomData: ShowroomData{SignedIn: true}, Vehicle: v, OrderID: id, Name: c.Name, Email: c.Email, Phone: phone, Address: address, City: city, State: destinationState}
-	t, err := template.ParseFiles("payment.html", "partials.html")
-	if err != nil {
-		http.Error(w, "Order saved; open My orders to continue.", 500)
-		return
-	}
-	w.Header().Set("Content-Type", "text/html; charset=utf-8")
-	if err = t.Execute(w, data); err != nil {
-		fmt.Println(err)
-	}
+	http.Redirect(w, r, "/order-payment?order-id="+strconv.FormatInt(id, 10), http.StatusSeeOther)
 }

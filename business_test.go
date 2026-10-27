@@ -210,7 +210,7 @@ func TestQuoteSnapshotReservationAndCancellation(t *testing.T) {
 	fields := url.Values{"vehicle-id": {v.ID}, "address": {"1 Test Road"}, "city": {"Ikeja"}, "state": {"Lagos"}, "country": {"Nigeria"}, "price": {"1"}, "quote-token": {quote.Token}}
 	w := httptest.NewRecorder()
 	handleOrder(db, w, servicePost(t, "/order", fields, 1))
-	if w.Code != 200 {
+	if w.Code != 303 {
 		t.Fatal(w.Code, w.Body.String())
 	}
 	var id int64

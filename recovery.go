@@ -37,7 +37,9 @@ func recoverySessionMiddleware(db *sql.DB, next http.Handler) http.Handler {
 		if err == nil {
 			if id, ok := session.Values["customer_id"].(int64); ok {
 				epoch, _ := session.Values["auth_epoch"].(int64)
-				if epoch != customerEpoch(db, id) {
+				var exists bool
+				lookupErr := db.QueryRow("SELECT EXISTS(SELECT 1 FROM customers WHERE id=?)", id).Scan(&exists)
+				if lookupErr != nil || !exists || epoch != customerEpoch(db, id) {
 					session.Values = map[interface{}]interface{}{}
 					session.Options.MaxAge = -1
 					_ = session.Save(r, w)
