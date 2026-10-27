@@ -72,6 +72,22 @@ MM_DEMO_MODE=false MM_DB_PATH=.local/clean-preview.db ./start-local.sh
 
 Stop a running server first. Disabling demo seeding does not remove already-created accounts from an existing database.
 
+## Share one local preview across devices
+
+Each independently started localhost copy uses its own database. To share customer accounts, orders, delivery estimates and admin changes, run **one server** and connect every device to it.
+
+For devices on the same Wi-Fi, start the host computer with:
+
+```bash
+MM_HOST=0.0.0.0 ./start-local.sh
+```
+
+If a preview is already running, stop it first (`systemctl --user stop marvellous-motors-preview.service` for the systemd preview). Find the computer's Wi-Fi IPv4 address using `ip -4 -brief address`, then open `http://<Wi-Fi-IP>:8080` on the other devices. The host can continue using `http://localhost:8080`. Both addresses reach the same server and `.local/preview.db`. Keep the host running; some Wi-Fi networks restrict connections between devices. The IP address may change when reconnecting to the network.
+
+The current machine's preview service also has a local systemd override enabling network access; it is machine configuration and is not included in Git. Remove that override and restart the service to return to access from this computer only.
+
+For people on different networks, deploy one shared service using [the deployment guide](docs/DEPLOYMENT.md). Use one persistent volume for the database, upload files and session key. Everyone must use that deployed URL. Customer accounts retain access to their own orders, while approved admins manage the shared dealership data. Local preview data is separate from a fresh deployment and is not uploaded by `git push`.
+
 ## Configuration
 
 `.env.example` documents the options; export them in your shell. The application does not automatically read `.env` files.
